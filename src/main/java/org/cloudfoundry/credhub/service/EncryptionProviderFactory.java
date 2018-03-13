@@ -32,9 +32,8 @@ public class EncryptionProviderFactory {
 
   public InternalEncryptionService getEncryptionService(ProviderType provider) throws Exception {
     InternalEncryptionService encryptionService;
-
-    if (map.containsKey(provider)) {
-      return map.get(provider);
+    if (map.containsKey(provider.getProviderName())) {
+      return map.get(provider.getProviderName());
     } else {
       switch (provider.getProviderType()) {
         case HSM:
