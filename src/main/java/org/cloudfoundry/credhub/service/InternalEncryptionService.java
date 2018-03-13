@@ -25,6 +25,7 @@ public abstract class InternalEncryptionService implements EncryptionProvider {
   abstract CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException;
 
   abstract AlgorithmParameterSpec generateParameterSpec(byte[] nonce);
+  abstract KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata);
 
   @Override
   public EncryptedValue encrypt(EncryptionKey key, String value) throws Exception {

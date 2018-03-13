@@ -6,7 +6,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
+
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 import org.cloudfoundry.credhub.service.grpc.DecryptionRequest;
 import org.cloudfoundry.credhub.service.grpc.DecryptionResponse;
@@ -22,7 +22,6 @@ public class ExternalEncryptionProvider implements EncryptionProvider {
   private final EncryptionProviderGrpc.EncryptionProviderBlockingStub blockingStub;
 
   public ExternalEncryptionProvider(String host, int port){
-
     this(ManagedChannelBuilder.forAddress(host, port)
         // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
         // needing certificates.
@@ -37,23 +36,19 @@ public class ExternalEncryptionProvider implements EncryptionProvider {
 
   @Override
   public EncryptedValue encrypt(EncryptionKey key, String value) throws Exception {
-    EncryptionResponse response = encrypt(key.getEncryptionKeyName(), value);
+    EncryptionResponse response = encrypt(key.getUuid().toString(), value);
     return new EncryptedValue(key.getUuid(),response.getData().toByteArray(),response.getNonce().toByteArray());
   }
 
 
   @Override
   public String decrypt(EncryptionKey key, byte[] encryptedValue, byte[] nonce) throws Exception {
-    DecryptionResponse response = decrypt(new String(encryptedValue, CHARSET), key.getEncryptionKeyName(), new String(nonce, CHARSET));
+    DecryptionResponse response = decrypt(new String(encryptedValue, CHARSET), key.getUuid().toString(), new String(nonce, CHARSET));
     return response.getData();
   }
 
-  @Override
-  public KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
-    return new ExternalKeyProxy(encryptionKeyMetadata, this);
-  }
 
-  private EncryptionResponse encrypt(String keyId, String value) throws Exception {
+  private EncryptionResponse encrypt(String value, String keyId) throws Exception {
     EncryptionRequest request = EncryptionRequest.newBuilder().setData(value).setKey(keyId).build();
     EncryptionResponse response;
     try {
