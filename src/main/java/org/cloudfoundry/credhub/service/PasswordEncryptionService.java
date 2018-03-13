@@ -15,17 +15,10 @@ import java.security.spec.AlgorithmParameterSpec;
 
 public class PasswordEncryptionService extends InternalEncryptionService {
   public static final int GCM_TAG_LENGTH = 128;
-  private final SecureRandom secureRandom;
   private final PasswordKeyProxyFactory passwordKeyProxyFactory;
 
   public PasswordEncryptionService(PasswordKeyProxyFactory passwordKeyProxyFactory) throws Exception {
     this.passwordKeyProxyFactory = passwordKeyProxyFactory;
-    this.secureRandom = SecureRandom.getInstance("SHA1PRNG");
-  }
-
-  @Override
-  public SecureRandom getSecureRandom() {
-    return secureRandom;
   }
 
   @Override
