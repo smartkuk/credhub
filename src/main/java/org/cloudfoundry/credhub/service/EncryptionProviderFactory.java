@@ -16,7 +16,7 @@ public class EncryptionProviderFactory {
   private LunaProviderProperties lunaProviderProperties;
   private TimedRetry timedRetry;
   private PasswordKeyProxyFactory passwordKeyProxyFactory;
-  private HashMap<String, EncryptionProvider> map;
+  private HashMap<ProviderType, InternalEncryptionService> map;
 
   @Autowired
   public EncryptionProviderFactory(EncryptionKeysConfiguration keysConfiguration,
@@ -29,9 +29,8 @@ public class EncryptionProviderFactory {
     map = new HashMap<>();
   }
 
-  public EncryptionProvider getEncryptionService(EncryptionKeyProvider provider) throws Exception {
-    EncryptionProvider encryptionService;
-
+  public InternalEncryptionService getEncryptionService(ProviderType provider) throws Exception {
+    InternalEncryptionService encryptionService;
     if (map.containsKey(provider.getProviderName())) {
       return map.get(provider.getProviderName());
     } else {

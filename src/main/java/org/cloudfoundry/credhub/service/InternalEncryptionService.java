@@ -22,7 +22,10 @@ public abstract class InternalEncryptionService implements EncryptionProvider {
 
   abstract AlgorithmParameterSpec generateParameterSpec(byte[] nonce);
 
-  @Override
+  abstract KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata);
+
+  public abstract SecureRandom getSecureRandom();
+
   public EncryptedValue encrypt(EncryptionKey key, String value) throws Exception {
     return encrypt(key.getUuid(), key.getKey(), value);
   }
@@ -39,7 +42,6 @@ public abstract class InternalEncryptionService implements EncryptionProvider {
     return new EncryptedValue(canaryUuid, encrypted, nonce);
   }
 
-  @Override
   public String decrypt(EncryptionKey key, byte[] encryptedValue, byte[] nonce) throws Exception {
     return decrypt(key.getKey(), encryptedValue, nonce);
   }
