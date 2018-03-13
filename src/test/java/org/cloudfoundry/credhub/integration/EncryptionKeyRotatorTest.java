@@ -23,7 +23,6 @@ import org.cloudfoundry.credhub.service.EncryptionKey;
 import org.cloudfoundry.credhub.service.EncryptionKeyRotator;
 import org.cloudfoundry.credhub.service.EncryptionKeySet;
 import org.cloudfoundry.credhub.service.InternalEncryptionService;
-import org.cloudfoundry.credhub.service.PasswordEncryptionService;
 import org.cloudfoundry.credhub.service.PasswordBasedKeyProxy;
 import org.cloudfoundry.credhub.service.PasswordEncryptionService;
 import org.cloudfoundry.credhub.service.PasswordKeyProxyFactory;
@@ -388,7 +387,6 @@ public class EncryptionKeyRotatorTest {
 
       clonedKey.setActive(false);
       clonedKey.setEncryptionPassword(encryptionKeyMetadata.getEncryptionPassword());
-      clonedKey.setProviderName("int");
 
       keys.add(clonedKey);
     }
