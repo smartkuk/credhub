@@ -17,7 +17,7 @@ public class EncryptionProviderFactory {
   private LunaProviderProperties lunaProviderProperties;
   private TimedRetry timedRetry;
   private PasswordKeyProxyFactory passwordKeyProxyFactory;
-  private HashMap<String, EncryptionProvider> map;
+  private HashMap<ProviderType, InternalEncryptionService> map;
 
   @Autowired
   public EncryptionProviderFactory(EncryptionKeysConfiguration keysConfiguration,
@@ -30,10 +30,11 @@ public class EncryptionProviderFactory {
     map = new HashMap<>();
   }
 
-  public EncryptionProvider getEncryptionService(EncryptionKeyProvider provider) throws Exception {
-    EncryptionProvider encryptionService;
-    if (map.containsKey(provider.getProviderName())) {
-      return map.get(provider.getProviderName());
+  public InternalEncryptionService getEncryptionService(ProviderType provider) throws Exception {
+    InternalEncryptionService encryptionService;
+
+    if (map.containsKey(provider)) {
+      return map.get(provider);
     } else {
       switch (provider.getProviderType()) {
         case HSM:
@@ -45,7 +46,7 @@ public class EncryptionProviderFactory {
           encryptionService = new ExternalEncryptionProvider(provider.getHost(), Integer.valueOf(provider.getPort()));
           break;
         default:
-          encryptionService = new InternalEncryptionService(passwordKeyProxyFactory);
+          encryptionService = new PasswordEncryptionService(passwordKeyProxyFactory);
       }
       map.put(provider.getProviderName(), encryptionService);
       return encryptionService;

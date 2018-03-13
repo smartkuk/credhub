@@ -1,29 +1,35 @@
 package org.cloudfoundry.credhub.service;
 
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
-import org.cloudfoundry.credhub.constants.CipherTypes;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.GCMParameterSpec;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.UUID;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
+import static org.cloudfoundry.credhub.constants.EncryptionConstants.NONCE_SIZE;
+import static org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper.CHARSET;
 
-public class InternalEncryptionService extends EncryptionService {
-  public static final int GCM_TAG_LENGTH = 128;
+// This class is tested in BCEncryptionServiceTest.
 
-  private final SecureRandom secureRandom;
-  private final PasswordKeyProxyFactory passwordKeyProxyFactory;
+public abstract class InternalEncryptionService implements EncryptionProvider {
 
   abstract CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException;
 
   abstract AlgorithmParameterSpec generateParameterSpec(byte[] nonce);
 
-  @Override
+  abstract KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata);
+
+  public abstract SecureRandom getSecureRandom();
+
   public EncryptedValue encrypt(EncryptionKey key, String value) throws Exception {
     return encrypt(key.getUuid(), key.getKey(), value);
   }
@@ -40,26 +46,44 @@ public class InternalEncryptionService extends EncryptionService {
     return new EncryptedValue(canaryUuid, encrypted, nonce);
   }
 
-  abstract KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata);
-
-  @Override
   public String decrypt(EncryptionKey key, byte[] encryptedValue, byte[] nonce) throws Exception {
     return decrypt(key.getKey(), encryptedValue, nonce);
   }
 
-  @Override
-  CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
-    return new CipherWrapper(Cipher.getInstance(CipherTypes.GCM.toString()));
+  public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {
+    CipherWrapper decryptionCipher = getCipher();
+    AlgorithmParameterSpec parameterSpec = generateParameterSpec(nonce);
+    decryptionCipher.init(Cipher.DECRYPT_MODE, key, parameterSpec);
+
+    return new String(decryptionCipher.doFinal(encryptedValue), CHARSET);
   }
 
-  @Override
-  AlgorithmParameterSpec generateParameterSpec(byte[] nonce) {
-    return new GCMParameterSpec(GCM_TAG_LENGTH, nonce);
+  private byte[] generateNonce() {
+    SecureRandom secureRandom = getSecureRandom();
+    byte[] nonce = new byte[NONCE_SIZE];
+    secureRandom.nextBytes(nonce);
+    return nonce;
   }
 
-  @Override
-  KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
-    return passwordKeyProxyFactory.createPasswordKeyProxy(encryptionKeyMetadata, this);
+  static class CipherWrapper {
+
+    private Cipher wrappedCipher;
+
+    CipherWrapper(Cipher wrappedCipher) {
+      this.wrappedCipher = wrappedCipher;
+    }
+
+    public void init(int encryptMode, Key key, AlgorithmParameterSpec parameterSpec)
+        throws InvalidAlgorithmParameterException, InvalidKeyException {
+      wrappedCipher.init(encryptMode, key, parameterSpec);
+    }
+
+    byte[] doFinal(byte[] encryptedValue) throws BadPaddingException, IllegalBlockSizeException {
+      return wrappedCipher.doFinal(encryptedValue);
+    }
+  }
+
+  public void reconnect(Exception reasonForReconnect) throws Exception {
+    throw reasonForReconnect;
   }
 }
-
