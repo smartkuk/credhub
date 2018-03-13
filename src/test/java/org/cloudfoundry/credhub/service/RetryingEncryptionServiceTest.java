@@ -46,7 +46,7 @@ public class RetryingEncryptionServiceTest {
   @Before
   public void beforeEach() {
     keySet = mock(EncryptionKeySet.class);
-    encryptionService = mock(InternalEncryptionService.class);
+    encryptionService = mock(LunaEncryptionService.class);
 
     activeKeyUuid = UUID.randomUUID();
     firstActiveKey = mock(EncryptionKey.class);
