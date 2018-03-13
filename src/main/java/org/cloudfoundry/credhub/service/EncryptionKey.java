@@ -7,14 +7,13 @@ import java.security.SecureRandom;
 import java.util.UUID;
 
 public class EncryptionKey implements RandomNumberGenerator {
-
-  private EncryptionProvider provider;
+  private InternalEncryptionService service;
   private UUID uuid;
   private final Key key;
   private String encryptionKeyName;
 
-  public EncryptionKey(EncryptionProvider provider, UUID uuid, Key key, String encryptionKeyName) {
-    this.provider = provider;
+  public EncryptionKey(InternalEncryptionService service, UUID uuid, Key key) {
+    this.service = service;
     this.uuid = uuid;
     this.key = key;
     this.encryptionKeyName = encryptionKeyName;
@@ -40,8 +39,12 @@ public class EncryptionKey implements RandomNumberGenerator {
     return provider.encrypt(this, value);
   }
 
-  public EncryptionProvider getProvider() {
-    return provider;
+  public InternalEncryptionService getService() {
+    return service;
+  }
+
+  public void reconnect(Exception e) throws Exception {
+    service.reconnect(e);
   }
 
   @Override
