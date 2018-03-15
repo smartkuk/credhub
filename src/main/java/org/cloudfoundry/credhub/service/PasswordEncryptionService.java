@@ -32,7 +32,7 @@ public class PasswordEncryptionService extends InternalEncryptionService {
   }
 
   @Override
-  KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
+  public KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
     return passwordKeyProxyFactory.createPasswordKeyProxy(encryptionKeyMetadata, this);
   }
 }
