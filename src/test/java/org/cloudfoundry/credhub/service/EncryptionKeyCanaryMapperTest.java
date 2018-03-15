@@ -94,25 +94,22 @@ public class EncryptionKeyCanaryMapperTest {
     activeKeyData = new EncryptionKeyMetadata();
     activeKeyData.setEncryptionPassword("this-is-active");
     activeKeyData.setActive(true);
-    activeKeyData.setProviderName("int");
-    activeProvider = new EncryptionKeyProvider();
-    activeProvider.setProviderName("int");
+    activeKeyData.setProviderName("internal");
+    activeProvider.setProviderName("internal");
     activeProvider.setProviderType(ProviderType.INTERNAL);
 
     existingKey1Data = new EncryptionKeyMetadata();
     existingKey1Data.setEncryptionPassword("existing-key-1");
     existingKey1Data.setActive(false);
-    existingKey1Data.setProviderName("int");
-    activeProvider = new EncryptionKeyProvider();
-    activeProvider.setProviderName("int");
+    activeKeyData.setProviderName("internal");
+    activeProvider.setProviderName("internal");
     activeProvider.setProviderType(ProviderType.INTERNAL);
 
     existingKey2Data = new EncryptionKeyMetadata();
     existingKey2Data.setEncryptionPassword("existing-key-2");
     existingKey2Data.setActive(false);
-    existingKey2Data.setProviderName("int");
-    activeProvider = new EncryptionKeyProvider();
-    activeProvider.setProviderName("int");
+    activeKeyData.setProviderName("internal");
+    activeProvider.setProviderName("internal");
     activeProvider.setProviderType(ProviderType.INTERNAL);
 
     activeKey = mock(Key.class, "active key");
