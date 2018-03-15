@@ -388,6 +388,7 @@ public class EncryptionKeyRotatorTest {
 
       clonedKey.setActive(false);
       clonedKey.setEncryptionPassword(encryptionKeyMetadata.getEncryptionPassword());
+      clonedKey.setProviderName("int");
 
       keys.add(clonedKey);
     }

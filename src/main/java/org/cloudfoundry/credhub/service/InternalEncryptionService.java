@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.service;
 
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.constants.CipherTypes;
+import org.cloudfoundry.credhub.entity.EncryptedValue;
 
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
@@ -21,9 +22,6 @@ public class InternalEncryptionService extends EncryptionService {
   abstract CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException;
 
   abstract AlgorithmParameterSpec generateParameterSpec(byte[] nonce);
-
-  abstract KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata);
-
 
   @Override
   public EncryptedValue encrypt(EncryptionKey key, String value) throws Exception {
