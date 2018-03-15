@@ -13,12 +13,6 @@ public class EncryptionKeysConfiguration {
   private List<EncryptionKeyMetadata> keys;
   private List<EncryptionKeyProvider> providers;
   private boolean keyCreationEnabled;
-  private List<EncryptionKeyProvider> providers;
-
-  public List<EncryptionKeyProvider> getProviders() { return providers;}
-
-  public void setProviders(List<EncryptionKeyProvider> providers) { this.providers = providers; }
-
 
   public List<EncryptionKeyProvider> getProviders() { return providers;}
 
