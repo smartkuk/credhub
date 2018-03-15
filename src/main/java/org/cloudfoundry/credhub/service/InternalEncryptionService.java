@@ -1,19 +1,14 @@
 package org.cloudfoundry.credhub.service;
 
-import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entity.EncryptedValue;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.AlgorithmParameterSpec;
-import java.util.UUID;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import java.security.*;
+import java.security.spec.AlgorithmParameterSpec;
+import java.util.UUID;
 
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.NONCE_SIZE;
 import static org.cloudfoundry.credhub.service.EncryptionKeyCanaryMapper.CHARSET;
@@ -25,7 +20,6 @@ public abstract class InternalEncryptionService implements EncryptionProvider {
   abstract CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException;
 
   abstract AlgorithmParameterSpec generateParameterSpec(byte[] nonce);
-  abstract KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata);
 
   @Override
   public EncryptedValue encrypt(EncryptionKey key, String value) throws Exception {

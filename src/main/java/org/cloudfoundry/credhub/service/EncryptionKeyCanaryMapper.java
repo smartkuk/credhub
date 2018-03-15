@@ -52,7 +52,7 @@ public class EncryptionKeyCanaryMapper {
     List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
 
     for (EncryptionKeyMetadata keyMetadata : encryptionKeysConfiguration.getKeys()) {
-      InternalEncryptionService encryptionService = providerFactory.getEncryptionService(getProviderFromName(keyMetadata));
+      EncryptionProvider encryptionService = providerFactory.getEncryptionService(getProviderFromName(keyMetadata));
       KeyProxy keyProxy = encryptionService.createKeyProxy(keyMetadata);
       EncryptionKeyCanary matchingCanary = null;
 
@@ -98,7 +98,7 @@ public class EncryptionKeyCanaryMapper {
     throw new RuntimeException("Provider name not found in list of keys");
   }
 
-  private EncryptionKeyCanary createCanary(KeyProxy keyProxy, InternalEncryptionService encryptionService) {
+  private EncryptionKeyCanary createCanary(KeyProxy keyProxy, EncryptionProvider encryptionService) {
     if (encryptionKeysConfiguration.isKeyCreationEnabled()) {
       logger.info("Creating a new active key canary");
       EncryptionKeyCanary canary = new EncryptionKeyCanary();
