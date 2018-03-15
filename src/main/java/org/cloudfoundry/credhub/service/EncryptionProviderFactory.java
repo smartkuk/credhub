@@ -1,5 +1,6 @@
 package org.cloudfoundry.credhub.service;
 
+import org.cloudfoundry.credhub.config.EncryptionKeyProvider;
 import org.cloudfoundry.credhub.config.EncryptionKeysConfiguration;
 import org.cloudfoundry.credhub.config.LunaProviderProperties;
 import org.cloudfoundry.credhub.config.ProviderType;
@@ -16,7 +17,7 @@ public class EncryptionProviderFactory {
   private LunaProviderProperties lunaProviderProperties;
   private TimedRetry timedRetry;
   private PasswordKeyProxyFactory passwordKeyProxyFactory;
-  private HashMap<ProviderType, EncryptionService> map;
+  private HashMap<String, InternalEncryptionService> map;
 
   @Autowired
   public EncryptionProviderFactory(EncryptionKeysConfiguration keysConfiguration,
@@ -29,22 +30,23 @@ public class EncryptionProviderFactory {
     map = new HashMap<>();
   }
 
-  public EncryptionService getEncryptionService(ProviderType provider) throws Exception {
-    EncryptionService encryptionService;
-
-    if (map.containsKey(provider)) {
-      return map.get(provider);
+  public InternalEncryptionService getEncryptionService(EncryptionKeyProvider provider) throws Exception {
+    InternalEncryptionService encryptionService;
+    if (map.containsKey(provider.getProviderName())) {
+      return map.get(provider.getProviderName());
     } else {
-      switch (provider) {
+      switch (provider.getProviderType()) {
         case HSM:
           encryptionService = new LunaEncryptionService(new LunaConnection(lunaProviderProperties),
               encryptionKeysConfiguration.isKeyCreationEnabled(),
               timedRetry);
           break;
+//        case EXTERNAL:
+//          encryptionService = new ExternalEncryptionProvider();
         default:
           encryptionService = new InternalEncryptionService(passwordKeyProxyFactory);
       }
-      map.put(provider, encryptionService);
+      map.put(provider.getProviderName(), encryptionService);
       return encryptionService;
     }
   }

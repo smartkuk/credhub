@@ -3,12 +3,13 @@ package org.cloudfoundry.credhub.service;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.constants.CipherTypes;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.AlgorithmParameterSpec;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.GCMParameterSpec;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.AlgorithmParameterSpec;
+import java.util.UUID;
 
 
 public class InternalEncryptionService extends EncryptionService {
@@ -17,14 +18,33 @@ public class InternalEncryptionService extends EncryptionService {
   private final SecureRandom secureRandom;
   private final PasswordKeyProxyFactory passwordKeyProxyFactory;
 
-  public InternalEncryptionService(PasswordKeyProxyFactory passwordKeyProxyFactory) throws Exception {
-    this.passwordKeyProxyFactory = passwordKeyProxyFactory;
-    this.secureRandom = SecureRandom.getInstance("SHA1PRNG");
+  abstract CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException;
+
+  abstract AlgorithmParameterSpec generateParameterSpec(byte[] nonce);
+
+  abstract KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata);
+
+
+  @Override
+  public EncryptedValue encrypt(EncryptionKey key, String value) throws Exception {
+    return encrypt(key.getUuid(), key.getKey(), value);
+  }
+
+  public EncryptedValue encrypt(UUID canaryUuid, Key key, String value) throws Exception {
+    byte[] nonce = generateNonce();
+    AlgorithmParameterSpec parameterSpec = generateParameterSpec(nonce);
+    CipherWrapper encryptionCipher = getCipher();
+
+    encryptionCipher.init(Cipher.ENCRYPT_MODE, key, parameterSpec);
+
+    byte[] encrypted = encryptionCipher.doFinal(value.getBytes(CHARSET));
+
+    return new EncryptedValue(canaryUuid, encrypted, nonce);
   }
 
   @Override
-  public SecureRandom getSecureRandom() {
-    return secureRandom;
+  public String decrypt(EncryptionKey key, byte[] encryptedValue, byte[] nonce) throws Exception {
+    return decrypt(key.getKey(), encryptedValue, nonce);
   }
 
   @Override
