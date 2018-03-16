@@ -54,7 +54,7 @@ public class EncryptionKeyCanaryMapper {
     for (EncryptionKeyMetadata keyMetadata : encryptionKeysConfiguration.getKeys()) {
 
 
-      EncryptionProvider encryptionService = providerFactory.getEncryptionService(getProviderFromName(keyMetadata));
+      InternalEncryptionService encryptionService = (InternalEncryptionService) providerFactory.getEncryptionService(getProviderFromName(keyMetadata));
       KeyProxy keyProxy = encryptionService.createKeyProxy(keyMetadata);
       EncryptionKeyCanary matchingCanary = null;
 
@@ -64,9 +64,11 @@ public class EncryptionKeyCanaryMapper {
           break;
         }
       }
-      EncryptionKey encryptionKey = new EncryptionKey(providerFactory.getEncryptionService(getProviderFromName(keyMetadata)), null, keyProxy.getKey(), keyMetadata.getEncryptionKeyName());
+      EncryptionKey encryptionKey = new EncryptionKey(providerFactory.getEncryptionService(getProviderFromName(keyMetadata)), null, keyProxy.getKey());
       if (matchingCanary == null) {
         if (keyMetadata.isActive()) {
+
+
           matchingCanary = createCanary(keyProxy, encryptionService, encryptionKey);
         } else {
           continue;
@@ -76,10 +78,8 @@ public class EncryptionKeyCanaryMapper {
         keySet.setActive(matchingCanary.getUuid());
       }
       try {
-        keySet.add(new EncryptionKey(
-            providerFactory.getEncryptionService(getProviderFromName(keyMetadata)),
-            matchingCanary.getUuid(),
-            keyProxy.getKey()));
+        encryptionKey.setUuid(matchingCanary.getUuid());
+        keySet.add(encryptionKey);
       } catch (Exception e) {
         throw new RuntimeException("Failed to connect to encryption provider", e);
       }
@@ -100,7 +100,7 @@ public class EncryptionKeyCanaryMapper {
     throw new RuntimeException("Provider name not found in list of keys");
   }
 
-  private EncryptionKeyCanary createCanary(KeyProxy keyProxy, EncryptionProvider encryptionService) {
+  private EncryptionKeyCanary createCanary(KeyProxy keyProxy, InternalEncryptionService encryptionProvider, EncryptionKey encryptionKey) {
     if (encryptionKeysConfiguration.isKeyCreationEnabled()) {
       logger.info("Creating a new active key canary");
       EncryptionKeyCanary canary = new EncryptionKeyCanary();
