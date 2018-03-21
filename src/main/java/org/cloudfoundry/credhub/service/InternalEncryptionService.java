@@ -46,6 +46,7 @@ public abstract class InternalEncryptionService implements EncryptionProvider {
     return new EncryptedValue(canaryUuid, encrypted, nonce);
   }
 
+  @Override
   public String decrypt(EncryptionKey key, byte[] encryptedValue, byte[] nonce) throws Exception {
     return decrypt(key.getKey(), encryptedValue, nonce);
   }

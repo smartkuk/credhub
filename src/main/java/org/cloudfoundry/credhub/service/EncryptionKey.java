@@ -11,11 +11,13 @@ public class EncryptionKey implements RandomNumberGenerator {
   private InternalEncryptionService service;
   private UUID uuid;
   private final Key key;
+  private String encryptionKeyName;
 
-  public EncryptionKey(InternalEncryptionService service, UUID uuid, Key key) {
-    this.service = service;
+  public EncryptionKey(EncryptionProvider provider, UUID uuid, Key key, String encryptionKeyName) {
+    this.provider = provider;
     this.uuid = uuid;
     this.key = key;
+    this.encryptionKeyName = encryptionKeyName;
   }
 
   public Key getKey() {
@@ -49,5 +51,13 @@ public class EncryptionKey implements RandomNumberGenerator {
   @Override
   public SecureRandom getSecureRandom() {
     return service.getSecureRandom();
+  }
+
+  public String getEncryptionKeyName() {
+    return encryptionKeyName;
+  }
+
+  public void setEncryptionKeyName(String encryptionKeyName) {
+    this.encryptionKeyName = encryptionKeyName;
   }
 }

@@ -364,7 +364,7 @@ public class EncryptionKeyRotatorTest {
     oldCanary.setNonce(canaryEncryption.getNonce());
     oldCanary = encryptionKeyCanaryDataService.save(oldCanary);
 
-    keySet.add(new EncryptionKey(encryptionService, oldCanary.getUuid(), oldKey));
+    keySet.add(new EncryptionKey(encryptionService, oldCanary.getUuid(), oldKey, "key-name"));
 
     return oldKey;
   }
