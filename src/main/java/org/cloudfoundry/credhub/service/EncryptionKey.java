@@ -12,7 +12,7 @@ public class EncryptionKey implements RandomNumberGenerator {
   private final Key key;
   private String encryptionKeyName;
 
-  public EncryptionKey(EncryptionProvider provider, UUID uuid, Key key) {
+  public EncryptionKey(EncryptionProvider provider, UUID uuid, Key key, String encryptionKeyName) {
     this.provider = provider;
     this.uuid = uuid;
     this.key = key;
@@ -46,5 +46,13 @@ public class EncryptionKey implements RandomNumberGenerator {
   @Override
   public SecureRandom getSecureRandom() {
     return provider.getSecureRandom();
+  }
+
+  public String getEncryptionKeyName() {
+    return encryptionKeyName;
+  }
+
+  public void setEncryptionKeyName(String encryptionKeyName) {
+    this.encryptionKeyName = encryptionKeyName;
   }
 }
