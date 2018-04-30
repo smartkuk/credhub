@@ -53,7 +53,7 @@ public class ExternalEncryptionProvider implements EncryptionProvider {
     return new ExternalKeyProxy(encryptionKeyMetadata, this);
   }
 
-  private EncryptionResponse encrypt(String value, String keyId) throws Exception {
+  private EncryptionResponse encrypt(String keyId, String value) throws Exception {
     EncryptionRequest request = EncryptionRequest.newBuilder().setData(value).setKey(keyId).build();
     EncryptionResponse response;
     try {

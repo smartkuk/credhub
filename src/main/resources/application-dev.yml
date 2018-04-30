@@ -13,6 +13,7 @@ encryption:
   - encryption_password: correcthorsebatterystaple
     provider_name: int
     active: false
+    encryption_key_name: some-key-name-2
   providers:
   - provider_name: int
     provider_type: external
