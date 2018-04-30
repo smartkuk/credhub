@@ -9,9 +9,11 @@ encryption:
   - encryption_password: opensesame
     provider_name: int
     active: true
+    encryption_key_name: some-key-name-1
   - encryption_password: correcthorsebatterystaple
     provider_name: int
     active: false
+    encryption_key_name: some-key-name-2
   providers:
   - provider_name: int
     provider_type: external
