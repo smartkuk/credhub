@@ -28,6 +28,7 @@ public class EncryptionKeyCanaryMapper {
 
   private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private final EncryptionKeysConfiguration encryptionKeysConfiguration;
+
   private final TimedRetry timedRetry;
   private EncryptionProviderFactory providerFactory;
   private final Logger logger;
