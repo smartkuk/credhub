@@ -53,7 +53,6 @@ public class EncryptedValue {
   public EncryptedValue() {
   }
 
-  // TODO remove this constructor
   public EncryptedValue(UUID encryptionKeyUuid, String encryptedValueString, String nonceString) {
     this(encryptionKeyUuid, encryptedValueString.getBytes(), nonceString.getBytes());
   }
