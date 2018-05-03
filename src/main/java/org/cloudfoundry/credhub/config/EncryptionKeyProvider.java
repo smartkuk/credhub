@@ -1,10 +1,13 @@
 package org.cloudfoundry.credhub.config;
 
+import java.util.List;
+
 @SuppressWarnings("unused")
 public class EncryptionKeyProvider {
   private String providerName, host;
   private Integer port;
   private ProviderType providerType;
+  private List<EncryptionKeyMetadata> keys;
 
   public String getProviderName() {
     return providerName;
@@ -36,5 +39,14 @@ public class EncryptionKeyProvider {
 
   public void setPort(Integer port) {
     this.port = port;
+  }
+
+
+  public List<EncryptionKeyMetadata> getKeys() {
+    return keys;
+  }
+
+  public void setKeys(List<EncryptionKeyMetadata> keys) {
+    this.keys = keys;
   }
 }

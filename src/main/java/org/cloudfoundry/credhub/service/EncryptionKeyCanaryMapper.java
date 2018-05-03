@@ -48,55 +48,51 @@ public class EncryptionKeyCanaryMapper {
     logger = LogManager.getLogger();
   }
 
+
   void mapUuidsToKeys(EncryptionKeySet keySet) throws Exception {
     List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
 
-    for (EncryptionKeyMetadata keyMetadata : encryptionKeysConfiguration.getKeys()) {
+    for (EncryptionKeyProvider provider : encryptionKeysConfiguration.getProviders()) {
+      EncryptionProvider encryptionService = providerFactory.getEncryptionService(provider);
 
+      for (EncryptionKeyMetadata keyMetadata : provider.getKeys()) {
+        KeyProxy keyProxy = encryptionService.createKeyProxy(keyMetadata);
+        EncryptionKeyCanary matchingCanary = null;
 
-      EncryptionProvider encryptionService =  providerFactory.getEncryptionService(getProviderFromName(keyMetadata));
-      KeyProxy keyProxy = encryptionService.createKeyProxy(keyMetadata);
-      EncryptionKeyCanary matchingCanary = null;
-
-      for (EncryptionKeyCanary canary : encryptionKeyCanaries) {
-        if (keyProxy.matchesCanary(canary)) {
-          matchingCanary = canary;
-          break;
+        for (EncryptionKeyCanary canary : encryptionKeyCanaries) {
+          if (keyProxy.matchesCanary(canary)) {
+            matchingCanary = canary;
+            break;
+          }
         }
-      }
-      EncryptionKey encryptionKey = new EncryptionKey(providerFactory.getEncryptionService(getProviderFromName(keyMetadata)), null, keyProxy.getKey(), keyMetadata.getEncryptionKeyName());
-      if (matchingCanary == null) {
+
+        EncryptionKey encryptionKey = new EncryptionKey(encryptionService, null, keyProxy.getKey(), keyMetadata.getEncryptionKeyName());
+
+        if (matchingCanary == null) {
+          if (keyMetadata.isActive()) {
+            matchingCanary = createCanary(keyProxy, encryptionService, encryptionKey);
+          } else {
+            continue;
+          }
+        }
         if (keyMetadata.isActive()) {
-          matchingCanary = createCanary(keyProxy, encryptionService, encryptionKey);
-        } else {
-          continue;
+          keySet.setActive(matchingCanary.getUuid());
+        }
+
+        try {
+          encryptionKey.setUuid(matchingCanary.getUuid());
+          keySet.add(encryptionKey);
+        } catch (Exception e) {
+          throw new RuntimeException("Failed to connect to encryption provider", e);
+        }
+
+        if (keySet.getActive() == null) {
+          throw new RuntimeException("No active key was found");
         }
       }
-      if (keyMetadata.isActive()) {
-        keySet.setActive(matchingCanary.getUuid());
-      }
-      try {
-        encryptionKey.setUuid(matchingCanary.getUuid());
-        keySet.add(encryptionKey);
-      } catch (Exception e) {
-        throw new RuntimeException("Failed to connect to encryption provider", e);
-      }
-    }
-
-    if (keySet.getActive() == null) {
-      throw new RuntimeException("No active key was found");
     }
   }
 
-  private EncryptionKeyProvider getProviderFromName(EncryptionKeyMetadata encryptionKeyMetadata) {
-    for(EncryptionKeyProvider provider : encryptionKeysConfiguration.getProviders()) {
-      if (encryptionKeyMetadata.getProviderName().equals(provider.getProviderName())) {
-        return provider;
-      }
-    }
-
-    throw new RuntimeException("Provider name not found in list of keys");
-  }
 
   private EncryptionKeyCanary createCanary(KeyProxy keyProxy, EncryptionProvider encryptionProvider, EncryptionKey encryptionKey) {
     if (encryptionKeysConfiguration.isKeyCreationEnabled()) {

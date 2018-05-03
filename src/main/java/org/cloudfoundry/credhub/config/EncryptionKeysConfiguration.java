@@ -10,21 +10,12 @@ import java.util.List;
 @ConfigurationProperties("encryption")
 public class EncryptionKeysConfiguration {
 
-  private List<EncryptionKeyMetadata> keys;
   private List<EncryptionKeyProvider> providers;
   private boolean keyCreationEnabled;
 
   public List<EncryptionKeyProvider> getProviders() { return providers;}
 
   public void setProviders(List<EncryptionKeyProvider> providers) { this.providers = providers; }
-
-  public List<EncryptionKeyMetadata> getKeys() {
-    return keys;
-  }
-
-  public void setKeys(List<EncryptionKeyMetadata> keys) {
-    this.keys = keys;
-  }
 
   public boolean isKeyCreationEnabled() {
     return keyCreationEnabled;

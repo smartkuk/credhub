@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
+import org.cloudfoundry.credhub.config.EncryptionKeyProvider;
 import org.cloudfoundry.credhub.config.EncryptionKeysConfiguration;
 import org.cloudfoundry.credhub.data.CredentialDataService;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
@@ -382,19 +383,20 @@ public class EncryptionKeyRotatorTest {
   private void setActiveKey(int index) throws Exception {
     List<EncryptionKeyMetadata> keys = new ArrayList<>();
 
-    for (EncryptionKeyMetadata encryptionKeyMetadata : encryptionKeysConfiguration.getKeys()) {
+    List<EncryptionKeyProvider> providers = encryptionKeysConfiguration.getProviders();
+    for (EncryptionKeyMetadata encryptionKeyMetadata : providers.get(0).getKeys()) {
       EncryptionKeyMetadata clonedKey = new EncryptionKeyMetadata();
 
       clonedKey.setActive(false);
       clonedKey.setEncryptionPassword(encryptionKeyMetadata.getEncryptionPassword());
-      clonedKey.setProviderName("int");
+      providers.get(0).setProviderName("int");
 
       keys.add(clonedKey);
     }
 
     keys.get(index).setActive(true);
 
-    doReturn(keys).when(encryptionKeysConfiguration).getKeys();
+    doReturn(keys).when(encryptionKeysConfiguration).getProviders().get(0).getKeys();
 
     keySet.reload();
   }
