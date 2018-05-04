@@ -24,4 +24,6 @@ public class EncryptionKeysConfiguration {
   public void setKeyCreationEnabled(boolean keyCreationEnabled) {
     this.keyCreationEnabled = keyCreationEnabled;
   }
+
+
 }

@@ -51,10 +51,8 @@ public class EncryptionKeyCanaryMapper {
 
   void mapUuidsToKeys(EncryptionKeySet keySet) throws Exception {
     List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
-
     for (EncryptionKeyProvider provider : encryptionKeysConfiguration.getProviders()) {
       EncryptionProvider encryptionService = providerFactory.getEncryptionService(provider);
-
       for (EncryptionKeyMetadata keyMetadata : provider.getKeys()) {
         KeyProxy keyProxy = encryptionService.createKeyProxy(keyMetadata);
         EncryptionKeyCanary matchingCanary = null;
@@ -85,11 +83,10 @@ public class EncryptionKeyCanaryMapper {
         } catch (Exception e) {
           throw new RuntimeException("Failed to connect to encryption provider", e);
         }
-
-        if (keySet.getActive() == null) {
-          throw new RuntimeException("No active key was found");
-        }
       }
+    }
+    if (keySet.getActive() == null) {
+      throw new RuntimeException("No active key was found");
     }
   }
 

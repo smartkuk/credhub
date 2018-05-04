@@ -8,6 +8,8 @@ encryption:
   providers:
   - provider_name: int
     provider_type: internal
+    host: localhost
+    port: 1234
     keys:
     - encryption_password: opensesame
       active: true

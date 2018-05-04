@@ -122,16 +122,22 @@ public class EncryptionKeyCanaryMapperTest {
     unknownCanary = createEncryptionCanary(unknownCanaryUuid, "fake-existing-encrypted-value3",
         "fake-existing-nonce3", unknownKey);
 
+    List<EncryptionKeyProvider> providers = new ArrayList<>();
+    EncryptionKeyProvider provider = new EncryptionKeyProvider();
+    List<EncryptionKeyMetadata> keys = newArrayList(
+        existingKey1Data,
+        activeKeyData,
+        existingKey2Data
+    );
+    provider.setKeys(keys);
+    providers.add(provider);
+
     when(encryptionService.encrypt(null, activeKey, CANARY_VALUE))
         .thenReturn(new EncryptedValue(
             null,
             "fake-encrypted-value",
             "fake-nonce"));
-    when(encryptionKeysConfiguration.getProviders().get(0).getKeys()).thenReturn(newArrayList(
-        existingKey1Data,
-        activeKeyData,
-        existingKey2Data
-    ));
+    when(encryptionKeysConfiguration.getProviders()).thenReturn(providers);
     when(providerFactory.getEncryptionService(activeProvider)).thenReturn(encryptionService);
 
     when(encryptionService.createKeyProxy(eq(activeKeyData))).thenReturn(activeKeyProxy);
@@ -321,9 +327,12 @@ public class EncryptionKeyCanaryMapperTest {
 
   @Test
   public void mapUuidsToKeys_whenThereIsNoActiveKey() throws Exception {
-    when(encryptionKeysConfiguration.getProviders().get(0).getKeys()).thenReturn(asList(existingKey1Data, existingKey2Data));
+    List<EncryptionKeyMetadata> keys = asList(existingKey1Data, existingKey2Data);
+    activeProvider.setKeys(keys);
+    List<EncryptionKeyProvider> providers = asList(activeProvider);
+
     when(encryptionKeysConfiguration.isKeyCreationEnabled()).thenReturn(true);
-    when(encryptionKeysConfiguration.getProviders()).thenReturn(asList(activeProvider));
+    when(encryptionKeysConfiguration.getProviders()).thenReturn(providers);
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
         encryptionKeysConfiguration, timedRetry, providerFactory);
 
@@ -418,10 +427,13 @@ public class EncryptionKeyCanaryMapperTest {
   @Test
   public void mapUuidsToKeys_whenThereAreMultipleKeys_andMatchingCanariesForEveryKey_itShouldReturnAMapBetweenMatchingCanariesAndKeys()
       throws Exception {
+
+    activeProvider.setKeys(asList(existingKey1Data, activeKeyData, existingKey2Data));
+    List<EncryptionKeyProvider> providers = asList(activeProvider);
+
     when(encryptionKeysConfiguration.isKeyCreationEnabled()).thenReturn(true);
-    when(encryptionKeysConfiguration.getProviders()).thenReturn(asList(activeProvider));
-    when(encryptionKeysConfiguration.getProviders().get(0).getKeys())
-        .thenReturn(asList(existingKey1Data, activeKeyData, existingKey2Data));
+    when(encryptionKeysConfiguration.getProviders()).thenReturn(providers);
+
     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
         encryptionKeysConfiguration,  timedRetry, providerFactory);
     subject.mapUuidsToKeys(keySet);
