@@ -49,4 +49,15 @@ public class EncryptionKeyProvider {
   public void setKeys(List<EncryptionKeyMetadata> keys) {
     this.keys = keys;
   }
+
+  @Override
+  public String toString() {
+    return "EncryptionKeyProvider{" +
+        "providerName='" + providerName + '\'' +
+        ", host='" + host + '\'' +
+        ", port=" + port +
+        ", providerType=" + providerType +
+        ", keys=" + keys +
+        '}';
+  }
 }

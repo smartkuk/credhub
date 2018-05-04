@@ -56,6 +56,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.core.IsNot.not;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -384,19 +385,21 @@ public class EncryptionKeyRotatorTest {
     List<EncryptionKeyMetadata> keys = new ArrayList<>();
 
     List<EncryptionKeyProvider> providers = encryptionKeysConfiguration.getProviders();
-    for (EncryptionKeyMetadata encryptionKeyMetadata : providers.get(0).getKeys()) {
-      EncryptionKeyMetadata clonedKey = new EncryptionKeyMetadata();
+    for (EncryptionKeyProvider provider : providers) {
+      for (EncryptionKeyMetadata encryptionKeyMetadata : provider.getKeys()) {
+        EncryptionKeyMetadata clonedKey = new EncryptionKeyMetadata();
 
-      clonedKey.setActive(false);
-      clonedKey.setEncryptionPassword(encryptionKeyMetadata.getEncryptionPassword());
-      providers.get(0).setProviderName("int");
-      keys.add(clonedKey);
+        clonedKey.setActive(false);
+        clonedKey.setEncryptionPassword(encryptionKeyMetadata.getEncryptionPassword());
+
+        keys.add(clonedKey);
+      }
+      keys.get(index).setActive(true);
+      provider.setKeys(keys);
+      provider.setProviderName("int");
     }
 
-    keys.get(index).setActive(true);
-
-    doReturn(keys).when(encryptionKeysConfiguration).getProviders().get(0).getKeys();
-
+    doReturn(providers).when(encryptionKeysConfiguration).getProviders();
     keySet.reload();
   }
 }

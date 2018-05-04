@@ -31,4 +31,12 @@ public class EncryptionKeyMetadata {
     this.encryptionKeyName = encryptionKeyName;
   }
 
+  @Override
+  public String toString() {
+    return "EncryptionKeyMetadata{" +
+        "encryptionPassword='" + encryptionPassword + '\'' +
+        ", active=" + active +
+        ", encryptionKeyName='" + encryptionKeyName + '\'' +
+        '}';
+  }
 }
