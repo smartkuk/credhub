@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.service;
 
 import org.cloudfoundry.credhub.config.EncryptionKeyProvider;
 import org.cloudfoundry.credhub.config.EncryptionKeysConfiguration;
-import org.cloudfoundry.credhub.config.LunaProviderProperties;
 import org.cloudfoundry.credhub.util.TimedRetry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -13,17 +12,14 @@ import java.util.HashMap;
 public class EncryptionProviderFactory {
 
   private EncryptionKeysConfiguration encryptionKeysConfiguration;
-  private LunaProviderProperties lunaProviderProperties;
   private TimedRetry timedRetry;
   private PasswordKeyProxyFactory passwordKeyProxyFactory;
   private HashMap<String, EncryptionProvider> map;
 
   @Autowired
-  public EncryptionProviderFactory(EncryptionKeysConfiguration keysConfiguration,
-      LunaProviderProperties lunaProviderProperties, TimedRetry timedRetry,
+  public EncryptionProviderFactory(EncryptionKeysConfiguration keysConfiguration, TimedRetry timedRetry,
       PasswordKeyProxyFactory passwordKeyProxyFactory) throws Exception {
     this.encryptionKeysConfiguration = keysConfiguration;
-    this.lunaProviderProperties = lunaProviderProperties;
     this.timedRetry = timedRetry;
     this.passwordKeyProxyFactory = passwordKeyProxyFactory;
     map = new HashMap<>();
@@ -37,12 +33,13 @@ public class EncryptionProviderFactory {
     } else {
       switch (provider.getProviderType()) {
         case HSM:
-          encryptionService = new LunaEncryptionService(new LunaConnection(lunaProviderProperties),
+          encryptionService = new LunaEncryptionService(new LunaConnection(provider.getConfiguration()),
               encryptionKeysConfiguration.isKeyCreationEnabled(),
               timedRetry);
           break;
         case EXTERNAL:
-          encryptionService = new ExternalEncryptionProvider(provider.getHost(), Integer.valueOf(provider.getPort()));
+          encryptionService = new ExternalEncryptionProvider(provider.getConfiguration().getHost(),
+              Integer.valueOf(provider.getConfiguration().getPort()));
           break;
         default:
           encryptionService = new PasswordEncryptionService(passwordKeyProxyFactory);

@@ -38,4 +38,11 @@ public class EncryptionKeysConfigurationTest {
     assertThat(secondKey.getEncryptionPassword(), equalTo("correcthorsebatterystaple"));
     assertThat(secondKey.isActive(), equalTo(false));
   }
+
+  @Test
+  public void fillsTheConfigurationObject(){
+    EncryptionConfiguration config = subject.getProviders().get(0).getConfiguration();
+    assertThat(config.getHost(), equalTo("localhost"));
+    assertThat(config.getPort(), equalTo(50051));
+    }
 }
