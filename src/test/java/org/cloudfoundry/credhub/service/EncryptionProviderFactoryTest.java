@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.service;
 
 import org.cloudfoundry.credhub.config.EncryptionKeyProvider;
 import org.cloudfoundry.credhub.config.EncryptionKeysConfiguration;
-import org.cloudfoundry.credhub.config.LunaProviderProperties;
 import org.cloudfoundry.credhub.config.ProviderType;
 import org.cloudfoundry.credhub.util.TimedRetry;
 import org.junit.Before;
@@ -32,7 +31,6 @@ public class EncryptionProviderFactoryTest {
   public void getEncryptionService_whenEncryptionServiceIsAlreadyInitialized() throws Exception {
     EncryptionProviderFactory subject = new EncryptionProviderFactory(
         mock(EncryptionKeysConfiguration.class),
-        mock(LunaProviderProperties.class),
         mock(TimedRetry.class),
         mock(PasswordKeyProxyFactory.class)
     );

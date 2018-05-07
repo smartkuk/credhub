@@ -4,10 +4,18 @@ import java.util.List;
 
 @SuppressWarnings("unused")
 public class EncryptionKeyProvider {
-  private String providerName, host;
-  private Integer port;
+  private String providerName;
   private ProviderType providerType;
   private List<EncryptionKeyMetadata> keys;
+  private EncryptionConfiguration configuration;
+
+  public EncryptionConfiguration getConfiguration() {
+    return configuration;
+  }
+
+  public void setConfiguration(EncryptionConfiguration configuration) {
+    this.configuration = configuration;
+  }
 
   public String getProviderName() {
     return providerName;
@@ -25,22 +33,6 @@ public class EncryptionKeyProvider {
     this.providerType = providerType;
   }
 
-  public String getHost() {
-    return host;
-  }
-
-  public void setHost(String host) {
-    this.host = host;
-  }
-
-  public Integer getPort() {
-    return port;
-  }
-
-  public void setPort(Integer port) {
-    this.port = port;
-  }
-
 
   public List<EncryptionKeyMetadata> getKeys() {
     return keys;
@@ -54,10 +46,9 @@ public class EncryptionKeyProvider {
   public String toString() {
     return "EncryptionKeyProvider{" +
         "providerName='" + providerName + '\'' +
-        ", host='" + host + '\'' +
-        ", port=" + port +
         ", providerType=" + providerType +
         ", keys=" + keys +
+        ", configuration=" + configuration +
         '}';
   }
 }
