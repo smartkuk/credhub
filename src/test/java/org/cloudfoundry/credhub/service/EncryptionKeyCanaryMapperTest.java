@@ -17,12 +17,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 
+import javax.crypto.AEADBadTagException;
+import javax.crypto.IllegalBlockSizeException;
 import java.security.Key;
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.crypto.AEADBadTagException;
-import javax.crypto.IllegalBlockSizeException;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
@@ -35,11 +35,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(JUnit4.class)
 public class EncryptionKeyCanaryMapperTest {
@@ -157,7 +153,7 @@ public class EncryptionKeyCanaryMapperTest {
     timedRetry = mock(TimedRetry.class);
     when(timedRetry.retryEverySecondUntil(anyLong(), any(Supplier.class)))
         .thenAnswer(answer -> {
-          Supplier<Boolean> retryableOperation = answer.getArgumentAt(1, Supplier.class);
+          Supplier<Boolean> retryableOperation = answer.getArgument(1);
           for (int i = 0; i < 10; ++i) {
             if (retryableOperation.get()) {
               return true;

@@ -56,3 +56,6 @@ logging:
           descriptor:
             sql:
               BasicBinder: TRACE
+
+flyway:
+  locations: classpath:/db/migration/common,classpath:/db/migration/mysql

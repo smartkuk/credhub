@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.util;
 
-import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -8,7 +7,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 @Component
-public class CurrentTimeProvider implements DateTimeProvider {
+public class CurrentTimeProvider {
 
   public static Calendar makeCalendar(long epochMilli) {
     Calendar.Builder builder = new Calendar.Builder();
@@ -17,7 +16,6 @@ public class CurrentTimeProvider implements DateTimeProvider {
     return builder.build();
   }
 
-  @Override
   public Calendar getNow() {
     return makeCalendar(getInstant().toEpochMilli());
   }
@@ -31,6 +29,6 @@ public class CurrentTimeProvider implements DateTimeProvider {
   }
 
   public void sleep(long sleepTimeInMillis) throws InterruptedException {
-      Thread.sleep(sleepTimeInMillis);
+    Thread.sleep(sleepTimeInMillis);
   }
 }

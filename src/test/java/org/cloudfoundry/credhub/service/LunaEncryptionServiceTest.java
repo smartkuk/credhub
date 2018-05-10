@@ -7,17 +7,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import java.util.function.Supplier;
 import javax.crypto.SecretKey;
+import java.util.function.Supplier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(JUnit4.class)
 public class LunaEncryptionServiceTest {
@@ -37,7 +34,7 @@ public class LunaEncryptionServiceTest {
 
     timedRetry = mock(TimedRetry.class);
     when(timedRetry.retryEverySecondUntil(anyLong(), any(Supplier.class))).thenAnswer(answer -> {
-      Supplier<Boolean> retryingOperation = answer.getArgumentAt(1, Supplier.class);
+      Supplier<Boolean> retryingOperation = answer.getArgument(1);
       for(int i=0; i < 10; i++) {
         if(retryingOperation.get()) {
           return true;

@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.generator;
 
-import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
@@ -12,10 +11,12 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
+import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.stereotype.Component;
 
+import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -26,14 +27,13 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
-import javax.security.auth.x500.X500Principal;
 
 import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
 
 @Component
 public class SignedCertificateGenerator {
 
-  private final DateTimeProvider timeProvider;
+  private final CurrentTimeProvider timeProvider;
   private final RandomSerialNumberGenerator serialNumberGenerator;
   private final JcaX509ExtensionUtils jcaX509ExtensionUtils;
   private JcaContentSignerBuilder jcaContentSignerBuilder;
@@ -42,7 +42,7 @@ public class SignedCertificateGenerator {
 
   @Autowired
   SignedCertificateGenerator(
-      DateTimeProvider timeProvider,
+      CurrentTimeProvider timeProvider,
       RandomSerialNumberGenerator serialNumberGenerator,
       JcaContentSignerBuilder jcaContentSignerBuilder,
       JcaX509CertificateConverter jcaX509CertificateConverter,
