@@ -45,7 +45,7 @@ configurations.all {
     exclude module: "logback-classic"
 }
 
-ext['spring-security-oauth.version'] = '2.2.1.RELEASE'
+ext['spring-security-oauth.version'] = '2.2.2.RELEASE'
 
 def grpcVersion = '1.10.0'
 dependencies {
