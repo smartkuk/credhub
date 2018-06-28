@@ -7,7 +7,7 @@ import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.request.PasswordGenerateRequest;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
-import org.cloudfoundry.credhub.service.PermissionService;
+import org.cloudfoundry.credhub.service.permissions.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.junit.Before;
 import org.junit.Test;

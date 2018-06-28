@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.service;
+package org.cloudfoundry.credhub.service.permissions;
 
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;

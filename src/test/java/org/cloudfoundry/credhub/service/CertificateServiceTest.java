@@ -7,6 +7,7 @@ import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.service.permissions.PermissionCheckingService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -312,10 +312,10 @@ public class PermissionAndCredentialTest {
     assertThat(acl.getCredentialName(), equalTo("/test-password"));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "test-path",
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new PermissionEntry(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
+            new PermissionEntry(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, "test-path",
                 asList(READ, WRITE)))));
   }
 
@@ -358,10 +358,10 @@ public class PermissionAndCredentialTest {
     assertThat(acl.getCredentialName(), equalTo("/test-password"));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "test-path",
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new PermissionEntry(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
+            new PermissionEntry(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, "test-path",
                 asList(READ, WRITE)))));
   }
 
@@ -475,13 +475,13 @@ public class PermissionAndCredentialTest {
     assertThat(acl.getCredentialName(), equalTo("/test-password"));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "test-path",
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new PermissionEntry(MTLS_APP_GUID,
+            new PermissionEntry(MTLS_APP_GUID, "test-path",
                 asList(WRITE))),
         samePropertyValuesAs(
-            new PermissionEntry(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID,
+            new PermissionEntry(UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID, "test-path",
                 asList(READ, WRITE, DELETE)))));
   }
 
@@ -500,16 +500,16 @@ public class PermissionAndCredentialTest {
   }
 
   private void hasCreatorAcl(String token, String actor) throws Exception {
-    assertThat(getAcl(token).getPermissions(), Matchers.contains(samePropertyValuesAs(new PermissionEntry(actor,
+    assertThat(getAcl(token).getPermissions(), Matchers.contains(samePropertyValuesAs(new PermissionEntry(actor, "test-path",
         asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL)))));
   }
 
   private void hasCreatorAndOtherAcl(String token, String actor) throws Exception {
     assertThat(getAcl(token).getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(actor,
+            new PermissionEntry(actor, "test-path",
             asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new PermissionEntry(MTLS_APP_GUID, asList(READ)))));
+            new PermissionEntry(MTLS_APP_GUID, "test-path", asList(READ)))));
   }
 }

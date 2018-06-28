@@ -11,6 +11,8 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.service.permissions.PermissionCheckingService;
+import org.cloudfoundry.credhub.service.permissions.PermissionService;
 import org.hamcrest.core.IsEqual;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,23 +84,23 @@ public class PermissionServiceTest {
     ArrayList<PermissionEntry> expectedEntries = newArrayList();
     subject.savePermissionsForUser(expectedCredentialVersion, expectedEntries, false);
 
-    verify(permissionDataService, never()).savePermissions(any(), any());
+    verify(permissionDataService, never()).savePermissions(any());
   }
 
   @Test
   public void saveAccessControlEntries_withEntries_delegatesToDataService() {
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
-    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, PermissionOperation.READ));
+    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
     subject.savePermissionsForUser(expectedCredentialVersion, expectedEntries, false);
 
-    verify(permissionDataService).savePermissions(expectedCredentialVersion.getCredential(), expectedEntries);
+    verify(permissionDataService).savePermissions(expectedEntries);
   }
 
   @Test
   public void saveAccessControlEntries_whenCredentialHasACEs_shouldCallVerifyAclWritePermission() {
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
     ArrayList<PermissionEntry> entries = newArrayList();
-    entries.add(new PermissionEntry(USER_NAME, asList(PermissionOperation.WRITE_ACL)));
+    entries.add(new PermissionEntry(USER_NAME, "test-path", asList(PermissionOperation.WRITE_ACL)));
 
     subject.savePermissionsForUser(expectedCredentialVersion, entries, false);
 
@@ -119,7 +121,7 @@ public class PermissionServiceTest {
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
     when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.WRITE_ACL))
         .thenReturn(false);
-    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, PermissionOperation.READ));
+    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
 
     try {
       subject.savePermissionsForUser(expectedCredentialVersion, expectedEntries, false);
@@ -134,10 +136,10 @@ public class PermissionServiceTest {
     when(userContextHolder.getUserContext()).thenReturn(null);
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
 
-    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, PermissionOperation.READ));
-    subject.savePermissions(expectedCredentialVersion, expectedEntries);
+    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
+    subject.savePermissions(expectedEntries);
 
-    verify(permissionDataService).savePermissions(expectedCredentialVersion.getCredential(), expectedEntries);
+    verify(permissionDataService).savePermissions(expectedEntries);
   }
 
   @Test

@@ -1,0 +1,20 @@
+security:
+  authorization:
+    permissions:
+    - path: /my/credential
+      actors:
+      - uaa-user:user-a
+      operations:
+      - read
+      - write
+      - delete
+      - read_acl
+      - write_acl
+    - path: /*
+      actors:
+      - uaa-user:user-b
+      operations:
+      - read
+      - write
+    acls:
+      enabled: true

@@ -450,10 +450,10 @@ public class CredentialsControllerTypeSpecificSetTest {
     assertThat(acl.getCredentialName(), equalTo(CREDENTIAL_NAME));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+            new PermissionEntry(UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "test-path",
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new PermissionEntry("app1-guid",
+            new PermissionEntry("app1-guid", "test-path",
                 asList(READ)))));
   }
 

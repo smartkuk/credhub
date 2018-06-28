@@ -37,24 +37,18 @@ public class PermissionDataService {
     return createViewsFromPermissionsFor(credential);
   }
 
-  public void savePermissions(
-      Credential credential,
-      List<PermissionEntry> permissions
-  ) {
-    List<PermissionData> existingPermissions = permissionRepository
-        .findAllByCredentialUuid(credential.getUuid());
-
+  public void savePermissions(List<PermissionEntry> permissions) {
     for (PermissionEntry permission : permissions) {
-      upsertPermissions(credential, existingPermissions, permission.getActor(),
+      String path = permission.getPath();
+      List<PermissionData> existingPermissions = permissionRepository.findAllByPath(path);
+      upsertPermissions(path, existingPermissions, permission.getActor(),
           permission.getAllowedOperations());
     }
   }
 
   public List<PermissionOperation> getAllowedOperations(String name, String actor) {
     List<PermissionOperation> operations = newArrayList();
-    Credential credential = credentialDataService.find(name);
-    PermissionData permissionData = permissionRepository
-        .findByCredentialAndActor(credential, actor);
+    PermissionData permissionData = permissionRepository.findByPathAndActor(name, actor);
 
     if (permissionData != null) {
       if (permissionData.hasReadPermission()) {
@@ -79,8 +73,8 @@ public class PermissionDataService {
 
   public boolean deletePermissions(String name, String actor) {
     Credential credential = credentialDataService.find(name);
-    auditRecord.setResource(credential);
-    return permissionRepository.deleteByCredentialAndActor(credential, actor) > 0;
+    auditRecord.setResource(credential); // TODO auditRecord should take a permission ID or name
+    return permissionRepository.deleteByPathAndActor(name, actor) > 0;
   }
 
   public boolean hasNoDefinedAccessControl(String name) {
@@ -88,22 +82,21 @@ public class PermissionDataService {
     if (credential == null) {
       return false;
     }
-    return (permissionRepository.findAllByCredentialUuid(credential.getUuid()).size() == 0);
+    return (permissionRepository.findAllByPath(name).size() == 0);
   }
 
   public boolean hasPermission(String user, String name, PermissionOperation requiredPermission) {
-    Credential credential = credentialDataService.find(name);
     final PermissionData permissionData =
-        permissionRepository.findByCredentialAndActor(credential, user);
+        permissionRepository.findByPathAndActor(name, user);
     return permissionData != null && permissionData.hasPermission(requiredPermission);
   }
 
-  private void upsertPermissions(Credential credential,
+  private void upsertPermissions(String path,
                                  List<PermissionData> accessEntries, String actor, List<PermissionOperation> operations) {
     PermissionData entry = findAccessEntryForActor(accessEntries, actor);
 
     if (entry == null) {
-      entry = new PermissionData(credential, actor);
+      entry = new PermissionData(path, actor);
     }
 
     entry.enableOperations(operations);
@@ -117,12 +110,13 @@ public class PermissionDataService {
     PermissionEntry entry = new PermissionEntry();
     List<PermissionOperation> operations = data.generateAccessControlOperations();
     entry.setAllowedOperations(operations);
+//    entry.setPath(data.getPath());
     entry.setActor(data.getActor());
     return entry;
   }
 
   private List<PermissionEntry> createViewsFromPermissionsFor(Credential credential) {
-    return permissionRepository.findAllByCredentialUuid(credential.getUuid())
+    return permissionRepository.findAllByPath(credential.getName())
         .stream()
         .map(this::createViewFor)
         .collect(Collectors.toList());

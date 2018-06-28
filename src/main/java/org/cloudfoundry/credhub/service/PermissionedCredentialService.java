@@ -20,6 +20,7 @@ import org.cloudfoundry.credhub.exceptions.PermissionException;
 import org.cloudfoundry.credhub.request.BaseCredentialRequest;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.service.permissions.PermissionCheckingService;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

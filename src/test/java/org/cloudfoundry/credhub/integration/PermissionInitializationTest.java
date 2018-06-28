@@ -11,8 +11,8 @@ import org.cloudfoundry.credhub.repository.PermissionRepository;
 import org.cloudfoundry.credhub.request.PasswordSetRequest;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.service.PermissionInitializer;
-import org.cloudfoundry.credhub.service.PermissionService;
+import org.cloudfoundry.credhub.service.permissions.PermissionInitializer;
+import org.cloudfoundry.credhub.service.permissions.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Before;
@@ -90,7 +90,7 @@ public class PermissionInitializationTest {
   public void itAddsNewPermissions() {
     applicationEventPublisher.publishEvent(new ContextRefreshedEvent(applicationContext));
 
-    List<PermissionData> savedPermissions = permissionRepository.findAllByCredentialUuid(credentialUUID);
+    List<PermissionData> savedPermissions = permissionRepository.findAllByPath(credentialPath);
     assertThat(savedPermissions, hasSize(2));
     assertThat(savedPermissions.stream().map(p -> p.getActor()).collect(Collectors.toList()), containsInAnyOrder(actors.get(0), actors.get(1)));
     assertThat(savedPermissions.stream().allMatch(p -> p.hasReadPermission() && p.hasWritePermission()), is(true));
@@ -102,11 +102,11 @@ public class PermissionInitializationTest {
     PermissionEntry permissionEntry = new PermissionEntry();
     permissionEntry.setActor(actors.get(0));
     permissionEntry.setAllowedOperations(Arrays.asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL));
-    permissionService.savePermissions(credentialVersion, Arrays.asList(permissionEntry));
+    permissionService.savePermissions(Arrays.asList(permissionEntry));
 
     applicationEventPublisher.publishEvent(new ContextRefreshedEvent(applicationContext));
 
-    List<PermissionData> savedPermissions = permissionRepository.findAllByCredentialUuid(credentialUUID);
+    List<PermissionData> savedPermissions = permissionRepository.findAllByPath(credentialPath);
     assertThat(savedPermissions, hasSize(2));
     assertThat(savedPermissions.stream().map(p -> p.getActor()).collect(Collectors.toList()), containsInAnyOrder(actors.get(0), actors.get(1)));
     assertThat(savedPermissions.stream().allMatch(p -> p.hasReadPermission() && p.hasWritePermission()), is(true));

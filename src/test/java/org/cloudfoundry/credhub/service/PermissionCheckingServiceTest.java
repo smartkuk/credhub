@@ -5,6 +5,7 @@ import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.PermissionDataService;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.request.PermissionOperation;
+import org.cloudfoundry.credhub.service.permissions.PermissionCheckingService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

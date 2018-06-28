@@ -83,10 +83,10 @@ public class PermissionsEndpointTest {
     assertThat(permissions.getCredentialName(), equalTo(credentialName));
     assertThat(permissions.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "test-path",
                 asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
         samePropertyValuesAs(
-            new PermissionEntry("dan", asList(PermissionOperation.READ)))
+            new PermissionEntry("dan", "test-path", asList(PermissionOperation.READ)))
     ));
   }
 
@@ -100,10 +100,10 @@ public class PermissionsEndpointTest {
     assertThat(permissions.getCredentialName(), equalTo(credentialName));
     assertThat(permissions.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "test-path",
                 asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
         samePropertyValuesAs(
-            new PermissionEntry("dan", asList(PermissionOperation.READ)))
+            new PermissionEntry("dan", "test-path", asList(PermissionOperation.READ)))
     ));
   }
 
@@ -227,12 +227,12 @@ public class PermissionsEndpointTest {
     assertThat(permissions.getCredentialName(), equalTo(credentialName));
     assertThat(permissions.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "test-path",
                 asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
         samePropertyValuesAs(
-            new PermissionEntry("dan", asList(PermissionOperation.READ, PermissionOperation.WRITE))),
+            new PermissionEntry("dan", "test-path", asList(PermissionOperation.READ, PermissionOperation.WRITE))),
         samePropertyValuesAs(
-            new PermissionEntry("isobel", asList(PermissionOperation.DELETE)))
+            new PermissionEntry("isobel", "test-path", asList(PermissionOperation.DELETE)))
     ));
   }
 
@@ -250,10 +250,10 @@ public class PermissionsEndpointTest {
     assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "test-path",
                 asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
         samePropertyValuesAs(
-            new PermissionEntry("dan", asList(
+            new PermissionEntry("dan", "test-path", asList(
                 PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE)))
     ));
   }
@@ -295,10 +295,10 @@ public class PermissionsEndpointTest {
     assertThat(acl.getPermissions(), hasSize(2));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "test-path",
                 asList(PermissionOperation.READ, PermissionOperation.WRITE, PermissionOperation.DELETE, PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL))),
         samePropertyValuesAs(
-            new PermissionEntry("dan", singletonList(PermissionOperation.READ)))
+            new PermissionEntry("dan", "test-path", singletonList(PermissionOperation.READ)))
     ));
   }
 

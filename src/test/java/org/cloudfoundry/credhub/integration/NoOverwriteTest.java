@@ -137,10 +137,10 @@ public class NoOverwriteTest {
 
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new PermissionEntry(winningActor,
+            new PermissionEntry(winningActor, "test-path",
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new PermissionEntry("uaa-client:a-different-actor", asList(READ)))
+            new PermissionEntry("uaa-client:a-different-actor", "test-path", asList(READ)))
     ));
 
   }

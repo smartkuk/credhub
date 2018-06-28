@@ -4,7 +4,7 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
-import org.cloudfoundry.credhub.service.PermissionService;
+import org.cloudfoundry.credhub.service.permissions.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;

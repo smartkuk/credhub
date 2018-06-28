@@ -122,10 +122,10 @@ public class PermissionDataServiceTest {
   @Test
   public void setAccessControlEntries_whenGivenAnExistingAce_returnsTheAcl() {
     aces = singletonList(
-        new PermissionEntry(LUKE, singletonList(READ))
+        new PermissionEntry(LUKE, "test-path", singletonList(READ))
     );
 
-    subject.savePermissions(credential, aces);
+    subject.savePermissions(aces);
 
     List<PermissionEntry> response = subject.getPermissions(credential);
 
@@ -147,9 +147,9 @@ public class PermissionDataServiceTest {
 
     credentialDataService.save(credential2);
     aces = singletonList(
-        new PermissionEntry(LUKE, singletonList(READ)));
+        new PermissionEntry(LUKE, "test-path",singletonList(READ)));
 
-    subject.savePermissions(credential2, aces);
+    subject.savePermissions(aces);
 
     List<PermissionEntry> response = subject.getPermissions(credential2);
 
@@ -326,22 +326,8 @@ public class PermissionDataServiceTest {
     Credential noAccessCredential = credentialDataService.save(noAccessValueCredential);
     this.credential = credentialDataService.save(this.credential);
 
-    subject.savePermissions(
-        this.credential,
-        singletonList(new PermissionEntry(LUKE,
-            newArrayList(WRITE, DELETE)))
-    );
-
-    subject.savePermissions(
-        this.credential,
-        singletonList(new PermissionEntry(LEIA,
-            singletonList(READ)))
-    );
-
-    subject.savePermissions(
-        this.credential,
-        singletonList(new PermissionEntry(HAN_SOLO,
-            newArrayList(READ_ACL, WRITE_ACL)))
-    );
+    subject.savePermissions(singletonList(new PermissionEntry(LUKE, "test-path", newArrayList(WRITE, DELETE))));
+    subject.savePermissions(singletonList(new PermissionEntry(LEIA, "test-path", singletonList(READ))));
+    subject.savePermissions(singletonList(new PermissionEntry(HAN_SOLO, "test-path", newArrayList(READ_ACL, WRITE_ACL))));
   }
 }

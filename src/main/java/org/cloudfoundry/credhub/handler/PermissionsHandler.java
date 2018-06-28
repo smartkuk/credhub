@@ -5,7 +5,7 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionsRequest;
-import org.cloudfoundry.credhub.service.PermissionService;
+import org.cloudfoundry.credhub.service.permissions.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.PermissionsView;
 import org.springframework.beans.factory.annotation.Autowired;

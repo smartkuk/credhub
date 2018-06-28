@@ -12,8 +12,8 @@ import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.request.PermissionsRequest;
-import org.cloudfoundry.credhub.service.PermissionCheckingService;
-import org.cloudfoundry.credhub.service.PermissionService;
+import org.cloudfoundry.credhub.service.permissions.PermissionCheckingService;
+import org.cloudfoundry.credhub.service.permissions.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.PermissionsView;
 import org.junit.Before;
@@ -102,6 +102,7 @@ public class PermissionsHandlerTest {
         .thenReturn(true);
     PermissionEntry permissionEntry = new PermissionEntry(
         ACTOR_NAME,
+        "test-path",
         operations
     );
     List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
@@ -140,11 +141,12 @@ public class PermissionsHandlerTest {
         PermissionOperation.READ,
         PermissionOperation.WRITE
     );
-    PermissionEntry permissionEntry = new PermissionEntry(ACTOR_NAME, operations);
+    PermissionEntry permissionEntry = new PermissionEntry(ACTOR_NAME, "test-path", operations);
     List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
 
     PermissionEntry preexistingPermissionEntry = new PermissionEntry(
         ACTOR_NAME2,
+        "test-path",
         Lists.newArrayList(PermissionOperation.READ)
     );
     List<PermissionEntry> expectedControlList = newArrayList(permissionEntry,
@@ -180,7 +182,7 @@ public class PermissionsHandlerTest {
         .userAllowedToOperateOnActor(ACTOR_NAME))
         .thenReturn(false);
 
-    List<PermissionEntry> accessControlList = Arrays.asList(new PermissionEntry(ACTOR_NAME, Arrays.asList(
+    List<PermissionEntry> accessControlList = Arrays.asList(new PermissionEntry(ACTOR_NAME, "test-path", Arrays.asList(
         PermissionOperation.READ)));
     when(permissionsRequest.getCredentialName()).thenReturn(CREDENTIAL_NAME);
     when(permissionsRequest.getPermissions()).thenReturn(accessControlList);

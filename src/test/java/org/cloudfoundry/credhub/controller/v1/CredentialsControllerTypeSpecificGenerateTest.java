@@ -495,7 +495,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
     assertThat(acl.getCredentialName(), equalTo(CREDENTIAL_NAME));
     assertThat(acl.getPermissions(), Matchers.contains(
         samePropertyValuesAs(
-            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
+            new PermissionEntry(AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID, "test-path",
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL)))));
   }
 

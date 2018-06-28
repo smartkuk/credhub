@@ -1,6 +1,5 @@
-package org.cloudfoundry.credhub.service;
+package org.cloudfoundry.credhub.service.permissions;
 
-import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.PermissionDataService;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -14,11 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-import static java.util.Arrays.asList;
-import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
-import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
 import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
-import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
 
 @Service
@@ -44,41 +39,38 @@ public class PermissionService {
   public void savePermissionsForUser(CredentialVersion credentialVersion,
                                      List<PermissionEntry> permissionEntryList,
                                      boolean isNewCredential) {
-    if (credentialVersion == null) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
-    }
-
-    for (PermissionEntry permissionEntry : permissionEntryList) {
-      if (!permissionCheckingService.userAllowedToOperateOnActor(permissionEntry.getActor())) {
-        throw new InvalidPermissionOperationException("error.permission.invalid_update_operation");
-      }
-    }
-
-    UserContext userContext = userContextHolder.getUserContext();
-
-    if (isNewCredential) {
-      final PermissionEntry permissionEntry = new PermissionEntry(userContext.getActor(), asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL));
-      permissionEntryList.add(permissionEntry);
-    }
-
-    if (permissionEntryList.size() == 0) {
-      return;
-    }
-    if (!permissionCheckingService.hasPermission(userContext.getActor(), credentialVersion.getName(), WRITE_ACL)) {
-      throw new EntryNotFoundException("error.credential.invalid_access");
-    }
-
-    permissionDataService.savePermissions(credentialVersion.getCredential(), permissionEntryList);
+//    if (credentialVersion == null) {
+//      throw new EntryNotFoundException("error.credential.invalid_access");
+//    }
+//
+//    for (PermissionEntry permissionEntry : permissionEntryList) {
+//      if (!permissionCheckingService.userAllowedToOperateOnActor(permissionEntry.getActor())) {
+//        throw new InvalidPermissionOperationException("error.permission.invalid_update_operation");
+//      }
+//    }
+//
+//    UserContext userContext = userContextHolder.getUserContext();
+//
+//    if (isNewCredential) {
+//      final PermissionEntry permissionEntry = new PermissionEntry(userContext.getActor(), asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL));
+//      permissionEntryList.add(permissionEntry);
+//    }
+//
+//    if (permissionEntryList.size() == 0) {
+//      return;
+//    }
+//    if (!permissionCheckingService.hasPermission(userContext.getActor(), credentialVersion.getName(), WRITE_ACL)) {
+//      throw new EntryNotFoundException("error.credential.invalid_access");
+//    }
+//
+//    permissionDataService.savePermissions(credentialVersion.getCredential(), permissionEntryList);
   }
 
-  public void savePermissions(CredentialVersion credentialVersion, List<PermissionEntry> permissionEntryList) {
+  public void savePermissions(List<PermissionEntry> permissionEntryList) {
     if (permissionEntryList.size() == 0) {
       return;
     }
-    if (credentialVersion == null) {
-      return;
-    }
-    permissionDataService.savePermissions(credentialVersion.getCredential(), permissionEntryList);
+    permissionDataService.savePermissions(permissionEntryList);
   }
 
   public List<PermissionEntry> getPermissions(CredentialVersion credentialVersion) {

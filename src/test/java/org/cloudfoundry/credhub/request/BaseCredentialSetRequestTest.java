@@ -94,7 +94,7 @@ public class BaseCredentialSetRequestTest {
         "\"overwrite\":true" +
         "}";
     BaseCredentialSetRequest setRequest = JsonTestHelper.deserialize(json, BaseCredentialSetRequest.class);
-    PermissionEntry expectedEntry = new PermissionEntry("my-actor", Arrays.asList(READ, WRITE));
+    PermissionEntry expectedEntry = new PermissionEntry("my-actor", "test-path", Arrays.asList(READ, WRITE));
 
     setRequest.addCurrentUser(expectedEntry);
 
@@ -116,9 +116,9 @@ public class BaseCredentialSetRequestTest {
         "}";
     BaseCredentialSetRequest setRequest = JsonTestHelper.deserialize(json, BaseCredentialSetRequest.class);
     PermissionEntry currentUserPermissionEntry =
-        new PermissionEntry("my-actor", Arrays.asList(READ, WRITE));
+        new PermissionEntry("my-actor", "test-path", Arrays.asList(READ, WRITE));
     PermissionEntry passedPermissionEntry =
-        new PermissionEntry("my-other-actor", Arrays.asList(READ));
+        new PermissionEntry("my-other-actor", "test-path", Arrays.asList(READ));
     setRequest.addCurrentUser(currentUserPermissionEntry);
     assertThat(setRequest.getAdditionalPermissions(),
         containsInAnyOrder(
@@ -140,7 +140,7 @@ public class BaseCredentialSetRequestTest {
         "}]\n" +
         "}";
     BaseCredentialSetRequest setRequest = JsonTestHelper.deserialize(json, BaseCredentialSetRequest.class);
-    PermissionEntry expectedEntry = new PermissionEntry("my-actor", Arrays.asList(READ, WRITE));
+    PermissionEntry expectedEntry = new PermissionEntry("my-actor", "test-path", Arrays.asList(READ, WRITE));
 
     setRequest.addCurrentUser(expectedEntry);
 
