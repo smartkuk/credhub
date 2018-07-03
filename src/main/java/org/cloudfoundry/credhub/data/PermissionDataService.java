@@ -1,14 +1,15 @@
 package org.cloudfoundry.credhub.data;
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.entity.Credential;
+import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.repository.PermissionRepository;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -18,8 +19,8 @@ import static com.google.common.collect.Lists.newArrayList;
 @Component
 public class PermissionDataService {
 
-  private PermissionRepository permissionRepository;
   private final CredentialDataService credentialDataService;
+  private PermissionRepository permissionRepository;
   private CEFAuditRecord auditRecord;
 
   @Autowired
@@ -85,10 +86,13 @@ public class PermissionDataService {
     return (permissionRepository.findAllByPath(name).size() == 0);
   }
 
-  public boolean hasPermission(String user, String name, PermissionOperation requiredPermission) {
-    final PermissionData permissionData =
-        permissionRepository.findByPathAndActor(name, user);
-    return permissionData != null && permissionData.hasPermission(requiredPermission);
+  public boolean hasPermission(String user, String path, PermissionOperation requiredPermission) {
+    for (PermissionData permissionData : permissionRepository.findByPathsAndActor(findAllPaths(path), user)) {
+      if (permissionData.hasPermission(requiredPermission)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private void upsertPermissions(String path,
@@ -103,6 +107,18 @@ public class PermissionDataService {
     permissionRepository.saveAndFlush(entry);
   }
 
+  private List<String> findAllPaths(String path) {
+    List<String> result = new ArrayList<>();
+    result.add(path);
+    for (int i = 0; i < path.length(); i++) {
+      if (path.charAt(i) == '/') {
+        result.add(path.substring(0, i + 1) + "*");
+      }
+    }
+
+    return result;
+  }
+
   private PermissionEntry createViewFor(PermissionData data) {
     if (data == null) {
       return null;
@@ -110,7 +126,7 @@ public class PermissionDataService {
     PermissionEntry entry = new PermissionEntry();
     List<PermissionOperation> operations = data.generateAccessControlOperations();
     entry.setAllowedOperations(operations);
-//    entry.setPath(data.getPath());
+    entry.setPath(data.getPath());
     entry.setActor(data.getActor());
     return entry;
   }

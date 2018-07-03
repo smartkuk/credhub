@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.service.permissions;
+package org.cloudfoundry.credhub.service;
 
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
@@ -26,9 +26,6 @@ public class PermissionCheckingService {
 
   public boolean hasPermission(String user, String credentialName, PermissionOperation permission) {
     if (enforcePermissions) {
-      if (permissionDataService.hasNoDefinedAccessControl(credentialName)) {
-        return true;
-      }
       return permissionDataService.hasPermission(user, credentialName, permission);
     }
     return true;

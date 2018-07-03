@@ -23,7 +23,6 @@ import org.cloudfoundry.credhub.request.BaseCredentialRequest;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.request.StringGenerationParameters;
-import org.cloudfoundry.credhub.service.permissions.PermissionCheckingService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

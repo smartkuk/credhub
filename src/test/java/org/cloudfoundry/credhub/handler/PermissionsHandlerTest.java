@@ -12,8 +12,8 @@ import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.request.PermissionsRequest;
-import org.cloudfoundry.credhub.service.permissions.PermissionCheckingService;
-import org.cloudfoundry.credhub.service.permissions.PermissionService;
+import org.cloudfoundry.credhub.service.PermissionCheckingService;
+import org.cloudfoundry.credhub.service.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.PermissionsView;
 import org.junit.Before;
@@ -161,12 +161,13 @@ public class PermissionsHandlerTest {
     subject.setPermissions(permissionsRequest);
 
     ArgumentCaptor<List> permissionsListCaptor = ArgumentCaptor.forClass(List.class);
-    verify(permissionService).savePermissionsForUser(eq(credentialVersion), permissionsListCaptor.capture(), eq(false));
+    verify(permissionService).savePermissionsForUser(permissionsListCaptor.capture());
 
     List<PermissionEntry> accessControlEntries = permissionsListCaptor.getValue();
 
     PermissionEntry entry = accessControlEntries.get(0);
     assertThat(entry.getActor(), equalTo(ACTOR_NAME));
+    assertThat(entry.getPath(), equalTo(CREDENTIAL_NAME));
     assertThat(entry.getAllowedOperations(), contains(
         equalTo(PermissionOperation.READ),
         equalTo(PermissionOperation.WRITE)
@@ -191,7 +192,7 @@ public class PermissionsHandlerTest {
       subject.setPermissions(permissionsRequest);
     } catch (InvalidPermissionOperationException e) {
       assertThat(e.getMessage(), equalTo("error.permission.invalid_update_operation"));
-      verify(permissionService, times(0)).savePermissionsForUser(any(), any(), eq(false));
+      verify(permissionService, times(0)).savePermissionsForUser(any());
     }
   }
 

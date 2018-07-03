@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.service.permissions;
+package org.cloudfoundry.credhub.service;
 
 import org.cloudfoundry.credhub.config.Permissions;
 import org.cloudfoundry.credhub.data.CredentialVersionDataService;
@@ -35,15 +35,11 @@ public class PermissionInitializer {
     }
 
     for (Permissions.Permission permission : permissions.getPermissions()) {
-//      CredentialVersion credentialVersion = credentialVersionDataService.findMostRecent(permission.getPath());
       ArrayList<PermissionEntry> permissionEntries = new ArrayList<>();
       for (String actor : permission.getActors()) {
         permissionEntries.add(new PermissionEntry(actor, permission.getPath(), permission.getOperations()));
       }
 
-//      if (credentialVersion == null) {
-//        throw new EntryNotFoundException("error.resource_not_found");
-//      }
       permissionService.savePermissions(permissionEntries);
     }
   }

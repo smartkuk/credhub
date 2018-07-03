@@ -472,6 +472,7 @@ public class RequestHelper {
             + "  \"permissions\": [\n"
             + "     { \n"
             + "       \"actor\": \"" + grantee + "\",\n"
+            + "       \"path\": \"" + credentialName + "\",\n"
             + "       \"operations\": [\"" + join("\", \"", permissions) + "\"]\n"
             + "     }]"
             + "}");

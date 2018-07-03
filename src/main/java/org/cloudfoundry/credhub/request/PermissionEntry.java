@@ -13,10 +13,10 @@ import static com.google.common.collect.Lists.newArrayList;
 @JsonAutoDetect
 @Validated
 public class PermissionEntry {
-  @NotEmpty(message = "error.acl.missing_actor")
+  @NotEmpty(message = "error.permission.missing_actor")
   private String actor;
 
-  @NotEmpty(message = "error.acl.missing_path")
+  @NotEmpty(message = "error.permission.missing_path")
   private String path;
 
   @NotEmpty(message = "error.permission.missing_operations")

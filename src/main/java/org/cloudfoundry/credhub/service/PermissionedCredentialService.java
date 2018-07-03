@@ -20,7 +20,6 @@ import org.cloudfoundry.credhub.exceptions.PermissionException;
 import org.cloudfoundry.credhub.request.BaseCredentialRequest;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.service.permissions.PermissionCheckingService;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -224,12 +223,10 @@ public class PermissionedCredentialService {
 
   private void validateCredentialSave(String credentialName, String type, List<PermissionEntry> accessControlEntries,
       CredentialVersion existingCredentialVersion) {
-    if (existingCredentialVersion != null) {
-      verifyCredentialWritePermission(credentialName);
-    }
+    verifyWritePermission(credentialName);
 
-    if (existingCredentialVersion != null && accessControlEntries.size() > 0) {
-      verifyWritePermission(credentialName);
+    if (accessControlEntries.size() > 0) {
+      verifyWriteAclPermission(credentialName);
     }
 
     if (existingCredentialVersion != null && !existingCredentialVersion.getCredentialType().equals(type)) {
@@ -237,14 +234,14 @@ public class PermissionedCredentialService {
     }
   }
 
-  private void verifyCredentialWritePermission(String credentialName) {
+  private void verifyWritePermission(String credentialName) {
     if (!permissionCheckingService
         .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE)) {
       throw new PermissionException("error.credential.invalid_access");
     }
   }
 
-  private void verifyWritePermission(String credentialName) {
+  private void verifyWriteAclPermission(String credentialName) {
     if (!permissionCheckingService
         .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE_ACL)) {
       throw new PermissionException("error.credential.invalid_access");

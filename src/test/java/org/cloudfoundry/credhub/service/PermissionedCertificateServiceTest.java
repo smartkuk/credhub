@@ -16,7 +16,6 @@ import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.request.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.service.permissions.PermissionCheckingService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;

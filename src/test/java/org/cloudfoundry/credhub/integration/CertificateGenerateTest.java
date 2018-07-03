@@ -54,7 +54,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@TestPropertySource(properties = "security.authorization.acls.enabled=true")
+@TestPropertySource(properties = {
+    "security.authorization.acls.enabled=true",
+    "security.authorization.permissions[0].path=/riker",
+    "security.authorization.permissions[0].actors=uaa-client:credhub_test",
+    "security.authorization.permissions[0].operations=write",
+    "security.authorization.permissions[1].path=/*",
+    "security.authorization.permissions[1].actors=uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+    "security.authorization.permissions[1].operations=read,write,delete,read_acl,write_acl"})
 @Transactional
 public class CertificateGenerateTest {
   @Autowired
@@ -213,7 +220,7 @@ public class CertificateGenerateTest {
   }
 
   @Test
-  public void credentialNotOverwrittenWhenModeIsSetAndAllDNsSet() throws Exception {
+  public void credentialNotOverwrittenWhenConvergeModeIsSetAndAllDNsSet() throws Exception {
     generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null);
 
     Map<String, Object> certRequestBody = new HashMap() {

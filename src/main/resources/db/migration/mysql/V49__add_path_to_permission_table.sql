@@ -15,6 +15,6 @@ ALTER TABLE permission
   DROP COLUMN credential_uuid;
 
 ALTER TABLE permission
-  ALTER COLUMN path VARCHAR(255) NOT NULL;
+  MODIFY path VARCHAR(255) NOT NULL;
 
 CREATE UNIQUE INDEX permission_path_actor_uindex ON permission (path, actor);

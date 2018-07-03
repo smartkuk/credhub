@@ -16,8 +16,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -28,26 +28,22 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateId;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@TestPropertySource(properties = "security.authorization.acls.enabled=true")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class BulkRegenerateTest {
 
   private static final String API_V1_DATA_ENDPOINT = "/api/v1/data";
@@ -96,11 +92,10 @@ public class BulkRegenerateTest {
     encryptionKeyCanaryRepository.flush();
   }
 
-
   @Test
   public void regeneratingCertificatesSignedByCA_shouldRegenerateCertificates() throws Exception {
     MockHttpServletRequestBuilder regenerateCertificatesRequest = post(API_V1_BULK_REGENERATE_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .header("Authorization", "Bearer " + UAA_USER_WITH_NO_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -356,7 +351,7 @@ public class BulkRegenerateTest {
 
   private String generateRootCA(String caName, String caCommonName) throws Exception {
     MockHttpServletRequestBuilder generateCAToRotateRequest = post(API_V1_DATA_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + UAA_USER_WITH_ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -368,7 +363,7 @@ public class BulkRegenerateTest {
             + "     \"common_name\": \"" + caCommonName + "\"\n"
             + "   },\n"
             + "\"additional_permissions\": [{"
-            + "   \"actor\": \"" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID + "\",\n"
+            + "   \"actor\": \"" + UAA_USER_WITH_NO_PERMISSIONS_ACTOR_ID + "\",\n"
             + "   \"operations\": [\"read\"]\n"
             + "}]}");
 
@@ -380,7 +375,7 @@ public class BulkRegenerateTest {
 
   private void generateSignedCertificate(String certificateName, String certificatCN, String signingCA) throws Exception {
     MockHttpServletRequestBuilder generateCertSignedByOriginalCARequest = post(API_V1_DATA_ENDPOINT)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + UAA_USER_WITH_ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -395,7 +390,7 @@ public class BulkRegenerateTest {
             + "  \"additional_permissions\": \n"
             + "    [\n"
             + "      {\n"
-            + "        \"actor\": \"" + UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID + "\",\n"
+            + "        \"actor\": \"" + UAA_USER_WITH_NO_PERMISSIONS_ACTOR_ID + "\",\n"
             + "        \"operations\": [\"write\"]\n"
             + "      }\n"
             + "    ]\n"

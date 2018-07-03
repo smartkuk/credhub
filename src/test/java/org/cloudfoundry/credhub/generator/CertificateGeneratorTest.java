@@ -19,7 +19,7 @@ import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.helper.TestHelper;
 import org.cloudfoundry.credhub.request.CertificateGenerationRequestParameters;
-import org.cloudfoundry.credhub.service.permissions.PermissionCheckingService;
+import org.cloudfoundry.credhub.service.PermissionCheckingService;
 import org.cloudfoundry.credhub.util.CertificateFormatter;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.junit.Before;

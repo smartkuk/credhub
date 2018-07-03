@@ -8,7 +8,8 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.request.BaseCredentialSetRequest;
 import org.cloudfoundry.credhub.request.CertificateSetRequest;
-import org.cloudfoundry.credhub.service.permissions.PermissionService;
+import org.cloudfoundry.credhub.request.PermissionEntry;
+import org.cloudfoundry.credhub.service.PermissionService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.util.CertificateReader;
 import org.cloudfoundry.credhub.view.CredentialView;
@@ -64,8 +65,12 @@ public class SetHandler {
 
     final boolean isNewCredential = existingCredentialVersion == null;
 
+    for(PermissionEntry entry : setRequest.getAdditionalPermissions()){
+      entry.setPath(setRequest.getName());
+    }
+
     if (isNewCredential || setRequest.isOverwrite()) {
-      permissionService.savePermissionsForUser(credentialVersion, setRequest.getAdditionalPermissions(), isNewCredential);
+      permissionService.savePermissionsForUser(setRequest.getAdditionalPermissions());
     }
     auditRecord.setVersion(credentialVersion);
     auditRecord.setResource(credentialVersion.getCredential());

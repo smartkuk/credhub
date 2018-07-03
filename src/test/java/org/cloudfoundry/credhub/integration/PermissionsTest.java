@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.integration;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.service.permissions.PermissionCheckingService;
+import org.cloudfoundry.credhub.service.PermissionCheckingService;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,20 +27,26 @@ public class PermissionsTest {
   private static final String USERB = "uaa-user:user-b";
   private static final String USERC = "uaa-user:user-c";
   private static final String PATH = "/my/credential";
+  private static final String OTHER_PATH = "/my/other-credential";
 
   @Test
   public void testPermissionsWithoutWildcard(){
     assertThat(subject.hasPermission(USERA, PATH, PermissionOperation.READ), is(true));
-    assertThat(subject.hasPermission(USERB, PATH, PermissionOperation.READ), is(false));
+    assertThat(subject.hasPermission(USERA, OTHER_PATH, PermissionOperation.READ), is(false));
   }
 
   @Test
   public void testPermissionsWithWildcard(){
     assertThat(subject.hasPermission(USERB, PATH, PermissionOperation.READ), is(true));
+    assertThat(subject.hasPermission(USERB, OTHER_PATH, PermissionOperation.READ), is(true));
+
+    assertThat(subject.hasPermission(USERB, PATH, PermissionOperation.DELETE), is(false));
+    assertThat(subject.hasPermission(USERB, OTHER_PATH, PermissionOperation.DELETE), is(false));
   }
 
   @Test
   public void testUnauthorizedPermissions(){
-    assertThat(subject.hasPermission(USERB, PATH, PermissionOperation.READ), is(false));
+    assertThat(subject.hasPermission(USERC, PATH, PermissionOperation.READ), is(false));
+    assertThat(subject.hasPermission(USERC, OTHER_PATH, PermissionOperation.READ), is(false));
   }
 }

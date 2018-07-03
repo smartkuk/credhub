@@ -76,7 +76,6 @@ dependencies {
     compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.6")
     compile("net.java.dev.jna:jna:4.5.1")
     compile("org.apache.httpcomponents:httpclient:4.5.5")
-//    compile("org.apache.shiro:shiro-spring-boot-starter:1.4.0-RC2")
 
     //gRPC
     compile "com.google.api.grpc:proto-google-common-protos:1.0.0"

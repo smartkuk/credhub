@@ -8,7 +8,7 @@ import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.service.permissions.PermissionCheckingService;
+import org.cloudfoundry.credhub.service.PermissionCheckingService;
 import org.cloudfoundry.credhub.service.PermissionedCredentialService;
 import org.cloudfoundry.credhub.view.CredentialView;
 import org.cloudfoundry.credhub.view.DataResponse;

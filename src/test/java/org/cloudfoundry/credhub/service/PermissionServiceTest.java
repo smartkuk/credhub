@@ -11,8 +11,6 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidPermissionOperationException;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
-import org.cloudfoundry.credhub.service.permissions.PermissionCheckingService;
-import org.cloudfoundry.credhub.service.permissions.PermissionService;
 import org.hamcrest.core.IsEqual;
 import org.junit.Before;
 import org.junit.Test;
@@ -82,7 +80,7 @@ public class PermissionServiceTest {
   @Test
   public void saveAccessControlEntries_whenThereAreNoChanges_doesNothing() {
     ArrayList<PermissionEntry> expectedEntries = newArrayList();
-    subject.savePermissionsForUser(expectedCredentialVersion, expectedEntries, false);
+    subject.savePermissionsForUser(expectedEntries);
 
     verify(permissionDataService, never()).savePermissions(any());
   }
@@ -91,7 +89,7 @@ public class PermissionServiceTest {
   public void saveAccessControlEntries_withEntries_delegatesToDataService() {
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
     ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
-    subject.savePermissionsForUser(expectedCredentialVersion, expectedEntries, false);
+    subject.savePermissionsForUser(expectedEntries);
 
     verify(permissionDataService).savePermissions(expectedEntries);
   }
@@ -102,7 +100,7 @@ public class PermissionServiceTest {
     ArrayList<PermissionEntry> entries = newArrayList();
     entries.add(new PermissionEntry(USER_NAME, "test-path", asList(PermissionOperation.WRITE_ACL)));
 
-    subject.savePermissionsForUser(expectedCredentialVersion, entries, false);
+    subject.savePermissionsForUser(entries);
 
     verify(permissionCheckingService).hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.WRITE_ACL);
   }
@@ -111,7 +109,7 @@ public class PermissionServiceTest {
   public void saveAccessControlEntries_whenCredentialHasNoACEs_shouldDoNothing() {
     ArrayList<PermissionEntry> entries = newArrayList();
 
-    subject.savePermissionsForUser(expectedCredentialVersion, entries, false);
+    subject.savePermissionsForUser(entries);
 
     verify(permissionCheckingService, never()).hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.WRITE_ACL);
   }
@@ -124,7 +122,7 @@ public class PermissionServiceTest {
     ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
 
     try {
-      subject.savePermissionsForUser(expectedCredentialVersion, expectedEntries, false);
+      subject.savePermissionsForUser(expectedEntries);
       fail("expected exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo("error.credential.invalid_access"));
