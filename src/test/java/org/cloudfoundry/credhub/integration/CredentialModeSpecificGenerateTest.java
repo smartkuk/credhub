@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.generatePassword;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -70,10 +71,10 @@ public class CredentialModeSpecificGenerateTest {
 
   @Test
   public void credentialCanBeOverwrittenWhenModeIsSetToOverwriteInRequest() throws Exception {
-    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.OVERWRITE.mode, null);
+    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.OVERWRITE.mode, null, ALL_PERMISSIONS_TOKEN);
     String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.OVERWRITE.mode, null);
+    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.OVERWRITE.mode, null, ALL_PERMISSIONS_TOKEN);
     String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, not(equalTo(updatedPassword)));
@@ -81,10 +82,10 @@ public class CredentialModeSpecificGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToNotOverwriteInRequest() throws Exception {
-    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.OVERWRITE.mode, null);
+    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.OVERWRITE.mode, null, ALL_PERMISSIONS_TOKEN);
     String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, null);
+    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, null, ALL_PERMISSIONS_TOKEN);
     String samePassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, equalTo(samePassword));
@@ -92,10 +93,10 @@ public class CredentialModeSpecificGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSame() throws Exception {
-    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, 20);
+    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, 20, ALL_PERMISSIONS_TOKEN);
     String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, 20);
+    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, 20, ALL_PERMISSIONS_TOKEN);
     String samePassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, equalTo(samePassword));
@@ -103,10 +104,10 @@ public class CredentialModeSpecificGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSameAndAreTheDefault() throws Exception {
-    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.OVERWRITE.mode, null);
+    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.OVERWRITE.mode, null, ALL_PERMISSIONS_TOKEN);
     String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, null);
+    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, null, ALL_PERMISSIONS_TOKEN);
     String samePassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, equalTo(samePassword));
@@ -114,10 +115,10 @@ public class CredentialModeSpecificGenerateTest {
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndParametersNotTheSame() throws Exception {
-    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.OVERWRITE.mode, 30);
+    String firstResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.OVERWRITE.mode, 30, ALL_PERMISSIONS_TOKEN);
     String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, 20);
+    String secondResponse = generatePassword(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, 20, ALL_PERMISSIONS_TOKEN);
     String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, not(equalTo(updatedPassword)));
@@ -125,10 +126,10 @@ public class CredentialModeSpecificGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenNameIsProvidedWithoutASlashAndThenWithOne() throws Exception {
-    String firstResponse = generatePassword(mockMvc, "a-name", CredentialWriteMode.OVERWRITE.mode, 30);
+    String firstResponse = generatePassword(mockMvc, "a-name", CredentialWriteMode.OVERWRITE.mode, 30, ALL_PERMISSIONS_TOKEN);
     String originalPassword = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generatePassword(mockMvc, "/a-name", CredentialWriteMode.CONVERGE.mode, 30);
+    String secondResponse = generatePassword(mockMvc, "/a-name", CredentialWriteMode.CONVERGE.mode, 30, ALL_PERMISSIONS_TOKEN);
     String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalPassword, equalTo(updatedPassword));

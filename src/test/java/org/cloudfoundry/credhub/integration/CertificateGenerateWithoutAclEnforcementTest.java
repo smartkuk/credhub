@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -50,7 +51,7 @@ public class CertificateGenerateWithoutAclEnforcementTest {
     RequestHelper.generateCa(mockMvc, CA_NAME, AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
     //This request uses the PASSWORD GRANT TOKEN under the hood and hence should fail if permissions are enforced.
     String firstResponse = RequestHelper
-        .generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME);
+        .generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
     assertThat(firstResponse, containsString(CREDENTIAL_NAME));
   }
 

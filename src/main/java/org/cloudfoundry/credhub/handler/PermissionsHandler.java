@@ -33,18 +33,15 @@ public class PermissionsHandler {
   public PermissionsView getPermissions(String name) {
     CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(name);
     final List<PermissionEntry> permissions = permissionService.getPermissions(credentialVersion);
-    auditRecord.setResource(credentialVersion.getCredential());
+    auditRecord.setResource(credentialVersion.getCredential()); // TODO this should be permission UUID + path
     return new PermissionsView(credentialVersion.getName(), permissions);
   }
 
   public void setPermissions(PermissionsRequest request) {
-    CredentialVersion credentialVersion = permissionedCredentialService.findMostRecent(request.getCredentialName());
     for(PermissionEntry entry : request.getPermissions()){
       entry.setPath(request.getCredentialName());
     }
-
     permissionService.savePermissionsForUser(request.getPermissions());
-    auditRecord.setResource(credentialVersion.getCredential());
   }
 
   public void deletePermissionEntry(String credentialName, String actor) {

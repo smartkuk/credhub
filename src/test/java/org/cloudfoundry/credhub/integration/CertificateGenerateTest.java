@@ -18,8 +18,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -33,12 +33,8 @@ import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.cloudfoundry.credhub.helper.RequestHelper.expect404WhileGeneratingCertificate;
-import static org.cloudfoundry.credhub.helper.RequestHelper.generateCa;
-import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificateCredential;
-import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentialsByName;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.cloudfoundry.credhub.helper.RequestHelper.*;
+import static org.cloudfoundry.credhub.util.AuthConstants.*;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -51,17 +47,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+// TODO: TEST POLLUTION :(
+
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test","unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@TestPropertySource(properties = {
-    "security.authorization.acls.enabled=true",
-    "security.authorization.permissions[0].path=/riker",
-    "security.authorization.permissions[0].actors=uaa-client:credhub_test",
-    "security.authorization.permissions[0].operations=write",
-    "security.authorization.permissions[1].path=/*",
-    "security.authorization.permissions[1].actors=uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
-    "security.authorization.permissions[1].operations=read,write,delete,read_acl,write_acl"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD) // TODO....maybe we shouldnt this??
 @Transactional
 public class CertificateGenerateTest {
   @Autowired
@@ -84,7 +75,7 @@ public class CertificateGenerateTest {
   @Test
   public void certificateGeneration_shouldGenerateCorrectCertificate() throws Exception {
     MockHttpServletRequestBuilder caPost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -110,7 +101,7 @@ public class CertificateGenerateTest {
     assertThat(picardCert, notNullValue());
 
     MockHttpServletRequestBuilder certPost = post("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -153,9 +144,9 @@ public class CertificateGenerateTest {
 
   @Test
   public void certificateGeneration_whenUserNotAuthorizedToReadCa_shouldReturnCorrectError() throws Exception {
-    generateCa(mockMvc, "picard", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    generateCa(mockMvc, "picard", ALL_PERMISSIONS_TOKEN);
     // try to generate with a different token that doesn't have read permission
-    expect404WhileGeneratingCertificate(mockMvc, "riker", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN,
+    expect404WhileGeneratingCertificate(mockMvc, "riker", USER_B_TOKEN,
         "The request could not be completed because the credential does not exist or you do not have sufficient authorization.");
   }
 
@@ -184,12 +175,12 @@ public class CertificateGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSame() throws Exception {
-    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null);
+    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null, ALL_PERMISSIONS_TOKEN);
 
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME);
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
     String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME);
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
     String sameValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, Matchers.equalTo(sameValue));
@@ -197,10 +188,10 @@ public class CertificateGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToConvergeAndParametersAreTheSameAndAreCAs() throws Exception {
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", null);
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", null, ALL_PERMISSIONS_TOKEN);
     String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", null);
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", null, ALL_PERMISSIONS_TOKEN);
     String sameValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, Matchers.equalTo(sameValue));
@@ -208,12 +199,12 @@ public class CertificateGenerateTest {
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndCommonNameNotTheSame() throws Exception {
-    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null);
+    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null, ALL_PERMISSIONS_TOKEN);
 
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME);
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
     String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "other-common-name", CA_NAME);
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "other-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
     String updatedValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
@@ -221,7 +212,7 @@ public class CertificateGenerateTest {
 
   @Test
   public void credentialNotOverwrittenWhenConvergeModeIsSetAndAllDNsSet() throws Exception {
-    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null);
+    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null, ALL_PERMISSIONS_TOKEN);
 
     Map<String, Object> certRequestBody = new HashMap() {
       {
@@ -242,7 +233,7 @@ public class CertificateGenerateTest {
     certRequestBody.put("parameters", parameters);
     String content = JsonTestHelper.serializeToString(certRequestBody);
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(content);
@@ -265,14 +256,14 @@ public class CertificateGenerateTest {
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndCaNameNotTheSame() throws Exception {
-    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null);
-    generateCertificateCredential(mockMvc, CA_NAME2, CredentialWriteMode.OVERWRITE.mode, "test-CA2", null);
+    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null, ALL_PERMISSIONS_TOKEN);
+    generateCertificateCredential(mockMvc, CA_NAME2, CredentialWriteMode.OVERWRITE.mode, "test-CA2", null, ALL_PERMISSIONS_TOKEN);
 
 
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME);
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
     String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME2);
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME2, ALL_PERMISSIONS_TOKEN);
     String updatedValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
@@ -280,14 +271,14 @@ public class CertificateGenerateTest {
 
   @Test
   public void credentialOverwrittenWhenModeIsSetToConvergeAndCAUpdated() throws Exception {
-    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null);
+    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null, ALL_PERMISSIONS_TOKEN);
 
-    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME);
+    String firstResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
     String originalValue = (new JSONObject(firstResponse)).getString("value");
 
-    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null);
+    generateCertificateCredential(mockMvc, CA_NAME, CredentialWriteMode.OVERWRITE.mode, "test-CA", null, ALL_PERMISSIONS_TOKEN);
 
-    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME);
+    String secondResponse = generateCertificateCredential(mockMvc, CREDENTIAL_NAME, CredentialWriteMode.CONVERGE.mode, "some-common-name", CA_NAME, ALL_PERMISSIONS_TOKEN);
     String updatedValue = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(originalValue, not(Matchers.equalTo(updatedValue)));
@@ -302,7 +293,7 @@ public class CertificateGenerateTest {
 
     String caName = "crusher";
     MockHttpServletRequestBuilder certificateSetRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -330,7 +321,7 @@ public class CertificateGenerateTest {
     certRequestBody.put("parameters", parameters);
     String content = JsonTestHelper.serializeToString(certRequestBody);
     MockHttpServletRequestBuilder post = post("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(content);
@@ -344,18 +335,18 @@ public class CertificateGenerateTest {
 
   @Test
   public void usesTheLatestNonTransitionalCaAsTheSigningCertificate() throws Exception {
-    String generateCaResponse = generateCa(mockMvc, "/originalCA", UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    String generateCaResponse = generateCa(mockMvc, "/originalCA", ALL_PERMISSIONS_TOKEN);
     String originalCaCertificate = JsonPath.parse(generateCaResponse)
         .read("$.value.certificate");
     String caId = JsonPath.parse(generateCaResponse)
         .read("$.id");
 
-    String response = getCertificateCredentialsByName(mockMvc, UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "/originalCA");
+    String response = getCertificateCredentialsByName(mockMvc, ALL_PERMISSIONS_TOKEN, "/originalCA");
     String uuid = JsonPath.parse(response)
         .read("$.certificates[0].id");
 
     MockHttpServletRequestBuilder caRegenerateRequest = post("/api/v1/certificates/" + uuid + "/regenerate")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         //language=JSON
@@ -373,7 +364,8 @@ public class CertificateGenerateTest {
         "/some-cert",
         CredentialWriteMode.OVERWRITE.mode,
         "test",
-        "/originalCA"
+        "/originalCA",
+        ALL_PERMISSIONS_TOKEN
     );
 
     String actualCaCertificate = JsonPath.parse(generateCertificateResponse)

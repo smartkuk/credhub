@@ -82,7 +82,7 @@ public class PermissionServiceTest {
     ArrayList<PermissionEntry> expectedEntries = newArrayList();
     subject.savePermissionsForUser(expectedEntries);
 
-    verify(permissionDataService, never()).savePermissions(any());
+    verify(permissionDataService, never()).savePermissionsWithLogging(any());
   }
 
   @Test
@@ -91,7 +91,7 @@ public class PermissionServiceTest {
     ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
     subject.savePermissionsForUser(expectedEntries);
 
-    verify(permissionDataService).savePermissions(expectedEntries);
+    verify(permissionDataService).savePermissionsWithLogging(expectedEntries);
   }
 
   @Test
@@ -102,7 +102,7 @@ public class PermissionServiceTest {
 
     subject.savePermissionsForUser(entries);
 
-    verify(permissionCheckingService).hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.WRITE_ACL);
+    verify(permissionCheckingService).hasPermission(USER_NAME, "test-path", PermissionOperation.WRITE_ACL);
   }
 
   @Test
@@ -117,7 +117,7 @@ public class PermissionServiceTest {
   @Test
   public void saveAccessControlEntries_whenUserCantWrite_throws() {
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
-    when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.WRITE_ACL))
+    when(permissionCheckingService.hasPermission(USER_NAME, "test-path", PermissionOperation.WRITE_ACL))
         .thenReturn(false);
     ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
 
@@ -134,7 +134,7 @@ public class PermissionServiceTest {
     when(userContextHolder.getUserContext()).thenReturn(null);
     when(permissionCheckingService.userAllowedToOperateOnActor(eq(USER_NAME))).thenReturn(true);
 
-    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, "test-path", PermissionOperation.READ));
+    ArrayList<PermissionEntry> expectedEntries = newArrayList(new PermissionEntry(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ));
     subject.savePermissions(expectedEntries);
 
     verify(permissionDataService).savePermissions(expectedEntries);

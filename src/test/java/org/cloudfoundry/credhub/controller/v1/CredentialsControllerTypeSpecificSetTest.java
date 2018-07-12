@@ -9,13 +9,10 @@ import org.cloudfoundry.credhub.data.CredentialVersionDataService;
 import org.cloudfoundry.credhub.domain.*;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.handler.SetHandler;
-import org.cloudfoundry.credhub.helper.JsonTestHelper;
 import org.cloudfoundry.credhub.request.BaseCredentialSetRequest;
-import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.util.TestConstants;
-import org.cloudfoundry.credhub.view.PermissionsView;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -46,20 +43,17 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static java.util.Arrays.asList;
 import static org.cloudfoundry.credhub.helper.TestHelper.mockOutCurrentTimeProvider;
-import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.cloudfoundry.credhub.util.MultiJsonPathMatcher.multiJsonPath;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -304,7 +298,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   @Test
   public void settingACredential_shouldAcceptAnyCasingForType() throws Exception {
     MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -336,7 +330,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   @Test
   public void settingACredential_returnsTheExpectedResponse() throws Exception {
     MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -366,7 +360,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   @Test
   public void settingACredential_expectsDataServiceToPersistTheCredential() throws Exception {
     MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -391,41 +385,41 @@ public class CredentialsControllerTypeSpecificSetTest {
     parametizer.credentialAssertions(newCredentialVersion);
   }
 
-  // TODO
-  @Test
-  public void creatingACredential_createsRequestedPermissions_andFullPermissionsForCurrentUser() throws Exception {
-    MockHttpServletRequestBuilder putRequest = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{" +
-            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
-            "\"type\":\"" + parametizer.credentialType + "\"," +
-            "\"value\":" + parametizer.credentialValue + "," +
-            "\"overwrite\":" + false + "," +
-            "\"additional_permissions\": [" +
-            "{\"actor\": \"app1-guid\"," +
-            "\"operations\": [\"read\"]}]" +
-            "}");
-    MockHttpServletRequestBuilder getRequest = get("/api/v1/permissions?credential_name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
-
-    mockMvc.perform(putRequest).andExpect(status().isOk());
-
-    String responseContent = mockMvc.perform(getRequest)
-        .andExpect(status().isOk())
-        .andReturn().getResponse().getContentAsString();
-    PermissionsView acl = JsonTestHelper.deserialize(responseContent, PermissionsView.class);
-
-    assertThat(acl.getCredentialName(), equalTo(CREDENTIAL_NAME));
-    assertThat(acl.getPermissions().size(), equalTo(1));
-    assertThat(acl.getPermissions().get(0), samePropertyValuesAs(new PermissionEntry("app1-guid", CREDENTIAL_NAME, asList(READ))));
-  }
+  // TODO: delete?
+//  @Test
+//  public void creatingACredential_createsRequestedPermissions_andFullPermissionsForCurrentUser() throws Exception {
+//    MockHttpServletRequestBuilder putRequest = put("/api/v1/data")
+//        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+//        .accept(APPLICATION_JSON)
+//        .contentType(APPLICATION_JSON)
+//        .content("{" +
+//            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+//            "\"type\":\"" + parametizer.credentialType + "\"," +
+//            "\"value\":" + parametizer.credentialValue + "," +
+//            "\"overwrite\":" + false + "," +
+//            "\"additional_permissions\": [" +
+//            "{\"actor\": \"app1-guid\"," +
+//            "\"operations\": [\"read\"]}]" +
+//            "}");
+//    MockHttpServletRequestBuilder getRequest = get("/api/v1/permissions?credential_name=" + CREDENTIAL_NAME)
+//        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+//
+//    mockMvc.perform(putRequest).andExpect(status().isOk());
+//
+//    String responseContent = mockMvc.perform(getRequest)
+//        .andExpect(status().isOk())
+//        .andReturn().getResponse().getContentAsString();
+//    PermissionsView acl = JsonTestHelper.deserialize(responseContent, PermissionsView.class);
+//
+//    assertThat(acl.getCredentialName(), equalTo(CREDENTIAL_NAME));
+//    assertThat(acl.getPermissions().size(), equalTo(1));
+//    assertThat(acl.getPermissions().get(0), samePropertyValuesAs(new PermissionEntry("app1-guid", CREDENTIAL_NAME, asList(READ))));
+//  }
 
   @Test
   public void validationExceptionsAreReturnedAsErrorMessages() throws Exception {
     MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -452,7 +446,7 @@ public class CredentialsControllerTypeSpecificSetTest {
     doReturn(parametizer.createCredential(encryptor)).when(credentialVersionDataService).findMostRecent(CREDENTIAL_NAME);
 
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +

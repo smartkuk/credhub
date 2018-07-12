@@ -21,6 +21,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.generatePassword;
 import static org.cloudfoundry.credhub.helper.RequestHelper.setPassword;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -127,9 +128,9 @@ public class CredentialSetTest {
 
   @Test
   public void credentialCanBeOverwrittenWhenModeIsSetToOverwriteInRequest() throws Exception {
-    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", CredentialWriteMode.CONVERGE.mode);
+    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", CredentialWriteMode.CONVERGE.mode, ALL_PERMISSIONS_TOKEN);
 
-    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", CredentialWriteMode.OVERWRITE.mode);
+    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", CredentialWriteMode.OVERWRITE.mode, ALL_PERMISSIONS_TOKEN);
     String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(updatedPassword, equalTo("new-password"));
@@ -137,9 +138,9 @@ public class CredentialSetTest {
 
   @Test
   public void credentialNotOverwrittenWhenModeIsSetToNotOverwriteInRequest() throws Exception {
-    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", CredentialWriteMode.CONVERGE.mode);
+    setPassword(mockMvc, CREDENTIAL_NAME, "original-password", CredentialWriteMode.CONVERGE.mode, ALL_PERMISSIONS_TOKEN);
 
-    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", CredentialWriteMode.CONVERGE.mode);
+    String secondResponse = setPassword(mockMvc, CREDENTIAL_NAME, "new-password", CredentialWriteMode.CONVERGE.mode, ALL_PERMISSIONS_TOKEN);
     String updatedPassword = (new JSONObject(secondResponse)).getString("value");
 
     assertThat(updatedPassword, equalTo("original-password"));
@@ -149,12 +150,12 @@ public class CredentialSetTest {
   public void credentialNamesCanHaveALengthOf1024Characters() throws Exception {
     assertThat(CREDENTIAL_NAME_1024_CHARACTERS.length(), is(equalTo(1024)));
 
-    String setResponse = setPassword(mockMvc, CREDENTIAL_NAME_1024_CHARACTERS, "foobar", CredentialWriteMode.CONVERGE.mode);
+    String setResponse = setPassword(mockMvc, CREDENTIAL_NAME_1024_CHARACTERS, "foobar", CredentialWriteMode.CONVERGE.mode, ALL_PERMISSIONS_TOKEN);
     String setPassword = (new JSONObject(setResponse)).getString("value");
 
     assertThat(setPassword, equalTo("foobar"));
 
-    String getResponse = generatePassword(mockMvc, CREDENTIAL_NAME_1024_CHARACTERS, "overwrite", 14);
+    String getResponse = generatePassword(mockMvc, CREDENTIAL_NAME_1024_CHARACTERS, "overwrite", 14, ALL_PERMISSIONS_TOKEN);
     String getPassword = (new JSONObject(getResponse)).getString("value");
     assertThat(getPassword.length(), equalTo(14));
   }
@@ -164,7 +165,7 @@ public class CredentialSetTest {
     String name1025 = CREDENTIAL_NAME_1024_CHARACTERS + "a";
     assertThat(name1025.length(), is(equalTo(1025)));
 
-    setPassword(mockMvc, name1025, "foobar", CredentialWriteMode.CONVERGE.mode);
-    generatePassword(mockMvc, name1025, "foobar", 10);
+    setPassword(mockMvc, name1025, "foobar", CredentialWriteMode.CONVERGE.mode, ALL_PERMISSIONS_TOKEN);
+    generatePassword(mockMvc, name1025, "foobar", 10, ALL_PERMISSIONS_TOKEN);
   }
 }

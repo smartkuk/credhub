@@ -102,16 +102,17 @@ public class BaseCredentialSetRequestTest {
   }
 
   @Test
-  public void addCurrentUser_whenTheArePermissionsInRequest_addsPermissionsForCurrentUser() {
+  public void addCurrentUser_whenThereArePermissionsInRequest_addsPermissionsForCurrentUser() {
     // language=JSON
     String json = "{\n" +
-        "\"name\":\"some-name\"," +
+        "\"name\":\"test-path\"," +
         "\"type\":\"password\"," +
         "\"value\":\"some-value\"," +
         "\"overwrite\":true, \n" +
         "\"additional_permissions\": [{\n" +
         "  \"actor\": \"my-other-actor\",\n" +
-        "  \"operations\": [\"read\"]\n" +
+        "  \"operations\": [\"read\"],\n" +
+        "  \"path\": \"test-path\"\n" +
         "}]\n" +
         "}";
     BaseCredentialSetRequest setRequest = JsonTestHelper.deserialize(json, BaseCredentialSetRequest.class);

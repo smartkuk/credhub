@@ -115,7 +115,7 @@ public class PermissionDataServiceTest {
         new PermissionEntry(LUKE, CREDENTIAL_NAME, singletonList(READ))
     );
 
-    subject.savePermissions(aces);
+    subject.savePermissionsWithLogging(aces);
 
     List<PermissionEntry> response = subject.getPermissions(credential);
 
@@ -139,7 +139,7 @@ public class PermissionDataServiceTest {
     aces = singletonList(
         new PermissionEntry(LUKE,credential2.getName(),singletonList(READ)));
 
-    subject.savePermissions(aces);
+    subject.savePermissionsWithLogging(aces);
 
     List<PermissionEntry> response = subject.getPermissions(credential2);
 
@@ -315,8 +315,8 @@ public class PermissionDataServiceTest {
     Credential noAccessValueCredential = noAccessValueCredentialData.getCredential();
     credentialDataService.save(noAccessValueCredential);
 
-    subject.savePermissions(singletonList(new PermissionEntry(LUKE, CREDENTIAL_NAME, newArrayList(WRITE, DELETE))));
-    subject.savePermissions(singletonList(new PermissionEntry(LEIA, CREDENTIAL_NAME, singletonList(READ))));
-    subject.savePermissions(singletonList(new PermissionEntry(HAN_SOLO, CREDENTIAL_NAME, newArrayList(READ_ACL, WRITE_ACL))));
+    subject.savePermissionsWithLogging(singletonList(new PermissionEntry(LUKE, CREDENTIAL_NAME, newArrayList(WRITE, DELETE))));
+    subject.savePermissionsWithLogging(singletonList(new PermissionEntry(LEIA, CREDENTIAL_NAME, singletonList(READ))));
+    subject.savePermissionsWithLogging(singletonList(new PermissionEntry(HAN_SOLO, CREDENTIAL_NAME, newArrayList(READ_ACL, WRITE_ACL))));
   }
 }

@@ -34,27 +34,21 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import static java.util.Arrays.asList;
-import static org.cloudfoundry.credhub.request.PermissionOperation.DELETE;
 import static org.cloudfoundry.credhub.request.PermissionOperation.READ;
-import static org.cloudfoundry.credhub.request.PermissionOperation.READ_ACL;
-import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE;
-import static org.cloudfoundry.credhub.request.PermissionOperation.WRITE_ACL;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID;
-import static org.cloudfoundry.credhub.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+// TODO: TEST POLLUTION :(
+
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -63,6 +57,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class NoOverwriteTest {
 
   private static final String CREDENTIAL_NAME = "TEST-SECRET";
+  private static final String CREDENTIAL_NAME_WITH_LEADING_SLASH = "/" + CREDENTIAL_NAME;
   @Autowired
   private WebApplicationContext webApplicationContext;
 
@@ -87,7 +82,7 @@ public class NoOverwriteTest {
   }
 
   @After
-  public void afterEach() throws Exception {
+  public void afterEach() {
     flyway.clean();
     flyway.setTarget(MigrationVersion.LATEST);
     flyway.migrate();
@@ -97,8 +92,7 @@ public class NoOverwriteTest {
   }
 
   @Test
-  public void whenMultipleThreadsPutWithSameNameAndNoOverwrite_itShouldNotOverwrite()
-      throws Exception {
+  public void whenMultipleThreadsPutWithSameNameAndNoOverwrite_itShouldNotOverwrite() throws Exception {
     runRequestsConcurrently(CREDENTIAL_NAME,
         ",\"value\":\"thread1\"",
         ",\"value\":\"thread2\"",
@@ -118,12 +112,12 @@ public class NoOverwriteTest {
     String winningValue = context1.read("$.value");
 
     String tokenForWinningActor = ImmutableMap
-        .of("thread1", UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
-            "thread2", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .of("thread1", USER_A_TOKEN,
+            "thread2", USER_B_TOKEN)
         .get(winningValue);
     String winningActor = ImmutableMap
-        .of("thread1", UAA_OAUTH2_PASSWORD_GRANT_ACTOR_ID,
-            "thread2", UAA_OAUTH2_CLIENT_CREDENTIALS_ACTOR_ID)
+        .of("thread1", USER_A_ACTOR_ID,
+            "thread2", USER_B_ACTOR_ID)
         .get(winningValue);
 
     MvcResult result = mockMvc.perform(get("/api/v1/permissions?credential_name=" + CREDENTIAL_NAME)
@@ -135,12 +129,9 @@ public class NoOverwriteTest {
     PermissionsView acl = JsonTestHelper
         .deserialize(content, PermissionsView.class);
 
-    assertThat(acl.getPermissions(), containsInAnyOrder(
+    assertThat(acl.getPermissions(), contains(
         samePropertyValuesAs(
-            new PermissionEntry(winningActor, "test-path",
-                asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
-        samePropertyValuesAs(
-            new PermissionEntry("uaa-client:a-different-actor", "test-path", asList(READ)))
+            new PermissionEntry("uaa-client:a-different-actor", CREDENTIAL_NAME_WITH_LEADING_SLASH, asList(READ)))
     ));
 
   }
@@ -169,7 +160,7 @@ public class NoOverwriteTest {
 
     MockHttpServletResponse response1 = mockMvc
         .perform(get("/api/v1/data?name=/" + CREDENTIAL_NAME)
-            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
+            .header("Authorization", "Bearer " + USER_A_TOKEN))
         .andDo(print())
         .andReturn().getResponse();
 
@@ -189,7 +180,7 @@ public class NoOverwriteTest {
       @Override
       public void run() {
         final MockHttpServletRequestBuilder requestBuilder = requestBuilderProvider.get()
-            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .header("Authorization", "Bearer " + USER_A_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content(
@@ -199,8 +190,8 @@ public class NoOverwriteTest {
                     + "\"overwrite\":false,"
                     + "\"name\":\"" + credentialName + "\","
                     + "\"additional_permissions\":[{"
-                    + "\"actor\":\"uaa-client:a-different-actor\","
-                    + "\"operations\": [\"read\"]"
+                    + "  \"actor\":\"uaa-client:a-different-actor\","
+                    + "  \"operations\": [\"read\"]"
                     + "}]"
                     + additionalJsonPayload1
                     + "\n" +
@@ -218,7 +209,7 @@ public class NoOverwriteTest {
       @Override
       public void run() {
         final MockHttpServletRequestBuilder post = requestBuilderProvider.get()
-            .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+            .header("Authorization", "Bearer " + USER_B_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content(

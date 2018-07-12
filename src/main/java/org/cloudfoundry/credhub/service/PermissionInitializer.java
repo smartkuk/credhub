@@ -30,6 +30,7 @@ public class PermissionInitializer {
 
   @EventListener(ContextRefreshedEvent.class)
   public void seed() {
+
     if (permissions == null ||  permissions.getPermissions() == null) {
       return;
     }

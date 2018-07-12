@@ -8,45 +8,57 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.cloudfoundry.credhub.util.AuthConstants.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+
+// TODO: test pollution
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @ActiveProfiles(value = {"unit-test", "unit-test-permissions"}, resolver = DatabaseProfileResolver.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD) // TODO....maybe we shouldnt this??
 @Transactional
 public class PermissionsTest {
   @Autowired
   private PermissionCheckingService subject;
 
-  private static final String USERA = "uaa-user:user-a";
-  private static final String USERB = "uaa-user:user-b";
-  private static final String USERC = "uaa-user:user-c";
   private static final String PATH = "/my/credential";
   private static final String OTHER_PATH = "/my/other-credential";
 
   @Test
   public void testPermissionsWithoutWildcard(){
-    assertThat(subject.hasPermission(USERA, PATH, PermissionOperation.READ), is(true));
-    assertThat(subject.hasPermission(USERA, OTHER_PATH, PermissionOperation.READ), is(false));
+    assertThat(subject.hasPermission(USER_A_ACTOR_ID, "/user-a-cred", PermissionOperation.READ), is(true));
+    assertThat(subject.hasPermission(USER_A_ACTOR_ID, "/user-b-cred", PermissionOperation.READ), is(false));
   }
 
   @Test
   public void testPermissionsWithWildcard(){
-    assertThat(subject.hasPermission(USERB, PATH, PermissionOperation.READ), is(true));
-    assertThat(subject.hasPermission(USERB, OTHER_PATH, PermissionOperation.READ), is(true));
+    assertThat(subject.hasPermission(USER_A_ACTOR_ID, USER_A_PATH + "anything", PermissionOperation.READ), is(true));
+    assertThat(subject.hasPermission(USER_A_ACTOR_ID, USER_A_PATH + "anything", PermissionOperation.WRITE), is(true));
+    assertThat(subject.hasPermission(USER_A_ACTOR_ID, USER_B_PATH + "anything", PermissionOperation.READ), is(false));
 
-    assertThat(subject.hasPermission(USERB, PATH, PermissionOperation.DELETE), is(false));
-    assertThat(subject.hasPermission(USERB, OTHER_PATH, PermissionOperation.DELETE), is(false));
+    assertThat(subject.hasPermission(USER_B_ACTOR_ID, USER_A_PATH + "anything", PermissionOperation.READ), is(false));
+    assertThat(subject.hasPermission(USER_B_ACTOR_ID, USER_B_PATH + "anything", PermissionOperation.READ), is(true));
+    assertThat(subject.hasPermission(USER_B_ACTOR_ID, USER_B_PATH + "anything", PermissionOperation.WRITE), is(true));
+
+    assertThat(subject.hasPermission(USER_A_ACTOR_ID, "/shared-read-only/anything", PermissionOperation.READ), is(true));
+    assertThat(subject.hasPermission(USER_A_ACTOR_ID, "/shared-read-only/anything", PermissionOperation.WRITE), is(false));
+
+    assertThat(subject.hasPermission(ALL_PERMISSIONS_ACTOR_ID, USER_A_PATH + "anything", PermissionOperation.READ), is(true));
+    assertThat(subject.hasPermission(ALL_PERMISSIONS_ACTOR_ID, USER_A_PATH + "anything", PermissionOperation.WRITE), is(true));
+    assertThat(subject.hasPermission(ALL_PERMISSIONS_ACTOR_ID, USER_B_PATH + "anything", PermissionOperation.READ), is(true));
+    assertThat(subject.hasPermission(ALL_PERMISSIONS_ACTOR_ID, USER_B_PATH + "anything", PermissionOperation.WRITE), is(true));
   }
 
   @Test
   public void testUnauthorizedPermissions(){
-    assertThat(subject.hasPermission(USERC, PATH, PermissionOperation.READ), is(false));
-    assertThat(subject.hasPermission(USERC, OTHER_PATH, PermissionOperation.READ), is(false));
+    assertThat(subject.hasPermission(NO_PERMISSIONS_ACTOR_ID, PATH, PermissionOperation.READ), is(false));
+    assertThat(subject.hasPermission(NO_PERMISSIONS_ACTOR_ID, OTHER_PATH, PermissionOperation.READ), is(false));
   }
 }

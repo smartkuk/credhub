@@ -60,6 +60,10 @@ public class PermissionedCredentialService {
     this.userContextHolder = userContextHolder;
     this.credentialDataService = credentialDataService;
     this.auditRecord = auditRecord;
+
+    System.out.println("NULL?? " + String.valueOf(userContextHolder == null));
+    System.out.println("STRING: " + userContextHolder.getUserContext().toString());
+    System.exit(0);
   }
 
   public CredentialVersion save(
@@ -235,6 +239,12 @@ public class PermissionedCredentialService {
   }
 
   private void verifyWritePermission(String credentialName) {
+//    System.out.println(userContextHolder.);
+//    if (userContextHolder.getUserContext() == null) {
+//      System.out.println("**********************the user context is nulllllll");
+//    }
+//    System.out.println(userContextHolder.getUserContext().toString());
+
     if (!permissionCheckingService
         .hasPermission(userContextHolder.getUserContext().getActor(), credentialName, WRITE)) {
       throw new PermissionException("error.credential.invalid_access");

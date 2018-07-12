@@ -38,13 +38,20 @@ public class PermissionDataService {
     return createViewsFromPermissionsFor(credential);
   }
 
-  public void savePermissions(List<PermissionEntry> permissions) {
+  public void savePermissionsWithLogging(List<PermissionEntry> permissions){
+    auditRecord.addAllResources(savePermissions(permissions));
+  }
+
+  public List<PermissionData> savePermissions(List<PermissionEntry> permissions) {
+    List<PermissionData> result = new ArrayList<>();
     for (PermissionEntry permission : permissions) {
       String path = permission.getPath();
       List<PermissionData> existingPermissions = permissionRepository.findAllByPath(path);
-      upsertPermissions(path, existingPermissions, permission.getActor(),
-          permission.getAllowedOperations());
+      result.add(upsertPermissions(path, existingPermissions, permission.getActor(),
+          permission.getAllowedOperations()));
     }
+
+    return result;
   }
 
   public List<PermissionOperation> getAllowedOperations(String name, String actor) {
@@ -95,7 +102,7 @@ public class PermissionDataService {
     return false;
   }
 
-  private void upsertPermissions(String path,
+  private PermissionData upsertPermissions(String path,
                                  List<PermissionData> accessEntries, String actor, List<PermissionOperation> operations) {
     PermissionData entry = findAccessEntryForActor(accessEntries, actor);
 
@@ -105,6 +112,8 @@ public class PermissionDataService {
 
     entry.enableOperations(operations);
     permissionRepository.saveAndFlush(entry);
+
+    return entry;
   }
 
   private List<String> findAllPaths(String path) {

@@ -34,9 +34,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -82,6 +80,7 @@ public class PermissionInitializationTest {
     PasswordSetRequest passwordSetRequest = new PasswordSetRequest();
     passwordSetRequest.setName(credentialPath);
     passwordSetRequest.setType(CredentialType.password.toString());
+    // TODO NPE caused by userContextHolder.getUserContext() returning null
     credentialVersion = permissionedCredentialService.save(null, password, passwordSetRequest);
     credentialUUID = credentialVersion.getCredential().getUuid();
   }
@@ -125,9 +124,9 @@ public class PermissionInitializationTest {
 
     applicationEventPublisher.publishEvent(new ContextRefreshedEvent(applicationContext));
   }
-
-  @Test
-  public void itDoesntThrowAnExceptionIfAuthorizationIsEmpty() {
+//
+  @Test//(expected = AuthorizationMissingException.class)
+  public void itThrowsAnExceptionIfAuthorizationIsEmpty() {
     PermissionInitializer initializer = new PermissionInitializer(null, new Permissions(),null);
     initializer.seed();
   }

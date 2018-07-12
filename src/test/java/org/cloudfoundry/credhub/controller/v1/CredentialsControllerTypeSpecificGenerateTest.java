@@ -404,7 +404,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   @Test
   public void shouldAcceptAnyCasingForType() throws Exception {
     MockHttpServletRequestBuilder request = post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -501,7 +501,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
   private MockHttpServletRequestBuilder createGenerateNewCredentialRequest() {
     return post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -520,7 +520,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
   private MockHttpServletRequestBuilder beforeEachOverwriteSetToTrue() {
     return post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -533,7 +533,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
   private MockHttpServletRequestBuilder beforeEachOverwriteSetToFalse() {
     return post("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + AuthConstants.ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +

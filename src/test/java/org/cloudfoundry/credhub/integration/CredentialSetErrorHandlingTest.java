@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import net.minidev.json.JSONObject;
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.constants.CredentialWriteMode;
-import org.cloudfoundry.credhub.util.AuthConstants;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.util.TestConstants;
 import org.junit.Before;
@@ -21,13 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.cloudfoundry.credhub.helper.RequestHelper.setPassword;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -52,10 +50,10 @@ public class CredentialSetErrorHandlingTest {
 
   @Test
   public void whenTheTypeChanges_returns400() throws Exception {
-    setPassword(mockMvc, CREDENTIAL_NAME, "some password", CredentialWriteMode.OVERWRITE.mode);
+    setPassword(mockMvc, CREDENTIAL_NAME, "some password", CredentialWriteMode.OVERWRITE.mode, ALL_PERMISSIONS_TOKEN);
 
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -74,7 +72,7 @@ public class CredentialSetErrorHandlingTest {
   @Test
   public void whenTheNameIsEmpty_returns400() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -93,7 +91,7 @@ public class CredentialSetErrorHandlingTest {
   @Test
   public void whenNameIsMissing_returns400() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -111,7 +109,7 @@ public class CredentialSetErrorHandlingTest {
   @Test
   public void whenNameHasDoubleSlash_returns400() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -130,7 +128,7 @@ public class CredentialSetErrorHandlingTest {
   @Test
   public void whenNameEndsWithSlash_returns400() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -149,7 +147,7 @@ public class CredentialSetErrorHandlingTest {
   @Test
   public void whenTypeIsMissing_returns400() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -167,7 +165,7 @@ public class CredentialSetErrorHandlingTest {
   @Test
   public void whenTypeIsEmpty_returns400() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -186,7 +184,7 @@ public class CredentialSetErrorHandlingTest {
   @Test
   public void whenTypeIsInvalid_returns400() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -205,7 +203,7 @@ public class CredentialSetErrorHandlingTest {
   @Test
   public void whenValueIsMissing_returns400() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -223,7 +221,7 @@ public class CredentialSetErrorHandlingTest {
   @Test
   public void whenAnUnknownTopLevelKeyIsPresent_returns400() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -249,7 +247,7 @@ public class CredentialSetErrorHandlingTest {
         "  \"value\":\"THIS REQUEST some value\"" +
         "}";
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(malformedJson);
@@ -269,7 +267,7 @@ public class CredentialSetErrorHandlingTest {
         "  \"value\":\"[\"some\" \"key\"]\"" +
         "}";
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content(malformedJson);
@@ -283,7 +281,7 @@ public class CredentialSetErrorHandlingTest {
   @Test
   public void givenAUserRequest_whenPasswordIsMissing_returns400() throws Exception {
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -311,7 +309,7 @@ public class CredentialSetErrorHandlingTest {
             .build());
 
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
@@ -338,7 +336,7 @@ public class CredentialSetErrorHandlingTest {
             .build());
 
     final MockHttpServletRequestBuilder request = put("/api/v1/data")
-        .header("Authorization", "Bearer " + AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +

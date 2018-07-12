@@ -43,15 +43,15 @@ public class PermissionService {
 
     UserContext userContext = userContextHolder.getUserContext();
     for (PermissionEntry permissionEntry : permissionEntryList) {
-      if (!permissionCheckingService.userAllowedToOperateOnActor(permissionEntry.getActor())) {
-        throw new InvalidPermissionOperationException("error.permission.invalid_update_operation");
-      }
       if (!permissionCheckingService.hasPermission(userContext.getActor(), permissionEntry.getPath(), WRITE_ACL)) {
         throw new EntryNotFoundException("error.credential.invalid_access");
       }
+      if (!permissionCheckingService.userAllowedToOperateOnActor(permissionEntry.getActor())) {
+        throw new InvalidPermissionOperationException("error.permission.invalid_update_operation");
+      }
     }
 
-    permissionDataService.savePermissions(permissionEntryList);
+    permissionDataService.savePermissionsWithLogging(permissionEntryList);
   }
 
   public void savePermissions(List<PermissionEntry> permissionEntryList) {
