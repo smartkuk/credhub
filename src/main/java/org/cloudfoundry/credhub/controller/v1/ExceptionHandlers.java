@@ -132,7 +132,7 @@ public class ExceptionHandlers {
     return constructError("error.read_only_mode");
   }
 
-  @ExceptionHandler({HttpMessageNotReadableException.class, InvalidJsonException.class, InvalidFormatException.class})
+  @ExceptionHandler({InvalidJsonException.class, InvalidFormatException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInputNotReadableException(Exception exception) {
     final Throwable cause = exception.getCause() == null ? exception : exception.getCause();
@@ -169,6 +169,12 @@ public class ExceptionHandlers {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInvalidTypeAccess(InvalidObjectException exception) {
     return constructError(exception.getMessage());
+  }
+
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
+  public ResponseError handleIncorrectOperation(HttpMessageNotReadableException e) {
+    return constructError("error.permission.invalid_operation");
   }
 
   private ResponseError badRequestResponse() {
