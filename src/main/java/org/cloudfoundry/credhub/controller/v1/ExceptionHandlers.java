@@ -31,8 +31,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.io.InvalidObjectException;
+import javax.servlet.http.HttpServletResponse;
 
 import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @RestControllerAdvice
 @Order(HIGHEST_PRECEDENCE)
@@ -132,23 +134,19 @@ public class ExceptionHandlers {
     return constructError("error.read_only_mode");
   }
 
-  @ExceptionHandler({InvalidJsonException.class, InvalidFormatException.class})
+  @ExceptionHandler({InvalidJsonException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInputNotReadableException(Exception exception) {
+
     final Throwable cause = exception.getCause() == null ? exception : exception.getCause();
+
+    System.out.println("Cause:" + cause.toString());
     if (cause instanceof UnrecognizedPropertyException) {
       return constructError("error.invalid_json_key", ((UnrecognizedPropertyException) cause).getPropertyName());
     } else if (cause instanceof InvalidTypeIdException
         || (cause instanceof JsonMappingException && cause.getMessage()
         .contains("missing property 'type'"))) {
       return constructError("error.invalid_type_with_set_prompt");
-    } else if (cause instanceof InvalidFormatException) {
-      for (InvalidFormatException.Reference reference : ((InvalidFormatException) cause)
-          .getPath()) {
-        if ("operations".equals(reference.getFieldName())) {
-          return constructError("error.permission.invalid_operation");
-        }
-      }
     }
     return badRequestResponse();
   }
@@ -166,20 +164,46 @@ public class ExceptionHandlers {
   }
 
   @ExceptionHandler(InvalidObjectException.class)
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  @ResponseStatus(value = BAD_REQUEST)
   public ResponseError handleInvalidTypeAccess(InvalidObjectException exception) {
     return constructError(exception.getMessage());
   }
 
-  @ExceptionHandler(HttpMessageNotReadableException.class)
-  @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
-  public ResponseError handleIncorrectOperation(HttpMessageNotReadableException e) {
-    return constructError("error.permission.invalid_operation");
+  @ExceptionHandler({HttpMessageNotReadableException.class, InvalidFormatException.class})
+  public ResponseError handleIncorrectOperation(Exception e, HttpServletResponse response) {
+    final Throwable cause = e.getCause() == null ? e : e.getCause();
+    response.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+
+    if (cause instanceof UnrecognizedPropertyException) {
+      return constructError("error.invalid_json_key", ((UnrecognizedPropertyException) cause).getPropertyName());
+
+    } else if (cause instanceof InvalidTypeIdException || (cause instanceof JsonMappingException && cause.getMessage().contains("missing property 'type'"))) {
+      return constructError("error.invalid_type_with_set_prompt");
+
+    } else if (cause instanceof JsonMappingException) {
+      for (com.fasterxml.jackson.databind.JsonMappingException.Reference reference : ((JsonMappingException) cause).getPath()) {
+        if ("operations".equals(reference.getFieldName())) {
+          return constructError("error.permission.invalid_operation");
+        }
+      }
+
+    } else if (cause instanceof InvalidFormatException) {
+      for (InvalidFormatException.Reference reference : ((InvalidFormatException) cause)
+          .getPath()) {
+        if ("operations".equals(reference.getFieldName())) {
+          return constructError("error.permission.invalid_operation");
+        }
+      }
+
+    }
+    response.setStatus(HttpStatus.BAD_REQUEST.value());
+    return badRequestResponse();
   }
 
   private ResponseError badRequestResponse() {
     return constructError("error.bad_request");
   }
+
 
   private ResponseError constructError(String error) {
 
