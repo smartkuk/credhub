@@ -120,4 +120,21 @@ public class PermissionsEndpointV2Test {
 
     mockMvc.perform(addPermissionRequest).andExpect(status().isUnprocessableEntity());
   }
+
+  @Test
+  public void POST_whenUserTriesToAddAPermissionThatAlreadyExists_theyReceiveAConflict() throws Exception {
+    String credentialName = "/user-a/*";
+
+    MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
+            + "  \"path\": \"" + credentialName + "\",\n"
+            + "  \"operations\": [\"read\"]\n"
+            + "}");
+
+    mockMvc.perform(addPermissionRequest).andExpect(status().isConflict());
+  }
 }

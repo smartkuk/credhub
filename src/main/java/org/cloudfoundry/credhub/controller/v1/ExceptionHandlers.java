@@ -14,6 +14,7 @@ import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.InvalidRemoteAddressException;
 import org.cloudfoundry.credhub.exceptions.KeyNotFoundException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
+import org.cloudfoundry.credhub.exceptions.PermissionAlreadyExistsException;
 import org.cloudfoundry.credhub.exceptions.PermissionException;
 import org.cloudfoundry.credhub.exceptions.ReadOnlyException;
 import org.cloudfoundry.credhub.view.ResponseError;
@@ -154,6 +155,12 @@ public class ExceptionHandlers {
   @ExceptionHandler(InvalidPermissionOperationException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleIncorrectAclOperation(InvalidPermissionOperationException e) {
+    return constructError(e.getMessage());
+  }
+
+  @ExceptionHandler(PermissionAlreadyExistsException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  public ResponseError handleIncorrectAclOperation(PermissionAlreadyExistsException e) {
     return constructError(e.getMessage());
   }
 
