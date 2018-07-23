@@ -35,7 +35,7 @@ public class PermissionCheckingService {
 
   public boolean hasPermissions(String user, String path, List<PermissionOperation> permissions) {
     for (PermissionOperation permission : permissions) {
-      if (!hasPermission(user, path, permission)) {
+      if (!permissionDataService.hasPermission(user, path, permission)) {
         return false;
       }
     }
