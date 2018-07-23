@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
@@ -136,5 +137,48 @@ public class PermissionsEndpointV2Test {
             + "}");
 
     mockMvc.perform(addPermissionRequest).andExpect(status().isConflict());
+  }
+
+  @Test
+  public void POST_whenUserTriesToAddAnAdditionalOperationToAPermissionThatAlreadyExists_theySucceed() throws Exception {
+    String credentialName = "/test";
+
+    MockHttpServletRequestBuilder addPermissionRequest = post("/api/v2/permissions")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
+            + "  \"path\": \"" + credentialName + "\",\n"
+            + "  \"operations\": [\"write\"]\n"
+            + "}");
+
+    String content = mockMvc.perform(addPermissionRequest).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+    PermissionsV2View returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
+    assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
+    assertThat(returnValue.getPath(), equalTo(credentialName));
+    assertThat(returnValue.getOperations(), equalTo(Collections.singletonList(PermissionOperation.WRITE)));
+
+    MockHttpServletRequestBuilder addPermissionRequestWithRead = post("/api/v2/permissions")
+        .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"actor\": \"" + USER_A_ACTOR_ID + "\",\n"
+            + "  \"path\": \"" + credentialName + "\",\n"
+            + "  \"operations\": [\"write\", \"read\"]\n"
+            + "}");
+
+    content = mockMvc.perform(addPermissionRequestWithRead).andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+    returnValue = JsonTestHelper.deserialize(content, PermissionsV2View.class);
+    assertThat(returnValue.getActor(), equalTo(USER_A_ACTOR_ID));
+    assertThat(returnValue.getPath(), equalTo(credentialName));
+    assertThat(returnValue.getOperations(), equalTo(Arrays.asList(PermissionOperation.WRITE, PermissionOperation.READ)));
+
+
+
+
+
+
   }
 }
