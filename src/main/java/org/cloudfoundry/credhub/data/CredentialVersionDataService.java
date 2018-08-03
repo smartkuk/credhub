@@ -8,6 +8,7 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.CredentialVersionData;
+import org.cloudfoundry.credhub.entity.KeyUsageCount;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.repository.CredentialVersionRepository;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
@@ -153,12 +154,20 @@ public class CredentialVersionDataService {
 
   public HashMap<UUID, Long> countByEncryptionKey() {
     HashMap<UUID, Long> map = new HashMap<>();
-    jdbcTemplate.query(
-        " SELECT count(*), encryption_key_uuid FROM credential_version " +
-            "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
-            "GROUP BY encrypted_value.encryption_key_uuid",
-        (rowSet, rowNum) -> map.put(UUID.fromString(rowSet.getString("encryption_key_uuid")), rowSet.getLong("count"))
-    );
+
+    // TODO encryption key is stored as binary... parsing will fail
+//    jdbcTemplate.query(
+//        " SELECT count(*), encryption_key_uuid FROM credential_version " +
+//            "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
+//            "GROUP BY encrypted_value.encryption_key_uuid",
+//        (rowSet, rowNum) -> map.put(UUID.fromString(rowSet.getString("encryption_key_uuid")), rowSet.getLong("count"))
+//    );
+
+    // TODO break query in two queries... then do count by
+
+    List<KeyUsageCount> data = credentialVersionRepository.countKeyUsage();
+    data.forEach(i -> map.put(i.getUuid(), i.getCount()));
+
     return map;
   }
 

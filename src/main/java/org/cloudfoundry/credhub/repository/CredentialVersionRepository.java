@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.repository;
 
 import org.cloudfoundry.credhub.entity.CredentialVersionData;
+import org.cloudfoundry.credhub.entity.KeyUsageCount;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -41,4 +42,12 @@ public interface CredentialVersionRepository extends JpaRepository<CredentialVer
   List<CredentialVersionData> findAllByCredentialUuidAndTypeOrderByVersionCreatedAtDesc(UUID uuid, String credentialType);
 
   CredentialVersionData findFirstByCredentialUuidOrderByVersionCreatedAtDesc(UUID uuid);
+
+  @Query(value = " SELECT new org.cloudfoundry.credhub.entity.KeyUsageCount(count(*), encrypted_value.encryption_key_uuid)"
+      + " FROM credential_version " +
+      "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
+      "GROUP BY encrypted_value.encryption_key_uuid", nativeQuery = true)
+  List<KeyUsageCount> countKeyUsage(); // TODO or do LIST<Object>
 }
+
+// see https://stackoverflow.com/questions/36328063/how-to-return-a-custom-object-from-a-spring-data-jpa-group-by-query
