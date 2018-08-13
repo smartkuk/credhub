@@ -43,7 +43,7 @@ public interface CredentialVersionRepository extends JpaRepository<CredentialVer
 
   CredentialVersionData findFirstByCredentialUuidOrderByVersionCreatedAtDesc(UUID uuid);
 
-  @Query(value = " SELECT new org.cloudfoundry.credhub.entity.KeyUsageCount(count(*), encrypted_value.encryption_key_uuid)"
+  @Query(value = "SELECT new org.cloudfoundry.credhub.entity.KeyUsageCount(count(*), encrypted_value.encryption_key_uuid)"
       + " FROM credential_version " +
       "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
       "GROUP BY encrypted_value.encryption_key_uuid", nativeQuery = true)
