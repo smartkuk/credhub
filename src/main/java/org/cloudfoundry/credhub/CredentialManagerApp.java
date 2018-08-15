@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub;
 
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -10,6 +9,9 @@ import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.cloudfoundry.credhub.config.JsonContextFactory;
+import org.cloudfoundry.credhub.data.PermissionDataService;
+import org.cloudfoundry.credhub.service.PermissionProvider;
+import org.cloudfoundry.credhub.util.CurrentTimeProvider;
 import org.cloudfoundry.credhub.util.TimeModuleFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -69,5 +71,11 @@ public class CredentialManagerApp {
   @Bean
   public MessageSourceAccessor messageSourceAccessor(MessageSource messageSource) {
     return new MessageSourceAccessor(messageSource);
+  }
+
+  @Bean
+  public PermissionProvider permissionProvider(){
+    // TODO make this configurable
+    return new PermissionDataService();
   }
 }

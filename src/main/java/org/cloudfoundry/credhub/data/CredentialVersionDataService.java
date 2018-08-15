@@ -10,6 +10,7 @@ import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.repository.CredentialVersionRepository;
+import org.cloudfoundry.credhub.service.PermissionProvider;
 import org.cloudfoundry.credhub.view.FindCredentialResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +32,7 @@ import static com.google.common.collect.Lists.newArrayList;
 public class CredentialVersionDataService {
 
   private final CredentialVersionRepository credentialVersionRepository;
-  private PermissionDataService permissionDataService;
+  private PermissionProvider permissionProvider;
   private final CredentialDataService credentialDataService;
   private final JdbcTemplate jdbcTemplate;
   private final CredentialFactory credentialFactory;
@@ -45,7 +46,7 @@ public class CredentialVersionDataService {
   @Autowired
   protected CredentialVersionDataService(
       CredentialVersionRepository credentialVersionRepository,
-      PermissionDataService permissionDataService,
+      PermissionProvider permissionProvider,
       CredentialDataService credentialDataService,
       JdbcTemplate jdbcTemplate,
       CredentialFactory credentialFactory,
@@ -53,7 +54,7 @@ public class CredentialVersionDataService {
       CertificateVersionDataService certificateVersionDataService,
       CEFAuditRecord auditRecord) {
     this.credentialVersionRepository = credentialVersionRepository;
-    this.permissionDataService = permissionDataService;
+    this.permissionProvider = permissionProvider;
     this.credentialDataService = credentialDataService;
     this.jdbcTemplate = jdbcTemplate;
     this.credentialFactory = credentialFactory;
@@ -120,7 +121,7 @@ public class CredentialVersionDataService {
 
     String actor = userContextHolder.getUserContext().getActor();
 
-    return filterCredentials(unfilteredResult, permissionDataService.findAllPathsByActor(actor));
+    return filterCredentials(unfilteredResult, permissionProvider.findAllPathsByActor(actor));
   }
 
 

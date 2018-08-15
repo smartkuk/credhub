@@ -32,8 +32,12 @@ import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.cloudfoundry.credhub.helper.RequestHelper.*;
-import static org.cloudfoundry.credhub.util.AuthConstants.*;
+import static org.cloudfoundry.credhub.helper.RequestHelper.expect404WhileGeneratingCertificate;
+import static org.cloudfoundry.credhub.helper.RequestHelper.generateCa;
+import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificateCredential;
+import static org.cloudfoundry.credhub.helper.RequestHelper.getCertificateCredentialsByName;
+import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_B_TOKEN;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;

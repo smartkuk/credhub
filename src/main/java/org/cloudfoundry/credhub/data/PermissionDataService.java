@@ -12,8 +12,8 @@ import org.cloudfoundry.credhub.repository.PermissionRepository;
 import org.cloudfoundry.credhub.request.PermissionEntry;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.cloudfoundry.credhub.request.PermissionsV2Request;
+import org.cloudfoundry.credhub.service.PermissionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -25,23 +25,12 @@ import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-@Component
-public class PermissionDataService {
-
-  private final CredentialDataService credentialDataService;
-  private PermissionRepository permissionRepository;
-  private CEFAuditRecord auditRecord;
+public class PermissionDataService implements PermissionProvider {
 
   @Autowired
-  public PermissionDataService(
-      PermissionRepository permissionRepository,
-      CredentialDataService credentialDataService,
-      CEFAuditRecord auditRecord
-  ) {
-    this.permissionRepository = permissionRepository;
-    this.credentialDataService = credentialDataService;
-    this.auditRecord = auditRecord;
-  }
+  private PermissionRepository permissionRepository;
+  private CredentialDataService credentialDataService;
+  private CEFAuditRecord auditRecord;
 
   public List<PermissionEntry> getPermissions(Credential credential) {
     return createViewsFromPermissionsFor(credential);

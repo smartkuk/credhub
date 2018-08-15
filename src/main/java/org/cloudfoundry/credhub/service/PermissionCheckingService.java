@@ -3,7 +3,6 @@ package org.cloudfoundry.credhub.service;
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
-import org.cloudfoundry.credhub.data.PermissionDataService;
 import org.cloudfoundry.credhub.entity.PermissionData;
 import org.cloudfoundry.credhub.request.PermissionOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,16 +14,16 @@ import java.util.UUID;
 
 @Component
 public class PermissionCheckingService {
-  private PermissionDataService permissionDataService;
+  private PermissionProvider permissionDataService;
   private UserContextHolder userContextHolder;
 
   @Value("${security.authorization.acls.enabled}")
   private boolean enforcePermissions;
 
   @Autowired
-  public PermissionCheckingService(PermissionDataService permissionDataService,
+  public PermissionCheckingService(PermissionProvider permissionProvider,
                                    UserContextHolder userContextHolder) {
-    this.permissionDataService = permissionDataService;
+    this.permissionDataService = permissionProvider;
     this.userContextHolder = userContextHolder;
   }
 
