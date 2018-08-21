@@ -1,11 +1,18 @@
 package org.cloudfoundry.credhub.controller.v1;
 
 import com.google.common.io.ByteStreams;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.audit.entity.*;
+import org.cloudfoundry.credhub.audit.entity.DeleteCredential;
+import org.cloudfoundry.credhub.audit.entity.FindCredential;
+import org.cloudfoundry.credhub.audit.entity.GetCredential;
+import org.cloudfoundry.credhub.audit.entity.RequestDetails;
+import org.cloudfoundry.credhub.audit.entity.SetCredential;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.handler.CredentialsHandler;
 import org.cloudfoundry.credhub.handler.LegacyGenerationHandler;
@@ -18,12 +25,20 @@ import org.cloudfoundry.credhub.view.FindCredentialResults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+@Api(description = "List of endpoints for credential management")
 @RestController
 @RequestMapping(
     path = CredentialsController.API_V1_DATA,
@@ -59,9 +74,11 @@ public class CredentialsController {
     return legacyGenerationHandler.auditedHandlePostRequest(requestInputStream);
   }
 
+  @ApiOperation("${CredentialsController.set}")
   @RequestMapping(path = "", method = RequestMethod.PUT)
   @ResponseStatus(HttpStatus.OK)
-  public synchronized CredentialView set(@RequestBody BaseCredentialSetRequest requestBody) {
+  public synchronized CredentialView set(@ApiParam("${CredentialsController.set.requestBody}")
+                                           @RequestBody BaseCredentialSetRequest requestBody) {
     requestBody.validate();
     return auditedHandlePutRequest(requestBody);
   }
