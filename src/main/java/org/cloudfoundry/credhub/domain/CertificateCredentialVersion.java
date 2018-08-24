@@ -19,6 +19,11 @@ public class CertificateCredentialVersion extends CredentialVersion<CertificateC
     super(delegate);
     this.delegate = delegate;
     this.setCertificate(delegate.getCertificate());
+    if(this.parsedCertificate != null){
+      System.out.println("***1234");
+      System.out.println("expiry date is: " + delegate.getExpiryDate());
+      System.out.println("expiry date should look like this: " + parsedCertificate.getNotAfter().toString() + "\n***\n");
+    }
   }
 
   public CertificateCredentialVersion(String name) {

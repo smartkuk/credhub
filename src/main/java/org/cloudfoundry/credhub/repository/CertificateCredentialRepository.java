@@ -10,6 +10,6 @@ import java.util.UUID;
 @Table(name = "certificate_credential")
 public interface CertificateCredentialRepository extends JpaRepository<CertificateCredentialVersionData, UUID> {
 
-  CertificateCredentialVersionData findOneByUuid(UUID uuid);
-  List<CertificateCredentialVersionData> findAllByExpiryDate();
+//  CertificateCredentialVersionData findOneByUuid(UUID uuid);
+//  List<CertificateCredentialVersionData> findAllByExpiryDate();
 }
