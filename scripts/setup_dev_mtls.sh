@@ -2,14 +2,14 @@
 
 set -eu
 
-DIRNAME=$(dirname "$0")
+setup_env_variables() {
+    KEYSTORE_PASSWORD=changeit
 
-KEYSTORE_PASSWORD=changeit
-
-KEY_STORE=key_store.jks
-MTLS_TRUST_STORE=trust_store.jks
-AUTH_SERVER_TRUST_STORE=auth_server_trust_store.jks
-UAA_CA=ca/dev_uaa.pem
+    KEY_STORE=key_store.jks
+    MTLS_TRUST_STORE=trust_store.jks
+    AUTH_SERVER_TRUST_STORE=auth_server_trust_store.jks
+    UAA_CA=ca/dev_uaa.pem
+}
 
 clean() {
     echo "Removing any existing key stores and certs..."
@@ -85,7 +85,8 @@ setup_auth_server_trust_store() {
 }
 
 main() {
-    pushd "${DIRNAME}/src/test/resources" >/dev/null
+    setup_env_variables
+    pushd "$HOME/workspace/credhub-release/src/credhub/src/test/resources" >/dev/null
         clean
         generate_server_ca
         generate_client_ca
@@ -105,4 +106,6 @@ main() {
     popd >/dev/null
 }
 
-main
+pushd $HOME/workspace/credhub-release/src/credhub
+    main
+popd
