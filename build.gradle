@@ -1,6 +1,7 @@
 buildscript {
     ext {
         springBootVersion = '2.0.6.RELEASE'
+        kotlinVersion = '1.2.71'
         springCloudContractVersion = '2.0.2.RELEASE'
         springRestDocsVersion = '2.0.2.RELEASE'
         grpcVersion = '1.14.0'
@@ -16,6 +17,8 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
+        classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
         classpath("org.owasp:dependency-check-gradle:3.1.1")
         classpath("org.springframework.build.gradle:propdeps-plugin:0.0.7")
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.8.6")
@@ -30,11 +33,14 @@ plugins {
 
 apply plugin: "java"
 apply plugin: "idea"
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-spring'
 apply plugin: "org.springframework.boot"
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'spring-cloud-contract'
 apply plugin: "org.owasp.dependencycheck"
 apply plugin: "com.google.protobuf"
+apply from: "kotlin.gradle"
 apply from: "spring-cloud-contract-config.gradle"
 apply from: "spring-rest-docs-config.gradle"
 
@@ -72,6 +78,11 @@ dependencies {
     testImplementation('org.springframework.cloud:spring-cloud-starter-contract-verifier')
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc:$springRestDocsVersion")
     asciidoctor("org.springframework.restdocs:spring-restdocs-asciidoctor:$springRestDocsVersion")
+
+    // Kotlin
+    implementation('com.fasterxml.jackson.module:jackson-module-kotlin')
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     // DB
     implementation("org.postgresql:postgresql:42.2.4")
@@ -181,5 +192,15 @@ protobuf {
         all()*.plugins {
             grpc {}
         }
+    }
+}
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 }

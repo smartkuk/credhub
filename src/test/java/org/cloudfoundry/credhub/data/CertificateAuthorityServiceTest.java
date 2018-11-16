@@ -99,8 +99,10 @@ public class CertificateAuthorityServiceTest {
     when(certificateReader.isCa()).thenReturn(true);
     when(certificateCredential.getCertificate()).thenReturn(CertificateStringConstants.SELF_SIGNED_CA_CERT);
 
-    assertThat(certificateAuthorityService.findActiveVersion(CREDENTIAL_NAME),
-        samePropertyValuesAs(certificate));
+    assertThat(
+      certificateAuthorityService.findActiveVersion(CREDENTIAL_NAME),
+      samePropertyValuesAs(certificate)
+    );
   }
 
   @Test
