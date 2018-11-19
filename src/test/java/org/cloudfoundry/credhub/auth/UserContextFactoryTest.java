@@ -30,6 +30,7 @@ import static org.cloudfoundry.credhub.auth.UserContext.AUTH_METHOD_UAA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -59,7 +60,6 @@ public class UserContextFactoryTest {
     assertThat(context.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
   }
 
-
   @Test
   public void fromAuthentication_handlesSuppliedToken() throws Exception {
 
@@ -72,7 +72,6 @@ public class UserContextFactoryTest {
     assertThat(context.getScope(), equalTo("scope1,scope2"));
     assertThat(context.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
   }
-
 
   @Test
   public void fromAuthentication_handlesMtlsAuth() throws Exception {
@@ -143,7 +142,8 @@ public class UserContextFactoryTest {
     scopes.add("scope1");
     scopes.add("scope2");
 
-    when(oauth2Request.getGrantType()).thenReturn(grantType);
+    doReturn(grantType).when(oauth2Request).getGrantType();
+    doReturn("TEST_CLIENT_ID").when(oauth2Request).getClientId();
     when(authentication.getDetails()).thenReturn(authDetails);
     when(authDetails.getTokenValue()).thenReturn("tokenValue");
 
