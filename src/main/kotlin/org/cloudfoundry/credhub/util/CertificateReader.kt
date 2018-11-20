@@ -75,11 +75,14 @@ class CertificateReader {
             val ca = parseStringIntoCertificate(caValue)
             certificate.verify(ca.publicKey)
             return true
+        } catch (e: MalformedCertificateException) {
+            return false
         } catch (e: SignatureException) {
             return false
         } catch (e: InvalidKeyException) {
             return false
         } catch (e: Exception) {
+            println(e.message)
             throw RuntimeException(e)
         }
     }
