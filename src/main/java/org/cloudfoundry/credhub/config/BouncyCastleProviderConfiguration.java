@@ -1,30 +1,29 @@
 package org.cloudfoundry.credhub.config;
 
-import java.security.Security;
-
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import java.security.Security;
 
 @Configuration
 public class BouncyCastleProviderConfiguration {
   @Bean
-  public BouncyCastleProvider bouncyCastleProvider() {
-    final BouncyCastleProvider bouncyCastleProvider = new BouncyCastleProvider();
+  public BouncyCastleFipsProvider bouncyCastleProvider() {
+    final BouncyCastleFipsProvider bouncyCastleProvider = new BouncyCastleFipsProvider();
     Security.addProvider(bouncyCastleProvider);
     return bouncyCastleProvider;
   }
 
   @Bean
-  public JcaContentSignerBuilder jcaContentSignerBuilder(final BouncyCastleProvider jceProvider) {
+  public JcaContentSignerBuilder jcaContentSignerBuilder(final BouncyCastleFipsProvider jceProvider) {
     return new JcaContentSignerBuilder("SHA256withRSA").setProvider(jceProvider);
   }
 
   @Bean
-  public JcaX509CertificateConverter jcaX509CertificateConverter(final BouncyCastleProvider jceProvider) {
+  public JcaX509CertificateConverter jcaX509CertificateConverter(final BouncyCastleFipsProvider jceProvider) {
     return new JcaX509CertificateConverter().setProvider(jceProvider);
   }
 }
