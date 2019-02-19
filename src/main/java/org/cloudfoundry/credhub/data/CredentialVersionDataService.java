@@ -176,10 +176,10 @@ public class CredentialVersionDataService {
   public Map<UUID, Long> countByEncryptionKey() {
     final Map<UUID, Long> map = new HashMap<>();
     jdbcTemplate.query(
-      " SELECT count(*), encryption_key_uuid FROM credential_version " +
+      " SELECT count(*) as count, encryption_key_uuid FROM credential_version " +
         "LEFT JOIN encrypted_value ON credential_version.encrypted_value_uuid = encrypted_value.uuid " +
         "GROUP BY encrypted_value.encryption_key_uuid",
-      (rowSet, rowNum) -> map.put(UUID.fromString(rowSet.getString("encryption_key_uuid")), rowSet.getLong("count"))
+      (rowSet, rowNum) -> map.put(UUID.nameUUIDFromBytes(rowSet.getBytes("encryption_key_uuid")), rowSet.getLong("count"))
     );
     return map;
   }

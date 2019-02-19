@@ -12,11 +12,12 @@ import org.springframework.web.context.WebApplicationContext;
 
 import org.cloudfoundry.credhub.CredentialManagerApp;
 import org.cloudfoundry.credhub.util.DatabaseProfileResolver;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.cloudfoundry.credhub.helper.RequestHelper.generateCertificateCredential;
 import static org.cloudfoundry.credhub.util.AuthConstants.ALL_PERMISSIONS_TOKEN;
+import static org.cloudfoundry.credhub.util.AuthConstants.USER_A_TOKEN;
 import static org.hamcrest.core.IsAnything.anything;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -27,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @Transactional
-@Ignore
+//@Ignore
 public class KeyUsageEndpointTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -41,7 +42,7 @@ public class KeyUsageEndpointTest {
       .apply(springSecurity())
       .build();
 
-    final MockHttpServletRequestBuilder getRequest = get(
+    MockHttpServletRequestBuilder getRequest = get(
       "/api/v1/key-usage")
       .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
     mockMvc.perform(getRequest)
@@ -50,5 +51,25 @@ public class KeyUsageEndpointTest {
       .andExpect(jsonPath("$.inactive_keys", anything()))
       .andExpect(jsonPath("$.unknown_keys", anything()));
   }
+
+  @Test
+  public void GET_whenThereAreCredentialsInTheDatabase_returnsCorrectly() throws Exception {
+    mockMvc = MockMvcBuilders
+      .webAppContextSetup(webApplicationContext)
+      .apply(springSecurity())
+      .build();
+
+    generateCertificateCredential(mockMvc, "/user-a/first-certificate", true, "test", null, USER_A_TOKEN);
+
+    final MockHttpServletRequestBuilder getRequest = get(
+      "/api/v1/key-usage")
+      .header("Authorization", "Bearer " + ALL_PERMISSIONS_TOKEN);
+    mockMvc.perform(getRequest)
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.active_key").value(1))
+      .andExpect(jsonPath("$.inactive_keys").value(0))
+      .andExpect(jsonPath("$.unknown_keys").value(0));
+  }
+
 
 }
