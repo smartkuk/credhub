@@ -48,7 +48,7 @@ public class SetHandlerTest {
 
   @Before
   public void setUp() {
-    TestHelper.getBouncyCastleProvider();
+    TestHelper.getBouncyCastleFipsProvider();
     credentialService = mock(PermissionedCredentialService.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
 

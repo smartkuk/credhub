@@ -93,7 +93,7 @@ public class CertificateReader {
         return true;
       }
       return false;
-    } catch (final SignatureException | InvalidKeyException e) {
+    } catch (final SignatureException | InvalidKeyException | CertificateException e) {
       return false;
     } catch (final Exception e) {
       throw new RuntimeException(e);
@@ -111,7 +111,7 @@ public class CertificateReader {
   public boolean isSelfSigned() {
     final String issuerName = certificate.getIssuerDN().getName();
 
-    if (!issuerName.equals(certificate.getSubjectDN().toString())) {
+    if (!issuerName.equals(certificate.getSubjectDN().getName())) {
       return false;
     } else {
       try {
