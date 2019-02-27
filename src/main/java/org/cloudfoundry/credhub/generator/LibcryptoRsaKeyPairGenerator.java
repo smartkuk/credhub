@@ -10,13 +10,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
-import org.cloudfoundry.credhub.jna.libcrypto.CryptoWrapper;
 
 @Component
 public class LibcryptoRsaKeyPairGenerator {
 
   @Autowired
-  public LibcryptoRsaKeyPairGenerator(final CryptoWrapper cryptoWrapper) throws NoSuchAlgorithmException {
+  public LibcryptoRsaKeyPairGenerator(){
     super();
   }
 

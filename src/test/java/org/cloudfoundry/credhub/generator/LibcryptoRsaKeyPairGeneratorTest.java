@@ -1,14 +1,9 @@
 package org.cloudfoundry.credhub.generator;
 
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.spec.InvalidKeySpecException;
 
-import org.cloudfoundry.credhub.jna.libcrypto.CryptoWrapper;
-import org.cloudfoundry.credhub.service.RandomNumberGenerator;
-import org.cloudfoundry.credhub.util.PseudoRandomNumberGenerator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,9 +18,8 @@ public class LibcryptoRsaKeyPairGeneratorTest {
 
   @Before
   public void beforeEach() throws Exception {
-    final RandomNumberGenerator randomNumberGenerator = new PseudoRandomNumberGenerator();
 
-    subject = new LibcryptoRsaKeyPairGenerator(new CryptoWrapper(randomNumberGenerator));
+    subject = new LibcryptoRsaKeyPairGenerator();
   }
 
   @Test
