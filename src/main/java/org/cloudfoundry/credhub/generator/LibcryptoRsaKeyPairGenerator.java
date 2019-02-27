@@ -1,31 +1,32 @@
 package org.cloudfoundry.credhub.generator;
 
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
+import java.security.NoSuchProviderException;
+import java.security.Security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.cloudfoundry.credhub.jna.libcrypto.CryptoWrapper;
 
 @Component
 public class LibcryptoRsaKeyPairGenerator {
 
-  private final CryptoWrapper cryptoWrapper;
-
   @Autowired
   public LibcryptoRsaKeyPairGenerator(final CryptoWrapper cryptoWrapper) throws NoSuchAlgorithmException {
     super();
-    this.cryptoWrapper = cryptoWrapper;
   }
 
   public synchronized KeyPair generateKeyPair(final int keyLength)
-    throws InvalidKeyException, InvalidKeySpecException {
-    final KeyPair[] keyPair = {null};
-    cryptoWrapper.generateKeyPair(keyLength,
-      byReference -> keyPair[0] = cryptoWrapper.toKeyPair(byReference));
-    return keyPair[0];
+    throws NoSuchProviderException, NoSuchAlgorithmException {
+    final BouncyCastleFipsProvider bouncyCastleProvider = new BouncyCastleFipsProvider();
+    Security.addProvider(bouncyCastleProvider);
+
+    KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", BouncyCastleFipsProvider.PROVIDER_NAME);
+    generator.initialize(keyLength);
+    return generator.generateKeyPair();
   }
 }

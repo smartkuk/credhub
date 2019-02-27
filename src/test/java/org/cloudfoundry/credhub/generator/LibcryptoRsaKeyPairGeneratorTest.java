@@ -2,6 +2,8 @@ package org.cloudfoundry.credhub.generator;
 
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
 
 import org.cloudfoundry.credhub.jna.libcrypto.CryptoWrapper;
@@ -27,7 +29,7 @@ public class LibcryptoRsaKeyPairGeneratorTest {
   }
 
   @Test
-  public void generateKeyPair_generatesKeyPair() throws InvalidKeySpecException, InvalidKeyException {
+  public void generateKeyPair_generatesKeyPair() throws NoSuchProviderException, NoSuchAlgorithmException {
     final KeyPair keyPair = subject.generateKeyPair(2048);
 
     assertThat(keyPair.getPublic(), notNullValue());
