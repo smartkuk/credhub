@@ -53,7 +53,7 @@ public class CertificateGeneratorTest {
 
   private CertificateGenerator subject;
 
-  private LibcryptoRsaKeyPairGenerator keyGenerator;
+  private RsaKeyPairGenerator keyGenerator;
   private SignedCertificateGenerator signedCertificateGenerator;
   private CertificateAuthorityService certificateAuthorityService;
 
@@ -73,7 +73,7 @@ public class CertificateGeneratorTest {
   @Before
   public void beforeEach() throws Exception {
     TestHelper.getBouncyCastleFipsProvider();
-    keyGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
+    keyGenerator = mock(RsaKeyPairGenerator.class);
     signedCertificateGenerator = mock(SignedCertificateGenerator.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
     permissionCheckingService = mock(PermissionCheckingService.class);

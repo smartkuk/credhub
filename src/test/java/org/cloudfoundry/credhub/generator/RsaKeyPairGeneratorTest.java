@@ -13,13 +13,13 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 @RunWith(JUnit4.class)
-public class LibcryptoRsaKeyPairGeneratorTest {
-  private LibcryptoRsaKeyPairGenerator subject;
+public class RsaKeyPairGeneratorTest {
+  private RsaKeyPairGenerator subject;
 
   @Before
   public void beforeEach() throws Exception {
 
-    subject = new LibcryptoRsaKeyPairGenerator();
+    subject = new RsaKeyPairGenerator();
   }
 
   @Test

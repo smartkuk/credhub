@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component;
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 
 @Component
-public class LibcryptoRsaKeyPairGenerator {
+public class RsaKeyPairGenerator {
 
   @Autowired
-  public LibcryptoRsaKeyPairGenerator(){
+  public RsaKeyPairGenerator(){
     super();
   }
 
