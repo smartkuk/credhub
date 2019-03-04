@@ -8,6 +8,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 
 public abstract class BaseCredentialRequest {
@@ -55,4 +57,30 @@ public abstract class BaseCredentialRequest {
   }
 
   abstract public GenerationParameters getGenerationParameters();
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    BaseCredentialRequest that = (BaseCredentialRequest) o;
+
+    return new EqualsBuilder()
+      .append(name, that.name)
+      .append(type, that.type)
+      .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+      .append(name)
+      .append(type)
+      .toHashCode();
+  }
 }

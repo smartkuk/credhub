@@ -24,6 +24,7 @@ import org.cloudfoundry.credhub.audit.entities.DeleteCredential;
 import org.cloudfoundry.credhub.audit.entities.FindCredential;
 import org.cloudfoundry.credhub.audit.entities.GetCredential;
 import org.cloudfoundry.credhub.audit.entities.SetCredential;
+import org.cloudfoundry.credhub.controllers.CredentialsController;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.handlers.CredentialsHandler;
 import org.cloudfoundry.credhub.handlers.LegacyGenerationHandler;
@@ -36,10 +37,10 @@ import org.cloudfoundry.credhub.views.FindCredentialResults;
 
 @RestController
 @RequestMapping(
-  path = CredentialsController.ENDPOINT,
+  path = CredHubCredentialsController.ENDPOINT,
   produces = MediaType.APPLICATION_JSON_UTF8_VALUE
 )
-public class CredentialsController {
+public class CredHubCredentialsController implements CredentialsController {
 
   public static final String ENDPOINT = "/api/v1/data";
 
@@ -50,7 +51,7 @@ public class CredentialsController {
   private final CEFAuditRecord auditRecord;
 
   @Autowired
-  public CredentialsController(
+  public CredHubCredentialsController(
     final PermissionedCredentialService permissionedCredentialService,
     final CredentialsHandler credentialsHandler,
     final SetHandler setHandler,

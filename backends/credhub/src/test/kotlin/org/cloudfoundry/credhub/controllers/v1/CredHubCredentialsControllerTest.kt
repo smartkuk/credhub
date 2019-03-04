@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.controllers.v1
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
-import org.cloudfoundry.credhub.credentials.CredentialsController
+import org.cloudfoundry.credhub.credentials.CredHubCredentialsController
 import org.cloudfoundry.credhub.handlers.DummyCredentialsHandler
 import org.cloudfoundry.credhub.handlers.DummyLegacyGenerationHandler
 import org.cloudfoundry.credhub.handlers.DummySetHandler
@@ -33,7 +33,7 @@ import org.springframework.test.web.servlet.setup.StandaloneMockMvcBuilder
 import java.time.Instant
 
 @RunWith(SpringRunner::class)
-class CredentialsControllerTest {
+class CredHubCredentialsControllerTest {
 
     @Rule
     @JvmField
@@ -46,7 +46,7 @@ class CredentialsControllerTest {
     fun setUp() {
         spyPermissionedCredentialService = SpyPermissionedCredentialService()
 
-        val credentialController = CredentialsController(
+        val credentialController = CredHubCredentialsController(
             spyPermissionedCredentialService,
             DummyCredentialsHandler(),
             DummySetHandler(),
@@ -76,7 +76,7 @@ class CredentialsControllerTest {
         )
 
         val mvcResult = mockMvc.perform(
-                get(CredentialsController.ENDPOINT)
+                get(CredHubCredentialsController.ENDPOINT)
                         .contentType(MediaType.APPLICATION_JSON)
                         .param("path", "some-credential-path")
                         .param("expires-within-days", "1")

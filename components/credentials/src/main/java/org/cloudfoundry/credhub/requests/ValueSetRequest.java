@@ -4,6 +4,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.cloudfoundry.credhub.credential.StringCredentialValue;
 
 public class ValueSetRequest extends BaseCredentialSetRequest<StringCredentialValue> {
@@ -29,5 +31,31 @@ public class ValueSetRequest extends BaseCredentialSetRequest<StringCredentialVa
   @Override
   public GenerationParameters getGenerationParameters() {
     return null;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    ValueSetRequest that = (ValueSetRequest) o;
+
+    return new EqualsBuilder()
+      .appendSuper(super.equals(o))
+      .append(value, that.value)
+      .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+      .appendSuper(super.hashCode())
+      .append(value)
+      .toHashCode();
   }
 }

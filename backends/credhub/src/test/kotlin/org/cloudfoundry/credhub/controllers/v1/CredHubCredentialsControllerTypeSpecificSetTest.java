@@ -76,7 +76,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
-public class CredentialsControllerTypeSpecificSetTest {
+public class CredHubCredentialsControllerTypeSpecificSetTest {
   @ClassRule
   public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
   private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);

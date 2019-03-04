@@ -58,7 +58,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 )
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
-public class CredentialsControllerGetTest {
+public class CredHubCredentialsControllerGetTest {
 
   private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);
   private static final String CREDENTIAL_NAME = "/my-namespace/controllerGetTest/credential-name";

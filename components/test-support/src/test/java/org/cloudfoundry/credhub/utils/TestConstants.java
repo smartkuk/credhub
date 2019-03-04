@@ -228,8 +228,9 @@ final public class TestConstants {
     "-----END RSA PRIVATE KEY-----";
     }
 
+
   public static final String TEST_PRIVATE_KEY_PKCS8;
-    static {
+  static {
       TEST_PRIVATE_KEY_PKCS8 =
         "-----BEGIN PRIVATE KEY----- fake\n" +
     "MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDCoitXwekK4/K4\n" +
@@ -260,4 +261,6 @@ final public class TestConstants {
     "wEzUa2gJLj69RCQlUdvSvr9l0w==\n" +
     "-----END PRIVATE KEY-----";
     }
+
+  public static String TEST_UUID_STRING = "fa7a5896-3295-4765-a13a-ed3ab9d16736";
 }
