@@ -11,7 +11,7 @@ import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.bouncycastle.crypto.CryptoServicesRegistrar;
 import org.cloudfoundry.credhub.config.CurrentTimeProviderConfig;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "org.cloudfoundry")
 @EnableJpaAuditing(dateTimeProviderRef = CurrentTimeProviderConfig.CURRENT_TIME_PROVIDER)
 public class CredHubApp {
 

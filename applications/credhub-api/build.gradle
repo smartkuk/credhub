@@ -36,7 +36,8 @@ repositories {
 }
 
 dependencies {
-    implementation project(":backends:credhub")
+    api project(":backends:credhub")
+    api project(":backends:cyberark")
     implementation project(":backends:shared-backend-configuration")
     implementation project(":components:audit")
     implementation project(":components:auth")

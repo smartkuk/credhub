@@ -5,6 +5,7 @@ import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
 import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
 import org.cloudfoundry.credhub.views.FindCredentialResults
+import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.RequestMapping
@@ -13,11 +14,12 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.io.InputStream
 
+@RestController
 @RequestMapping(
     path = [CyberArkCredentialsController.ENDPOINT],
     produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE)
 )
-@RestController
+@Profile("cyberark")
 class CyberArkCredentialsController(val cyberArkCredentialService: CyberArkCredentialService) : CredentialsController {
     companion object {
         const val ENDPOINT = "/api/v1/data"
@@ -27,7 +29,7 @@ class CyberArkCredentialsController(val cyberArkCredentialService: CyberArkCrede
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    @RequestMapping(path = arrayOf(""), method = arrayOf(RequestMethod.PUT))
+    @RequestMapping(method = arrayOf(RequestMethod.PUT))
     @ResponseStatus(HttpStatus.OK)
     override fun set(requestBody: BaseCredentialSetRequest<*>): CredentialView {
         return cyberArkCredentialService.setCredential(requestBody)

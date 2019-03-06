@@ -7,10 +7,8 @@ import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
-import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -18,7 +16,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import java.time.Instant
 import java.util.UUID
 
-@RunWith(SpringRunner::class)
 class CyberArkCredentialsControllerTest {
 
     lateinit var spyCyberArkCredentialService: SpyCyberArkCredentialService
@@ -39,7 +36,7 @@ class CyberArkCredentialsControllerTest {
     fun `should set a cyberark credential`() {
         spyCyberArkCredentialService.setCredentialReturn = CredentialView(
             Instant.ofEpochMilli(2L),
-            UUID.fromString("fa7a5896-3295-4765-a13a-ed3ab9d16736"),
+            UUID.fromString(TestConstants.TEST_UUID_STRING),
             "some-name",
             "value",
             StringCredentialValue("some-value")
@@ -88,7 +85,7 @@ class CyberArkCredentialsControllerTest {
     fun `should set another cyberark credential`() {
         spyCyberArkCredentialService.setCredentialReturn = CredentialView(
             Instant.ofEpochMilli(2L),
-            UUID.fromString("fa7a5896-3295-4765-a13a-ed3ab9d16736"),
+            UUID.fromString(TestConstants.TEST_UUID_STRING),
             "some-other-name",
             "value",
             StringCredentialValue("some-other-value")
@@ -132,5 +129,4 @@ class CyberArkCredentialsControllerTest {
             true
         )
     }
-
 }

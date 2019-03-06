@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -81,5 +83,37 @@ public class CredentialView {
   @JsonProperty("value")
   public CredentialValue getValue() {
     return value;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    CredentialView that = (CredentialView) o;
+
+    return new EqualsBuilder()
+      .append(versionCreatedAt, that.versionCreatedAt)
+      .append(uuid, that.uuid)
+      .append(name, that.name)
+      .append(type, that.type)
+      .append(value, that.value)
+      .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+      .append(versionCreatedAt)
+      .append(uuid)
+      .append(name)
+      .append(type)
+      .append(value)
+      .toHashCode();
   }
 }

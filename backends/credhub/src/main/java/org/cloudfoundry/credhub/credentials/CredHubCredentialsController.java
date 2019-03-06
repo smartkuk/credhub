@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,6 +41,7 @@ import org.cloudfoundry.credhub.views.FindCredentialResults;
   path = CredHubCredentialsController.ENDPOINT,
   produces = MediaType.APPLICATION_JSON_UTF8_VALUE
 )
+@Profile("!cyberark")
 public class CredHubCredentialsController implements CredentialsController {
 
   public static final String ENDPOINT = "/api/v1/data";

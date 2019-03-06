@@ -8,7 +8,7 @@ import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CurrentTimeProvider implements DateTimeProvider {
+public class CurrentTimeProvider implements DateTimeProvider, TimeProvider {
   @Override
   public Optional<TemporalAccessor> getNow() {
     return Optional.of(getInstant());
