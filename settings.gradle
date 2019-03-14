@@ -1,5 +1,6 @@
 rootProject.name = 'credhub'
 include "applications:credhub-api"
+include "applications:eureka-registry"
 include "backends:credhub"
 include "backends:shared-backend-configuration"
 include "components:audit"
