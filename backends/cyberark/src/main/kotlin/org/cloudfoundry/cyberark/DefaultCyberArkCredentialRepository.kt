@@ -42,19 +42,19 @@ class DefaultCyberArkCredentialRepository(
         return Base64.getEncoder().encodeToString(cyberArkTokenResponse.body!!.toByteArray())
     }
 
+    private fun createVariableInCyberArk(policyYml: String, requestHeaders: HttpHeaders) {
+        restOperations.put(
+            "$baseUrl/policies/$accountName/policy/$basePolicy",
+            HttpEntity(policyYml, requestHeaders)
+        )
+    }
+
     private fun setVariableInCyberArk(variableName: String, baseCredentialSetRequest: BaseCredentialSetRequest<*>, requestHeaders: HttpHeaders) {
         restOperations.exchange(
             "$baseUrl/secrets/$accountName/variable/$basePolicy/$variableName",
             HttpMethod.POST,
             HttpEntity(baseCredentialSetRequest.credentialValue, requestHeaders),
             String::class.java
-        )
-    }
-
-    private fun createVariableInCyberArk(policyYml: String, requestHeaders: HttpHeaders) {
-        restOperations.put(
-            "$baseUrl/policies/$accountName/policy/$basePolicy",
-            HttpEntity(policyYml, requestHeaders)
         )
     }
 }

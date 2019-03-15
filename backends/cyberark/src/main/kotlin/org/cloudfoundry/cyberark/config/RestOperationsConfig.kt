@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate
 class RestOperationsConfig {
 
     @Bean
-    public fun getRestOperations(): RestOperations {
+    fun getRestOperations(): RestOperations {
         return RestTemplate()
     }
 }

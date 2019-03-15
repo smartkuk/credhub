@@ -1,6 +1,5 @@
 cyberark:
   base-url: http://localhost:8080
   base-policy: credhub
-  api-key: 109x0by2zdd2p82zy61h9wsyy8m2g6pmb81pby6hp2eveafe1m17t7x
   account-name: cucumber
   user-name: admin

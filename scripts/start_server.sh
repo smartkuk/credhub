@@ -9,6 +9,10 @@ rm -rf "$DIR/build"
 "$DIR/gradlew" --no-daemon downloadBouncyCastleFips
 "$DIR/gradlew" --no-daemon assemble
 
+"$DIR/gradlew" \
+  --no-daemon \
+  manageCyberArkApiKey
+
 exec "$DIR/gradlew" \
   --no-daemon \
   bootRun \

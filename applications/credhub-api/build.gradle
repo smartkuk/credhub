@@ -1,3 +1,5 @@
+import org.cloudfoundry.credhub.gradlebuild.CyberArkApiKeyTask
+
 buildscript {
     ext {
         springCloudContractVersion = '2.0.2.RELEASE'
@@ -124,4 +126,8 @@ test {
     systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "unit-test-h2")
     systemProperties["java.security.egd"] = System.getProperty("java.security.egd", "file:/dev/urandom")
     outputs.upToDateWhen { false }
+}
+
+task manageCyberArkApiKey(type: CyberArkApiKeyTask) {
+    cyberArkApiKeyApplicationYmlDestinationPath = "$projectDir/src/main/resources/application-dev-cyberark-api-key.yml"
 }
