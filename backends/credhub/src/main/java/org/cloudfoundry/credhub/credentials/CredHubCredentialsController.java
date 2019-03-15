@@ -41,7 +41,7 @@ import org.cloudfoundry.credhub.views.FindCredentialResults;
   path = CredHubCredentialsController.ENDPOINT,
   produces = MediaType.APPLICATION_JSON_UTF8_VALUE
 )
-@Profile("!cyberark")
+@Profile("!conjur")
 public class CredHubCredentialsController implements CredentialsController {
 
   public static final String ENDPOINT = "/api/v1/data";

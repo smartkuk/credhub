@@ -1,4 +1,4 @@
-package org.cloudfoundry.cyberark
+package org.cloudfoundry.conjur
 
 import org.assertj.core.api.Assertions.assertThat
 import org.cloudfoundry.credhub.credential.StringCredentialValue
@@ -8,18 +8,18 @@ import org.junit.Before
 import org.junit.Test
 import java.time.Instant
 
-class DefaultCyberArkCredentialServiceTest {
+class DefaultConjurCredentialServiceTest {
 
-    lateinit var spyCyberArkCredentialRepository: SpyCyberArkCredentialRepository
+    lateinit var spyConjurCredentialRepository: SpyConjurCredentialRepository
     lateinit var stubTimeProvider: StubTimeProvider
-    lateinit var defaultCyberArkCredentialService: DefaultCyberArkCredentialService
+    lateinit var defaultConjurCredentialService: DefaultConjurCredentialService
 
     @Before
     fun setUp() {
-        spyCyberArkCredentialRepository = SpyCyberArkCredentialRepository()
+        spyConjurCredentialRepository = SpyConjurCredentialRepository()
         stubTimeProvider = StubTimeProvider()
-        defaultCyberArkCredentialService = DefaultCyberArkCredentialService(
-            cyberArkCredentialRepository = spyCyberArkCredentialRepository,
+        defaultConjurCredentialService = DefaultConjurCredentialService(
+            conjurCredentialRepository = spyConjurCredentialRepository,
             timeProvider = stubTimeProvider,
             uuidProvider = ConstantUuidProvider()
         )
@@ -42,10 +42,10 @@ class DefaultCyberArkCredentialServiceTest {
             StringCredentialValue("some-value")
         )
 
-        val actualCredentialView = defaultCyberArkCredentialService.setCredential(credentialSetRequest)
+        val actualCredentialView = defaultConjurCredentialService.setCredential(credentialSetRequest)
 
         assertThat(actualCredentialView).isEqualTo(expectedCredentialView)
-        assertThat(spyCyberArkCredentialRepository.setCredential_calledWith).isEqualTo(credentialSetRequest)
+        assertThat(spyConjurCredentialRepository.setCredential_calledWith).isEqualTo(credentialSetRequest)
     }
 
     @Test
@@ -65,9 +65,9 @@ class DefaultCyberArkCredentialServiceTest {
             StringCredentialValue("some-other-value")
         )
 
-        val actualCredentialView = defaultCyberArkCredentialService.setCredential(credentialSetRequest)
+        val actualCredentialView = defaultConjurCredentialService.setCredential(credentialSetRequest)
 
         assertThat(actualCredentialView).isEqualTo(expectedCredentialView)
-        assertThat(spyCyberArkCredentialRepository.setCredential_calledWith).isEqualTo(credentialSetRequest)
+        assertThat(spyConjurCredentialRepository.setCredential_calledWith).isEqualTo(credentialSetRequest)
     }
 }

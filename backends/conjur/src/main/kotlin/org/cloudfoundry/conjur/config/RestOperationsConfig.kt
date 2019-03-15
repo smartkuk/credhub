@@ -1,4 +1,4 @@
-package org.cloudfoundry.cyberark.config
+package org.cloudfoundry.conjur.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

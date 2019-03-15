@@ -1,33 +1,33 @@
-package org.cloudfoundry.cyberark.config
+package org.cloudfoundry.conjur.config
 
-import org.cloudfoundry.cyberark.CyberArkCredentialRepository
-import org.cloudfoundry.cyberark.DefaultCyberArkCredentialRepository
+import org.cloudfoundry.conjur.ConjurCredentialRepository
+import org.cloudfoundry.conjur.DefaultConjurCredentialRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.client.RestOperations
 
 @Configuration
-class CyberArkRepositoryConfiguration {
+class ConjurRepositoryConfiguration {
 
-    @Value("\${cyberark.base-url}")
+    @Value("\${conjur.base-url}")
     private lateinit var baseUrl: String
 
-    @Value("\${cyberark.base-policy}")
+    @Value("\${conjur.base-policy}")
     private lateinit var basePolicy: String
 
-    @Value("\${cyberark.api-key}")
+    @Value("\${conjur.api-key}")
     private lateinit var apiKey: String
 
-    @Value("\${cyberark.account-name}")
+    @Value("\${conjur.account-name}")
     private lateinit var accountName: String
 
-    @Value("\${cyberark.user-name}")
+    @Value("\${conjur.user-name}")
     private lateinit var userName: String
 
     @Bean
-    fun getCyberArkCredentialRepository(restOperations: RestOperations): CyberArkCredentialRepository {
-        return DefaultCyberArkCredentialRepository(
+    fun getConjurCredentialRepository(restOperations: RestOperations): ConjurCredentialRepository {
+        return DefaultConjurCredentialRepository(
             restOperations = restOperations,
             baseUrl = baseUrl,
             basePolicy = basePolicy,

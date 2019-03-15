@@ -1,9 +1,9 @@
-package org.cloudfoundry.cyberark
+package org.cloudfoundry.conjur
 
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
 import org.cloudfoundry.credhub.views.CredentialView
 
-class SpyCyberArkCredentialService : CyberArkCredentialService {
+class SpyConjurCredentialService : ConjurCredentialService {
 
     lateinit var setCredentialReturn: CredentialView
     lateinit var setCredential_calledWith: BaseCredentialSetRequest<*>

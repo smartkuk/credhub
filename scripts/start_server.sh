@@ -11,7 +11,7 @@ rm -rf "$DIR/build"
 
 "$DIR/gradlew" \
   --no-daemon \
-  manageCyberArkApiKey
+  manageConjurApiKey
 
 exec "$DIR/gradlew" \
   --no-daemon \

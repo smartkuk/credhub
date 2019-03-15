@@ -1,4 +1,4 @@
-package org.cloudfoundry.cyberark
+package org.cloudfoundry.conjur
 
 import java.util.UUID
 

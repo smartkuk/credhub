@@ -1,8 +1,8 @@
-package org.cloudfoundry.cyberark
+package org.cloudfoundry.conjur
 
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
 
-interface CyberArkCredentialRepository {
+interface ConjurCredentialRepository {
     fun setCredential(baseCredentialSetRequest: BaseCredentialSetRequest<*>)
 }
 

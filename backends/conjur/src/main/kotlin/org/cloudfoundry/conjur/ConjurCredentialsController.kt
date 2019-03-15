@@ -1,4 +1,4 @@
-package org.cloudfoundry.cyberark
+package org.cloudfoundry.conjur
 
 import org.cloudfoundry.credhub.controllers.CredentialsController
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
@@ -16,11 +16,11 @@ import java.io.InputStream
 
 @RestController
 @RequestMapping(
-    path = [CyberArkCredentialsController.ENDPOINT],
+    path = [ConjurCredentialsController.ENDPOINT],
     produces = arrayOf(MediaType.APPLICATION_JSON_UTF8_VALUE)
 )
-@Profile("cyberark")
-class CyberArkCredentialsController(val cyberArkCredentialService: CyberArkCredentialService) : CredentialsController {
+@Profile("conjur")
+class ConjurCredentialsController(val conjurCredentialService: ConjurCredentialService) : CredentialsController {
     companion object {
         const val ENDPOINT = "/api/v1/data"
     }
@@ -32,7 +32,7 @@ class CyberArkCredentialsController(val cyberArkCredentialService: CyberArkCrede
     @RequestMapping(method = arrayOf(RequestMethod.PUT))
     @ResponseStatus(HttpStatus.OK)
     override fun set(requestBody: BaseCredentialSetRequest<*>): CredentialView {
-        return cyberArkCredentialService.setCredential(requestBody)
+        return conjurCredentialService.setCredential(requestBody)
     }
 
     override fun delete(credentialName: String) {

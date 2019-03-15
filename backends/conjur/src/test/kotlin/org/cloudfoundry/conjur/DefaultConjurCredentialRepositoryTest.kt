@@ -1,4 +1,4 @@
-package org.cloudfoundry.cyberark
+package org.cloudfoundry.conjur
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock.aResponse
@@ -21,7 +21,7 @@ import org.junit.Test
 import org.springframework.web.client.RestTemplate
 import java.util.Base64
 
-class DefaultCyberArkCredentialRepositoryTest {
+class DefaultConjurCredentialRepositoryTest {
     @get: Rule
     val wireMockRule = WireMockRule(wireMockConfig().dynamicPort())
 
@@ -60,7 +60,7 @@ class DefaultCyberArkCredentialRepositoryTest {
             base64Token = base64Token
         )
 
-        val defaultCyberArkCredentialRepository = DefaultCyberArkCredentialRepository(
+        val defaultConjurCredentialRepository = DefaultConjurCredentialRepository(
             restOperations = RestTemplate(),
             baseUrl = wireMockRule.baseUrl(),
             basePolicy = policyName,
@@ -68,7 +68,7 @@ class DefaultCyberArkCredentialRepositoryTest {
             accountName = accountName,
             userName = userName
         )
-        defaultCyberArkCredentialRepository.setCredential(
+        defaultConjurCredentialRepository.setCredential(
             {
                 val valueSetRequest = ValueSetRequest()
                 valueSetRequest.setType("value")

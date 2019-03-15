@@ -1,4 +1,4 @@
-package org.cloudfoundry.cyberark
+package org.cloudfoundry.conjur
 
 import org.cloudfoundry.credhub.util.TimeProvider
 import java.time.Instant

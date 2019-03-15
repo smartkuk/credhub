@@ -1,4 +1,4 @@
-import org.cloudfoundry.credhub.gradlebuild.CyberArkApiKeyTask
+import org.cloudfoundry.credhub.gradlebuild.ConjurApiKeyTask
 
 buildscript {
     ext {
@@ -38,8 +38,8 @@ repositories {
 }
 
 dependencies {
+    api project(":backends:conjur")
     api project(":backends:credhub")
-    api project(":backends:cyberark")
     implementation project(":backends:shared-backend-configuration")
     implementation project(":components:audit")
     implementation project(":components:auth")
@@ -128,6 +128,6 @@ test {
     outputs.upToDateWhen { false }
 }
 
-task manageCyberArkApiKey(type: CyberArkApiKeyTask) {
-    cyberArkApiKeyApplicationYmlDestinationPath = "$projectDir/src/main/resources/application-dev-cyberark-api-key.yml"
+task manageConjurApiKey(type: ConjurApiKeyTask) {
+    conjurApiKeyApplicationYmlDestinationPath = "$projectDir/src/main/resources/application-dev-conjur-api-key.yml"
 }

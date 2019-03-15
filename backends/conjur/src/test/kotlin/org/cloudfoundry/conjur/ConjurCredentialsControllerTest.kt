@@ -1,4 +1,4 @@
-package org.cloudfoundry.cyberark
+package org.cloudfoundry.conjur
 
 import org.assertj.core.api.Assertions.assertThat
 import org.cloudfoundry.credhub.credential.StringCredentialValue
@@ -16,25 +16,25 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import java.time.Instant
 import java.util.UUID
 
-class CyberArkCredentialsControllerTest {
+class ConjurCredentialsControllerTest {
 
-    lateinit var spyCyberArkCredentialService: SpyCyberArkCredentialService
-    lateinit var cyberArkCredentialsController: CyberArkCredentialsController
+    lateinit var spyConjurCredentialService: SpyConjurCredentialService
+    lateinit var conjurCredentialsController: ConjurCredentialsController
     lateinit var mockMvc: MockMvc
 
     @Before
     fun setUp() {
-        spyCyberArkCredentialService = SpyCyberArkCredentialService()
-        cyberArkCredentialsController = CyberArkCredentialsController(spyCyberArkCredentialService)
+        spyConjurCredentialService = SpyConjurCredentialService()
+        conjurCredentialsController = ConjurCredentialsController(spyConjurCredentialService)
 
         mockMvc = MockMvcBuilders
-            .standaloneSetup(cyberArkCredentialsController)
+            .standaloneSetup(conjurCredentialsController)
             .build()
     }
 
     @Test
-    fun `should set a cyberark credential`() {
-        spyCyberArkCredentialService.setCredentialReturn = CredentialView(
+    fun `should set a conjur credential`() {
+        spyConjurCredentialService.setCredentialReturn = CredentialView(
             Instant.ofEpochMilli(2L),
             UUID.fromString(TestConstants.TEST_UUID_STRING),
             "some-name",
@@ -42,7 +42,7 @@ class CyberArkCredentialsControllerTest {
             StringCredentialValue("some-value")
         )
         val responseBody = mockMvc.perform(
-            put(CyberArkCredentialsController.ENDPOINT)
+            put(ConjurCredentialsController.ENDPOINT)
                 //language=json
                 .content(
                     """
@@ -63,7 +63,7 @@ class CyberArkCredentialsControllerTest {
         expectedBaseCredentialSetRequest.type = "value"
         expectedBaseCredentialSetRequest.name = "some-name"
 
-        assertThat(spyCyberArkCredentialService.setCredential_calledWith).isEqualToComparingFieldByField(expectedBaseCredentialSetRequest)
+        assertThat(spyConjurCredentialService.setCredential_calledWith).isEqualToComparingFieldByField(expectedBaseCredentialSetRequest)
 
         JSONAssert.assertEquals(
             responseBody,
@@ -82,8 +82,8 @@ class CyberArkCredentialsControllerTest {
     }
 
     @Test
-    fun `should set another cyberark credential`() {
-        spyCyberArkCredentialService.setCredentialReturn = CredentialView(
+    fun `should set another conjur credential`() {
+        spyConjurCredentialService.setCredentialReturn = CredentialView(
             Instant.ofEpochMilli(2L),
             UUID.fromString(TestConstants.TEST_UUID_STRING),
             "some-other-name",
@@ -91,7 +91,7 @@ class CyberArkCredentialsControllerTest {
             StringCredentialValue("some-other-value")
         )
         val responseBody = mockMvc.perform(
-            put(CyberArkCredentialsController.ENDPOINT)
+            put(ConjurCredentialsController.ENDPOINT)
                 //language=json
                 .content(
                     """
@@ -112,7 +112,7 @@ class CyberArkCredentialsControllerTest {
         expectedBaseCredentialSetRequest.type = "value"
         expectedBaseCredentialSetRequest.name = "some-other-name"
 
-        assertThat(spyCyberArkCredentialService.setCredential_calledWith).isEqualToComparingFieldByField(expectedBaseCredentialSetRequest)
+        assertThat(spyConjurCredentialService.setCredential_calledWith).isEqualToComparingFieldByField(expectedBaseCredentialSetRequest)
 
         JSONAssert.assertEquals(
             responseBody,
