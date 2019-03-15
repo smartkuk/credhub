@@ -7,7 +7,9 @@ import org.cloudfoundry.conjur.DefaultConjurCredentialService
 import org.cloudfoundry.credhub.util.CurrentTimeProvider
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 
+@Profile("conjur")
 @Configuration
 class ConjurServiceConfig {
     @Bean
