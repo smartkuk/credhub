@@ -9,6 +9,10 @@ rm -rf "$DIR/build"
 "$DIR/gradlew" --no-daemon downloadBouncyCastleFips
 "$DIR/gradlew" --no-daemon assemble
 
+"$DIR/gradlew" \
+  --no-daemon \
+  manageConjurApiKey
+
 exec "$DIR/gradlew" \
   --no-daemon \
   bootRun \
@@ -17,4 +21,5 @@ exec "$DIR/gradlew" \
   -Djdk.tls.namedGroups="secp384r1" \
   -Djavax.net.ssl.trustStore=src/test/resources/auth_server_trust_store.jks \
   -Djavax.net.ssl.trustStorePassword=changeit \
+  -Dspring.profiles.active=conjur,dev,dev-h2,dev-conjur,dev-conjur-api-key \
   "$@"
