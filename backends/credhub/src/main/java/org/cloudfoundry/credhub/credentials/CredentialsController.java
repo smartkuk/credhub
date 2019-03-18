@@ -3,18 +3,28 @@ package org.cloudfoundry.credhub.credentials;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.google.common.io.ByteStreams;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +53,9 @@ public class CredentialsController {
 
   public static final String ENDPOINT = "/api/v1/data";
 
+  @Autowired
+  private DiscoveryClient discoveryClient;
+
   private final PermissionedCredentialService permissionedCredentialService;
   private final SetHandler setHandler;
   private final CredentialsHandler credentialsHandler;
@@ -63,6 +76,52 @@ public class CredentialsController {
     this.setHandler = setHandler;
     this.legacyGenerationHandler = legacyGenerationHandler;
     this.auditRecord = auditRecord;
+  }
+
+  @RequestMapping("/service-instance-strings/{applicationName}")
+  public List<String> serviceInstancesStrings(
+    @PathVariable String applicationName) {
+    List<String> rval = new ArrayList<>();
+    List<ServiceInstance> credhubServiceInstances = discoveryClient.getInstances(applicationName);
+    for(ServiceInstance serviceInstance : credhubServiceInstances) {
+      rval.add(serviceInstance.getHost());
+    }
+    return rval;
+  }
+
+  @RequestMapping("/service-instances/{applicationName}")
+  public String serviceInstancesByApplicationName(
+    @RequestHeader("X-Authorization") String auth,
+    @PathVariable String applicationName) {
+    // I am credhubA (running locally)
+    List<ServiceInstance> credhubServiceInstances = discoveryClient.getInstances(applicationName);
+    String host = credhubServiceInstances.get(0).getHost();
+
+    ResponseEntity<String> responseEntity;
+
+    try {
+      RestTemplate rest = new RestTemplate();
+      HttpHeaders headers = new HttpHeaders();
+      headers.add("Accept", "application/json");
+      headers.add("Authorization", auth);
+      HttpEntity<String> requestEntity = new HttpEntity<String>("", headers);
+      responseEntity = rest.exchange(
+        String.format("https://%s:8844/api/v1/data?name-like=/", host),
+        HttpMethod.GET,
+        requestEntity,
+        String.class);
+    }catch(Exception e) {
+      return "some exception: " + e.toString() + "\n token: " + auth;
+    }
+
+    return responseEntity.getBody();
+
+//    ServiceInstance credhubB = discoveryClient.getInstances(applicationName).get(0);
+//    URI credhubBUri = credhubB.getUri();
+//    HttpClient client = new HttpClient(credhubBUri);
+//    Creds creds = client.get("/api/v1/data?name-like=/");
+//    System.out.println(creds);
+//    return this.discoveryClient.getInstances(applicationName);
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)

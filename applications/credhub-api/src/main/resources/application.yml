@@ -1,6 +1,8 @@
 spring:
   main:
     allow-bean-definition-overriding: true
+  application:
+    name: a-local-again
 
 management:
   endpoints:
@@ -14,3 +16,14 @@ management:
     ssl:
       enabled: false
     port: 9001
+
+eureka:
+  client:
+    serviceUrl:
+#      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eureka-registry.credhub-dev.cf-app.com/eureka/
+#  instance:
+#    prefer-ip-address: false
+#    ip-address: 35.190.178.101
+#    instance-id: "35.190.178.101:8844"
+#    hostname: 35.190.178.101

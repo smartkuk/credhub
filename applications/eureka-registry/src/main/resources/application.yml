@@ -5,6 +5,8 @@ eureka:
   client:
     registerWithEureka: false
     fetchRegistry: false
+  server:
+    enable-self-preservation: false
 
 logging:
   level:
@@ -12,3 +14,7 @@ logging:
       netflix:
         eureka: OFF
         discovery: OFF
+
+spring:
+  application:
+    name: a-bootiful-registry

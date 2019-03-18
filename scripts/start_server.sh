@@ -7,11 +7,11 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )"/.. && pwd )"
 rm -rf "$DIR/build"
 "$DIR/scripts/setup_dev_mtls.sh"
 "$DIR/gradlew" --no-daemon downloadBouncyCastleFips
-"$DIR/gradlew" --no-daemon assemble
+"$DIR/gradlew" --no-daemon :applications:credhub-api:assemble
 
 exec "$DIR/gradlew" \
   --no-daemon \
-  bootRun \
+  :applications:credhub-api:bootRun \
   -Djava.security.egd=file:/dev/urandom \
   -Djdk.tls.ephemeralDHKeySize=4096 \
   -Djdk.tls.namedGroups="secp384r1" \

@@ -1,0 +1,6 @@
+---
+applications:
+- name: eureka-registry
+  path: build/libs/eureka-registry.jar
+  buildpacks:
+  - java_buildpack

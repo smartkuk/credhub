@@ -43,6 +43,8 @@ dependencies {
     implementation project(":components:string-utilities")
     implementation project(":components:time-support")
 
+    implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:${springBootVersion}")
+
     testImplementation project(path: ":components:test-support", configuration: "testOutput")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
