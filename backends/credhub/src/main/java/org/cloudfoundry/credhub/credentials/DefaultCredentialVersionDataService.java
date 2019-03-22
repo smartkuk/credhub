@@ -235,7 +235,7 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
     return credentialVersionRepository.countByEncryptedCredentialValueEncryptionKeyUuidIn(uuids);
   }
 
-  private UUID toUUID(final Object object) {
+   public static UUID toUUID(final Object object) {
     if (object.getClass() == byte[].class) {
       final byte[] bytes = (byte[]) object;
       if (bytes.length != 16) {
