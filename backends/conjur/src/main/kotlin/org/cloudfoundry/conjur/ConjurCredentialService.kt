@@ -5,4 +5,5 @@ import org.cloudfoundry.credhub.views.CredentialView
 
 interface ConjurCredentialService {
     fun setCredential(baseCredentialSetRequest: BaseCredentialSetRequest<*>) : CredentialView
+    fun getCredential(credentialName: String) : CredentialView
 }

@@ -20,4 +20,8 @@ class DefaultConjurCredentialService(
             baseCredentialSetRequest.credentialValue
         )
     }
+
+    override fun getCredential(credentialName: String): CredentialView {
+        return conjurCredentialRepository.getCredential(credentialName)
+    }
 }

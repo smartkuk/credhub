@@ -70,4 +70,21 @@ class DefaultConjurCredentialServiceTest {
         assertThat(actualCredentialView).isEqualTo(expectedCredentialView)
         assertThat(spyConjurCredentialRepository.setCredential_calledWith).isEqualTo(credentialSetRequest)
     }
+
+    @Test
+    fun `should get credential in repository`() {
+        spyConjurCredentialRepository.getCredential_returnValue = CredentialView(
+            Instant.ofEpochMilli(2L),
+            ConstantUuidProvider().generateUuid(),
+            "/some-name",
+            "value",
+            StringCredentialValue("some-value")
+        )
+
+        val actualCredentialView = defaultConjurCredentialService.getCredential("/some-name")
+
+        assertThat(actualCredentialView.name).isEqualTo("/some-name")
+        assertThat((actualCredentialView.value as StringCredentialValue).stringCredential).isEqualTo("some-value")
+        assertThat(spyConjurCredentialRepository.getCredential_calledWithName).isEqualTo("/some-name")
+    }
 }

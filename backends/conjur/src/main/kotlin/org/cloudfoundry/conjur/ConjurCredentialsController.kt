@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.io.InputStream
+import java.util.Arrays
 
 @RestController
 @RequestMapping(
@@ -43,8 +44,10 @@ class ConjurCredentialsController(val conjurCredentialService: ConjurCredentialS
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    @RequestMapping(method = arrayOf(RequestMethod.GET))
+    @ResponseStatus(HttpStatus.OK)
     override fun getCredential(credentialName: String, numberOfVersions: Int?, current: Boolean): DataResponse {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return DataResponse(Arrays.asList(conjurCredentialService.getCredential(credentialName)))
     }
 
     override fun findByPath(path: String, expiresWithinDays: String): FindCredentialResults {

@@ -1,11 +1,17 @@
 package org.cloudfoundry.conjur
 
+import org.bouncycastle.asn1.x500.style.RFC4519Style.name
+import org.cloudfoundry.credhub.credential.StringCredentialValue
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
+import org.cloudfoundry.credhub.views.CredentialView
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.web.client.RestOperations
+import org.springframework.web.client.exchange
+import java.time.Instant
 import java.util.Base64
+import java.util.UUID
 
 class DefaultConjurCredentialRepository(
     val restOperations: RestOperations,
@@ -15,6 +21,25 @@ class DefaultConjurCredentialRepository(
     val accountName: String,
     val userName: String
 ) : ConjurCredentialRepository {
+    override fun getCredential(credentialName: String): CredentialView {
+        val token = fetchConjurToken()
+        val requestHeaders = HttpHeaders()
+        requestHeaders.add(
+            "Authorization",
+            "Token token=\"$token\""
+        )
+
+        val variableNameWithoutPrefix = credentialName.removePrefix("/")
+
+        val credentialValue = getVariableInConjur(variableNameWithoutPrefix, requestHeaders)
+        return CredentialView(
+            Instant.now(),
+            UUID.fromString("00000000-0000-0000-0000-000000000000"),
+            credentialName,
+            "value",
+            StringCredentialValue(credentialValue)
+        )
+    }
 
     override fun setCredential(baseCredentialSetRequest: BaseCredentialSetRequest<*>) {
         val token = fetchConjurToken()
@@ -56,5 +81,16 @@ class DefaultConjurCredentialRepository(
             HttpEntity(baseCredentialSetRequest.credentialValue, requestHeaders),
             String::class.java
         )
+    }
+
+    private fun getVariableInConjur(variableName: String, requestHeaders: HttpHeaders) : String {
+        val response = restOperations.exchange(
+            "$baseUrl/secrets/$accountName/variable/$basePolicy/$variableName",
+            HttpMethod.GET,
+            HttpEntity(null, requestHeaders),
+            String::class.java
+        )
+
+        return response.body!!.removeSurrounding("\"")
     }
 }

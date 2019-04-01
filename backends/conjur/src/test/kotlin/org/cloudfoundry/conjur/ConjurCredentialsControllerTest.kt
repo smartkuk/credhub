@@ -10,6 +10,7 @@ import org.junit.Test
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -124,6 +125,44 @@ class ConjurCredentialsControllerTest {
                     "name": "some-other-name",
                     "type": "value",
                     "value": "some-other-value"
+                }
+            """.trimIndent(),
+            true
+        )
+    }
+
+    @Test
+    fun `getCredential should get credential`() {
+        spyConjurCredentialService.getCredentialReturn = CredentialView(
+            Instant.ofEpochMilli(2L),
+            UUID.fromString(TestConstants.TEST_UUID_STRING),
+            "some-name",
+            "value",
+            StringCredentialValue("some-value")
+        )
+
+        val responseBody = mockMvc.perform(
+            get(ConjurCredentialsController.ENDPOINT)
+                .param("name", "some-name")
+        )
+            .andExpect(status().is2xxSuccessful)
+            .andReturn().response.contentAsString
+
+        assertThat(spyConjurCredentialService.getCredential_calledWithCredentialName).isEqualTo("some-name")
+        JSONAssert.assertEquals(
+            responseBody,
+            //language=json
+            """
+                {
+                    "data": [
+                        {
+                            "version_created_at": 0.002,
+                            "id": "${UUID.fromString(TestConstants.TEST_UUID_STRING)}",
+                            "name": "some-name",
+                            "type": "value",
+                            "value": "some-value"
+                        }
+                    ]
                 }
             """.trimIndent(),
             true
