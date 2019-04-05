@@ -12,17 +12,17 @@ class DependenciesGraphPlugin implements Plugin<Project> {
     void apply(Project project) {
 
         project.with {
-            task("clean", type: Delete) {
-                delete "build"
-            }
+//            task("clean", type: Delete) {
+//                delete "build"
+//            }
 
             task("dependenciesGraphDot") {
-                mustRunAfter "clean"
+//                mustRunAfter "clean"
                 group = "DependenciesGraph"
                 description = "Generate DOT file"
 
                 def graphBuildDir = "build/dependenciesGraph"
-                def dotFile = file "$graphBuildDir/graph.dot"
+                def dotFile = file "$graphBuildDir/gradleSubprojectsGraph.dot"
 
                 doLast {
                     delete graphBuildDir
@@ -30,7 +30,7 @@ class DependenciesGraphPlugin implements Plugin<Project> {
 
                     dotFile << "digraph dependencies {\n"
 
-                    subprojects.forEach { Project subProject ->
+                    rootProject.getSubprojects().forEach { Project subProject ->
 
                         try {
                             Configuration compileConfig = subProject.configurations["implementation"]
@@ -50,7 +50,7 @@ class DependenciesGraphPlugin implements Plugin<Project> {
             }
             task("dependenciesGraph", dependsOn: "dependenciesGraphDot", type: Exec) {
                 workingDir "$buildDir/dependenciesGraph"
-                commandLine "dot", "-O", "-Tpng", "graph.dot"
+                commandLine "dot", "-O", "-Tpng", "gradleSubprojectsGraph.dot"
                 group = "DependenciesGraph"
                 description = "Generate PNG file"
             }

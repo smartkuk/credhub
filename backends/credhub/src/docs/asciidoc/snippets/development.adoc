@@ -1,0 +1,8 @@
+
+== Development
+
+The CredHub API is open source, and source code is available at: https://github.com/cloudfoundry-incubator/credhub.
+It is composed of multiple components that are designed to be reusable, extendable, and testable.
+The current project component layout is as follows:
+
+image::images/gradleSubprojectsGraph.dot.png[]
