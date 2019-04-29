@@ -56,3 +56,8 @@ dependencyUpdates.resolutionStrategy = {
 configurations.all {
     exclude group: "org.bouncycastle"
 }
+
+subprojects {
+    apply plugin: 'java'
+//    apply plugin: 'kotlin'
+}

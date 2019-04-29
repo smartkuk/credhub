@@ -57,3 +57,9 @@ spring:
 
 certificates:
   concatenate_cas: false
+
+management:
+  endpoints:
+    web:
+      base-path: /
+    enabled-by-default: true

@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 
-@Component
-@Profile("!unit-test")
+//@Component
+//@Profile("!unit-test")
 public interface PasswordKeyProxyFactory {
   KeyProxy createPasswordKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata, InternalEncryptionService encryptionService);
 }

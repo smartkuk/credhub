@@ -10,7 +10,6 @@ import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.entities.EncryptedValue;
 import org.cloudfoundry.credhub.entities.EncryptionKeyCanary;
 import org.cloudfoundry.credhub.exceptions.IncorrectKeyException;
-import org.cloudfoundry.credhub.utils.PasswordKeyProxyFactoryTestImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +31,7 @@ public class LunaKeyProxyTest {
   @Before
   public void beforeEach() throws Exception {
     final PasswordEncryptionService encryptionService = new PasswordEncryptionService(
-      new PasswordKeyProxyFactoryTestImpl()
+      new TestPasswordKeyProxyFactory()
     );
     final EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
     keyMetadata.setEncryptionPassword("p@ssword");
@@ -52,14 +51,14 @@ public class LunaKeyProxyTest {
 
   @Test
   public void isMatchingCanary_whenCanaryMatches_returnsTrue() throws Exception {
-    subject = new LunaKeyProxy(encryptionKey, new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()));
+    subject = new LunaKeyProxy(encryptionKey, new PasswordEncryptionService(new TestPasswordKeyProxyFactory()));
 
     assertThat(subject.matchesCanary(canary), equalTo(true));
   }
 
   @Test
   public void isMatchingCanary_usingOldCanaryValue_returnsTrue() throws Exception {
-    subject = new LunaKeyProxy(encryptionKey, new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()));
+    subject = new LunaKeyProxy(encryptionKey, new PasswordEncryptionService(new TestPasswordKeyProxyFactory()));
 
     assertThat(subject.matchesCanary(deprecatedCanary), equalTo(true));
   }
@@ -67,7 +66,7 @@ public class LunaKeyProxyTest {
   @Test
   public void isMatchingCanary_whenDecryptThrowsRelevantIllegalBlockSizeException_returnsFalse() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-      new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+      new PasswordEncryptionService(new TestPasswordKeyProxyFactory()) {
         @Override
         public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce)
           throws Exception {
@@ -81,7 +80,7 @@ public class LunaKeyProxyTest {
   @Test
   public void isMatchingCanary_whenDecryptThrowsAEADBadTagException_returnsFalse() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-      new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+      new PasswordEncryptionService(new TestPasswordKeyProxyFactory()) {
         @Override
         public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce)
           throws Exception {
@@ -95,7 +94,7 @@ public class LunaKeyProxyTest {
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsBadPaddingException_throwsIncorrectKeyException() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-      new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+      new PasswordEncryptionService(new TestPasswordKeyProxyFactory()) {
         @Override
         public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce)
           throws Exception {
@@ -109,7 +108,7 @@ public class LunaKeyProxyTest {
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsIllegalBlockSizeException_throwsIncorrectKeyException() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-      new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+      new PasswordEncryptionService(new TestPasswordKeyProxyFactory()) {
         @Override
         public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce)
           throws Exception {
@@ -123,7 +122,7 @@ public class LunaKeyProxyTest {
   @Test(expected = IncorrectKeyException.class)
   public void isMatchingCanary_whenDecryptThrowsOtherException_throwsIncorrectKeyException() throws Exception {
     subject = new LunaKeyProxy(encryptionKey,
-      new PasswordEncryptionService(new PasswordKeyProxyFactoryTestImpl()) {
+      new PasswordEncryptionService(new TestPasswordKeyProxyFactory()) {
         @Override
         public String decrypt(final Key key, final byte[] encryptedValue, final byte[] nonce)
           throws Exception {
