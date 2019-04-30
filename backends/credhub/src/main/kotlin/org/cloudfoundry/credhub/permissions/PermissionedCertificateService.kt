@@ -6,7 +6,7 @@ import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.audit.AuditableCredentialVersion
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.auth.UserContextHolder
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue
+import org.cloudfoundry.credhub.credentials.CertificateCredentialValue
 import org.cloudfoundry.credhub.data.CertificateDataService
 import org.cloudfoundry.credhub.data.CertificateVersionDataService
 import org.cloudfoundry.credhub.domain.CertificateCredentialFactory
@@ -41,7 +41,7 @@ class PermissionedCertificateService(
 
     fun save(
         existingCredentialVersion: CredentialVersion,
-        credentialValue: CertificateCredentialValue,
+        credentialValue: org.cloudfoundry.credhub.credentials.CertificateCredentialValue,
         generateRequest: BaseCredentialGenerateRequest
     ): CredentialVersion {
         generateRequest.type = "certificate"
@@ -195,7 +195,7 @@ class PermissionedCertificateService(
         return versionToDelete
     }
 
-    operator fun set(certificateUuid: UUID, value: CertificateCredentialValue): CertificateCredentialVersion {
+    operator fun set(certificateUuid: UUID, value: org.cloudfoundry.credhub.credentials.CertificateCredentialValue): CertificateCredentialVersion {
         val credential = findCertificateCredential(certificateUuid)
 
         failForInvalidAccess(

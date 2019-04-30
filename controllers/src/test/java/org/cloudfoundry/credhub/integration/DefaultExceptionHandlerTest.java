@@ -16,14 +16,10 @@ import org.cloudfoundry.credhub.AuthConstants;
 import org.cloudfoundry.credhub.CredhubTestApp;
 import org.cloudfoundry.credhub.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.ErrorMessages;
-import org.cloudfoundry.credhub.credentials.DefaultCredentialsHandler;
 import org.cloudfoundry.credhub.generate.CredentialsHandler;
-import org.cloudfoundry.credhub.services.DefaultPermissionedCredentialService;
-import org.cloudfoundry.credhub.services.PermissionedCredentialService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;

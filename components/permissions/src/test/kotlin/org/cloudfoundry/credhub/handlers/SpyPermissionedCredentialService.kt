@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.handlers
 
-import org.cloudfoundry.credhub.credential.CredentialValue
+import org.cloudfoundry.credhub.credentials.CredentialValue
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.entity.Credential
 import org.cloudfoundry.credhub.requests.BaseCredentialRequest
@@ -10,7 +10,7 @@ import java.util.UUID
 
 class SpyPermissionedCredentialService : PermissionedCredentialService {
 
-    override fun save(existingCredentialVersion: CredentialVersion?, credentialValue: CredentialValue?, generateRequest: BaseCredentialRequest): CredentialVersion {
+    override fun save(existingCredentialVersion: CredentialVersion?, credentialValue: org.cloudfoundry.credhub.credentials.CredentialValue?, generateRequest: BaseCredentialRequest): CredentialVersion {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 

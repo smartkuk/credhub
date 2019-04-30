@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.interpolation
 
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
-import org.cloudfoundry.credhub.audit.entities.InterpolateCredentials
+import org.cloudfoundry.credhub.audit.InterpolateCredentials
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.RequestBody
@@ -24,7 +24,7 @@ class InterpolationController(
     @RequestMapping(method = [RequestMethod.POST], path = [""])
     @ResponseStatus(HttpStatus.OK)
     fun interpolate(@RequestBody requestBody: Map<String, Any>): Map<String, Any> {
-        auditRecord.requestDetails = InterpolateCredentials()
+        auditRecord.requestDetails = org.cloudfoundry.credhub.audit.InterpolateCredentials()
         return jsonInterpolationHandler.interpolateCredHubReferences(requestBody)
     }
 }

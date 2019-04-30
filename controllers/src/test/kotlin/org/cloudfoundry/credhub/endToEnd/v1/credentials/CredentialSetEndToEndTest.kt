@@ -1,11 +1,10 @@
 package org.cloudfoundry.credhub.endToEnd.v1.credentials
 
 import org.apache.commons.lang3.StringUtils
-import org.apache.tomcat.jni.SSL.setPassword
-import org.cloudfoundry.credhub.AuthConstants
-import org.cloudfoundry.credhub.AuthConstants.ALL_PERMISSIONS_TOKEN
+import org.cloudfoundry.credhub.utils.AuthConstants
+import org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN
 import org.cloudfoundry.credhub.CredhubTestApp
-import org.cloudfoundry.credhub.DatabaseProfileResolver
+import org.cloudfoundry.credhub.utils.DatabaseProfileResolver
 import org.cloudfoundry.credhub.helpers.RequestHelper.generatePassword
 import org.cloudfoundry.credhub.helpers.RequestHelper.setPassword
 import org.hamcrest.CoreMatchers.`is`
@@ -33,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
 
 @RunWith(SpringRunner::class)
-@ActiveProfiles(value = ["unit-test"], resolver = DatabaseProfileResolver::class)
+@ActiveProfiles(value = ["unit-test"], resolver = org.cloudfoundry.credhub.utils.DatabaseProfileResolver::class)
 @SpringBootTest(classes = [CredhubTestApp::class])
 @Transactional
 class CredentialSetEndToEndTest {
@@ -63,7 +62,7 @@ class CredentialSetEndToEndTest {
     @Test
     fun `rsa credential can be set without private key`() {
         val setRsaRequest = put("/api/v1/data")
-            .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
+            .header("Authorization", "Bearer ${org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN}")
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             // language=JSON
@@ -89,7 +88,7 @@ class CredentialSetEndToEndTest {
     @Test
     fun `user credential returns null username when set with blank string as username`() {
         val setUserRequest = put("/api/v1/data")
-            .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
+            .header("Authorization", "Bearer ${org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN}")
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             // language=JSON
@@ -236,7 +235,7 @@ class CredentialSetEndToEndTest {
         """.trimIndent().replace("\n", "\\n")
 
         val request = put("/api/v1/data")
-            .header("Authorization", "Bearer ${AuthConstants.ALL_PERMISSIONS_TOKEN}")
+            .header("Authorization", "Bearer ${org.cloudfoundry.credhub.utils.AuthConstants.ALL_PERMISSIONS_TOKEN}")
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             // language=json

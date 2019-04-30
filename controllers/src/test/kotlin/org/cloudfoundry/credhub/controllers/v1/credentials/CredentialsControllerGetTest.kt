@@ -6,12 +6,12 @@ import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.constants.CredentialType.JSON
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue
-import org.cloudfoundry.credhub.credential.JsonCredentialValue
-import org.cloudfoundry.credhub.credential.RsaCredentialValue
-import org.cloudfoundry.credhub.credential.SshCredentialValue
-import org.cloudfoundry.credhub.credential.StringCredentialValue
-import org.cloudfoundry.credhub.credential.UserCredentialValue
+import org.cloudfoundry.credhub.credentials.CertificateCredentialValue
+import org.cloudfoundry.credhub.credentials.JsonCredentialValue
+import org.cloudfoundry.credhub.credentials.RsaCredentialValue
+import org.cloudfoundry.credhub.credentials.SshCredentialValue
+import org.cloudfoundry.credhub.credentials.StringCredentialValue
+import org.cloudfoundry.credhub.credentials.UserCredentialValue
 import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
@@ -81,7 +81,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             CredentialType.VALUE.type.toLowerCase(),
-            StringCredentialValue("some-value")
+            org.cloudfoundry.credhub.credentials.StringCredentialValue("some-value")
         )
 
         val mvcResult = mockMvc.perform(
@@ -123,7 +123,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             JSON.type.toLowerCase(),
-            JsonCredentialValue(ObjectMapper().readTree(
+            org.cloudfoundry.credhub.credentials.JsonCredentialValue(ObjectMapper().readTree(
                 // language=json
                 """
                     {
@@ -174,7 +174,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             CredentialType.PASSWORD.type.toLowerCase(),
-            StringCredentialValue("some-password")
+            org.cloudfoundry.credhub.credentials.StringCredentialValue("some-password")
         )
 
         val mvcResult = mockMvc.perform(
@@ -217,7 +217,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             CredentialType.USER.type.toLowerCase(),
-            UserCredentialValue(
+            org.cloudfoundry.credhub.credentials.UserCredentialValue(
                 "some-username",
                 "some-password",
                 "foo"
@@ -268,7 +268,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             CredentialType.CERTIFICATE.type.toLowerCase(),
-            CertificateCredentialValue(
+            org.cloudfoundry.credhub.credentials.CertificateCredentialValue(
                 TestConstants.TEST_CA,
                 TestConstants.TEST_CERTIFICATE,
                 TestConstants.TEST_PRIVATE_KEY,
@@ -322,7 +322,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             CredentialType.RSA.type.toLowerCase(),
-            RsaCredentialValue(
+            org.cloudfoundry.credhub.credentials.RsaCredentialValue(
                 TestConstants.RSA_PUBLIC_KEY_4096,
                 TestConstants.PRIVATE_KEY_4096
             )
@@ -371,7 +371,7 @@ class CredentialsControllerGetTest {
             uuid,
             "/some-value-path",
             CredentialType.SSH.type.toLowerCase(),
-            SshCredentialValue(
+            org.cloudfoundry.credhub.credentials.SshCredentialValue(
                 TestConstants.SSH_PUBLIC_KEY_4096,
                 TestConstants.PRIVATE_KEY_4096,
                 null
@@ -523,7 +523,7 @@ class CredentialsControllerGetTest {
                     uuid,
                     "/some-value-path",
                     CredentialType.VALUE.type.toLowerCase(),
-                    StringCredentialValue("some-value")
+                    org.cloudfoundry.credhub.credentials.StringCredentialValue("some-value")
                 )
             )
         )

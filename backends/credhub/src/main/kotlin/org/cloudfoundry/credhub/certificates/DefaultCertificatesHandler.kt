@@ -4,7 +4,7 @@ import com.google.common.collect.Lists
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.audit.AuditableCredential
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue
+import org.cloudfoundry.credhub.credentials.CertificateCredentialValue
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.entity.Credential
@@ -43,7 +43,7 @@ class DefaultCertificatesHandler(
         val generateRequest = generationRequestGenerator
             .createGenerateRequest(existingCredentialVersion)
         val credentialValue = credentialGenerator
-            .generate(generateRequest) as CertificateCredentialValue
+            .generate(generateRequest) as org.cloudfoundry.credhub.credentials.CertificateCredentialValue
         credentialValue.isTransitional = request.isTransitional
 
         val credentialVersion = permissionedCertificateService

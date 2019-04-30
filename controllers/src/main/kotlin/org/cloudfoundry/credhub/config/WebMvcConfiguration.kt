@@ -7,13 +7,13 @@ import org.springframework.web.servlet.config.annotation.PathMatchConfigurer
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 import org.cloudfoundry.credhub.ManagementInterceptor
-import org.cloudfoundry.credhub.interceptors.AuditInterceptor
-import org.cloudfoundry.credhub.interceptors.UserContextInterceptor
+import org.cloudfoundry.credhub.audit.AuditInterceptor
+import org.cloudfoundry.credhub.auth.UserContextInterceptor
 
 @Configuration
 class WebMvcConfiguration(
-    private val auditInterceptor: AuditInterceptor,
-    private val userContextInterceptor: UserContextInterceptor,
+    private val auditInterceptor: org.cloudfoundry.credhub.audit.AuditInterceptor,
+    private val userContextInterceptor: org.cloudfoundry.credhub.auth.UserContextInterceptor,
     private val managementInterceptor: ManagementInterceptor
 ) : WebMvcConfigurer {
 

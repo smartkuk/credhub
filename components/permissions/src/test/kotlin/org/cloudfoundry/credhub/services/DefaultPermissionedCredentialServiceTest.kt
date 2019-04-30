@@ -9,12 +9,12 @@ import org.cloudfoundry.credhub.PermissionOperation.DELETE
 import org.cloudfoundry.credhub.PermissionOperation.READ
 import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
-import org.cloudfoundry.credhub.audit.entities.GetCredentialById
+import org.cloudfoundry.credhub.audit.GetCredentialById
 import org.cloudfoundry.credhub.auth.UserContext
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.constants.CredentialType
-import org.cloudfoundry.credhub.credential.CredentialValue
-import org.cloudfoundry.credhub.credential.StringCredentialValue
+import org.cloudfoundry.credhub.credentials.CredentialValue
+import org.cloudfoundry.credhub.credentials.StringCredentialValue
 import org.cloudfoundry.credhub.data.CertificateAuthorityService
 import org.cloudfoundry.credhub.data.CredentialDataService
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
@@ -75,7 +75,7 @@ class DefaultPermissionedCredentialServiceTest {
     private lateinit var existingCredentialVersion: CredentialVersion
     private lateinit var userContext: UserContext
     private lateinit var generationParameters: StringGenerationParameters
-    private lateinit var credentialValue: CredentialValue
+    private lateinit var credentialValue: org.cloudfoundry.credhub.credentials.CredentialValue
     private lateinit var accessControlEntries: MutableList<PermissionEntry>
     private val request = mock<BaseCredentialRequest>(BaseCredentialRequest::class.java)
     private lateinit var credential: Credential
@@ -116,7 +116,7 @@ class DefaultPermissionedCredentialServiceTest {
         )
 
         generationParameters = mock<StringGenerationParameters>(StringGenerationParameters::class.java)
-        credentialValue = mock<CredentialValue>(CredentialValue::class.java)
+        credentialValue = mock<org.cloudfoundry.credhub.credentials.CredentialValue>(org.cloudfoundry.credhub.credentials.CredentialValue::class.java)
         credential = Credential(CREDENTIAL_NAME)
         accessControlEntries = ArrayList()
 
@@ -233,7 +233,7 @@ class DefaultPermissionedCredentialServiceTest {
             subjectWithoutConcatenateCas.findVersionByUuid(VERSION_UUID_STRING)
             verify<CEFAuditRecord>(auditRecord, times(1)).addResource(credential)
             verify<CEFAuditRecord>(auditRecord, times(1)).addVersion(passwordCredentialVersion)
-            verify<CEFAuditRecord>(auditRecord, times(1)).requestDetails = GetCredentialById(VERSION_UUID_STRING)
+            verify<CEFAuditRecord>(auditRecord, times(1)).requestDetails = org.cloudfoundry.credhub.audit.GetCredentialById(VERSION_UUID_STRING)
         }.isInstanceOf(EntryNotFoundException::class.java)
             .hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }
@@ -275,7 +275,7 @@ class DefaultPermissionedCredentialServiceTest {
         val stringGenerationParameters = StringGenerationParameters()
         `when`<GenerationParameters>(request.generationParameters).thenReturn(stringGenerationParameters)
 
-        val stringCredentialValue = StringCredentialValue("password")
+        val stringCredentialValue = org.cloudfoundry.credhub.credentials.StringCredentialValue("password")
         val passwordCredentialVersion = PasswordCredentialVersion(
             stringCredentialValue,
             request.generationParameters as StringGenerationParameters,
@@ -366,7 +366,7 @@ class DefaultPermissionedCredentialServiceTest {
         val stringGenerationParameters = StringGenerationParameters()
         `when`(generateRequest.generationParameters).thenReturn(stringGenerationParameters)
 
-        val stringCredentialValue = StringCredentialValue("password")
+        val stringCredentialValue = org.cloudfoundry.credhub.credentials.StringCredentialValue("password")
         val passwordCredentialVersion = PasswordCredentialVersion(
             stringCredentialValue,
             stringGenerationParameters,
@@ -400,7 +400,7 @@ class DefaultPermissionedCredentialServiceTest {
         val stringGenerationParameters = StringGenerationParameters()
         `when`(request.generationParameters).thenReturn(stringGenerationParameters)
 
-        val stringCredentialValue = StringCredentialValue("password")
+        val stringCredentialValue = org.cloudfoundry.credhub.credentials.StringCredentialValue("password")
         val passwordCredentialVersion = PasswordCredentialVersion(
             stringCredentialValue,
             stringGenerationParameters,

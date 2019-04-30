@@ -6,12 +6,12 @@ import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.constants.CredentialType.JSON
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue
-import org.cloudfoundry.credhub.credential.JsonCredentialValue
-import org.cloudfoundry.credhub.credential.RsaCredentialValue
-import org.cloudfoundry.credhub.credential.SshCredentialValue
-import org.cloudfoundry.credhub.credential.StringCredentialValue
-import org.cloudfoundry.credhub.credential.UserCredentialValue
+import org.cloudfoundry.credhub.credentials.CertificateCredentialValue
+import org.cloudfoundry.credhub.credentials.JsonCredentialValue
+import org.cloudfoundry.credhub.credentials.RsaCredentialValue
+import org.cloudfoundry.credhub.credentials.SshCredentialValue
+import org.cloudfoundry.credhub.credentials.StringCredentialValue
+import org.cloudfoundry.credhub.credentials.UserCredentialValue
 import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.JsonHelpers.Companion.escapeNewLinesForJsonSerialization
@@ -85,7 +85,7 @@ class CredentialsControllerSetTest {
             uuid,
             "/some-value-path",
             CredentialType.VALUE.type.toLowerCase(),
-            StringCredentialValue("some-value")
+            org.cloudfoundry.credhub.credentials.StringCredentialValue("some-value")
         )
 
         // language=json
@@ -118,7 +118,7 @@ class CredentialsControllerSetTest {
             .andReturn()
 
         val expectedValueSetRequest = ValueSetRequest()
-        expectedValueSetRequest.value = StringCredentialValue("some-value")
+        expectedValueSetRequest.value = org.cloudfoundry.credhub.credentials.StringCredentialValue("some-value")
         expectedValueSetRequest.name = "/some-value-path"
         expectedValueSetRequest.type = CredentialType.VALUE.type.toLowerCase()
 
@@ -145,7 +145,7 @@ class CredentialsControllerSetTest {
             uuid,
             "/some-value-path",
             JSON.type.toLowerCase(),
-            JsonCredentialValue(ObjectMapper().readTree(
+            org.cloudfoundry.credhub.credentials.JsonCredentialValue(ObjectMapper().readTree(
                 // language=json
                 """
                     {
@@ -188,7 +188,7 @@ class CredentialsControllerSetTest {
             .andReturn()
 
         val expectedValueSetRequest = JsonSetRequest()
-        expectedValueSetRequest.value = JsonCredentialValue(ObjectMapper().readTree(
+        expectedValueSetRequest.value = org.cloudfoundry.credhub.credentials.JsonCredentialValue(ObjectMapper().readTree(
             // language=json
             """
             {
@@ -224,7 +224,7 @@ class CredentialsControllerSetTest {
             uuid,
             "/some-password-path",
             CredentialType.PASSWORD.type.toLowerCase(),
-            StringCredentialValue("some-password")
+            org.cloudfoundry.credhub.credentials.StringCredentialValue("some-password")
         )
 
         // language=json
@@ -257,7 +257,7 @@ class CredentialsControllerSetTest {
             .andReturn()
 
         val expectedValueSetRequest = PasswordSetRequest()
-        expectedValueSetRequest.password = StringCredentialValue("some-password")
+        expectedValueSetRequest.password = org.cloudfoundry.credhub.credentials.StringCredentialValue("some-password")
         expectedValueSetRequest.name = "/some-password-path"
         expectedValueSetRequest.type = CredentialType.PASSWORD.type.toLowerCase()
 
@@ -284,7 +284,7 @@ class CredentialsControllerSetTest {
             uuid,
             "/some-user-path",
             CredentialType.USER.type.toLowerCase(),
-            UserCredentialValue(
+            org.cloudfoundry.credhub.credentials.UserCredentialValue(
                 "some-username",
                 "some-password",
                 "foo"
@@ -325,7 +325,7 @@ class CredentialsControllerSetTest {
             .andReturn()
 
         val expectedValueSetRequest = UserSetRequest()
-        expectedValueSetRequest.userValue = UserCredentialValue(
+        expectedValueSetRequest.userValue = org.cloudfoundry.credhub.credentials.UserCredentialValue(
             "some-username",
             "some-password",
             null
@@ -360,7 +360,7 @@ class CredentialsControllerSetTest {
             uuid,
             "/some-certificate-path",
             CredentialType.CERTIFICATE.type.toLowerCase(),
-            CertificateCredentialValue(
+            org.cloudfoundry.credhub.credentials.CertificateCredentialValue(
                 TestConstants.TEST_CA,
                 TestConstants.TEST_CERTIFICATE,
                 TestConstants.TEST_PRIVATE_KEY,
@@ -412,7 +412,7 @@ class CredentialsControllerSetTest {
             .andReturn()
 
         val expectedValueSetRequest = CertificateSetRequest()
-        expectedValueSetRequest.certificateValue = CertificateCredentialValue(
+        expectedValueSetRequest.certificateValue = org.cloudfoundry.credhub.credentials.CertificateCredentialValue(
             TestConstants.TEST_CA,
             TestConstants.TEST_CERTIFICATE,
             TestConstants.TEST_PRIVATE_KEY,
@@ -450,7 +450,7 @@ class CredentialsControllerSetTest {
             uuid,
             "/some-rsa-path",
             CredentialType.RSA.type.toLowerCase(),
-            RsaCredentialValue(
+            org.cloudfoundry.credhub.credentials.RsaCredentialValue(
                 TestConstants.RSA_PUBLIC_KEY_4096,
                 TestConstants.PRIVATE_KEY_4096
             )
@@ -492,7 +492,7 @@ class CredentialsControllerSetTest {
             .andReturn()
 
         val expectedValueSetRequest = RsaSetRequest()
-        expectedValueSetRequest.rsaKeyValue = RsaCredentialValue(
+        expectedValueSetRequest.rsaKeyValue = org.cloudfoundry.credhub.credentials.RsaCredentialValue(
             TestConstants.RSA_PUBLIC_KEY_4096,
             TestConstants.PRIVATE_KEY_4096
         )
@@ -525,7 +525,7 @@ class CredentialsControllerSetTest {
             uuid,
             "/some-ssh-path",
             CredentialType.SSH.type.toLowerCase(),
-            SshCredentialValue(
+            org.cloudfoundry.credhub.credentials.SshCredentialValue(
                 TestConstants.SSH_PUBLIC_KEY_4096,
                 TestConstants.PRIVATE_KEY_4096,
                 null
@@ -568,7 +568,7 @@ class CredentialsControllerSetTest {
             .andReturn()
 
         val expectedValueSetRequest = SshSetRequest()
-        expectedValueSetRequest.sshKeyValue = SshCredentialValue(
+        expectedValueSetRequest.sshKeyValue = org.cloudfoundry.credhub.credentials.SshCredentialValue(
             TestConstants.SSH_PUBLIC_KEY_4096,
             TestConstants.PRIVATE_KEY_4096,
             null

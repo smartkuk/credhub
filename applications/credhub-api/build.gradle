@@ -37,7 +37,7 @@ dependencies {
     implementation project(":components:auth")
     implementation project(":components:constants")
     implementation project(":components:credentials")
-    implementation project(":components:encryption")
+    implementation project(":encryption")
     implementation project(":components:errors")
     implementation project(":components:generate")
     implementation project(":components:management")

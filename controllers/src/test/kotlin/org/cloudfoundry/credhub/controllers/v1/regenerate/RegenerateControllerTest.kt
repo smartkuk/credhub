@@ -2,7 +2,7 @@ package org.cloudfoundry.credhub.controllers.v1.regenerate
 
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.constants.CredentialType
-import org.cloudfoundry.credhub.credential.StringCredentialValue
+import org.cloudfoundry.credhub.credentials.StringCredentialValue
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
@@ -58,7 +58,7 @@ class RegenerateControllerTest {
             randomUUID,
             "/some-name",
             CredentialType.VALUE.type.toLowerCase(),
-            StringCredentialValue("some-value")
+            org.cloudfoundry.credhub.credentials.StringCredentialValue("some-value")
         )
 
         val actualResponse = mockMvc

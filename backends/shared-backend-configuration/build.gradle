@@ -29,7 +29,7 @@ dependencies {
     implementation project(":components:audit")
     implementation project(":components:auth")
     implementation project(":components:credentials")
-    implementation project(":components:encryption")
+    implementation project(":encryption")
     implementation project(":components:management")
     implementation project(":components:string-utilities")
 

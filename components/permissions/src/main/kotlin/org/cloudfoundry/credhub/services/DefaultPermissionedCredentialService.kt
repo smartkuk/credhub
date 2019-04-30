@@ -5,11 +5,11 @@ import org.cloudfoundry.credhub.PermissionOperation.DELETE
 import org.cloudfoundry.credhub.PermissionOperation.READ
 import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
-import org.cloudfoundry.credhub.audit.entities.GetCredentialById
+import org.cloudfoundry.credhub.audit.GetCredentialById
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.constants.CredentialWriteMode
-import org.cloudfoundry.credhub.credential.CredentialValue
+import org.cloudfoundry.credhub.credentials.CredentialValue
 import org.cloudfoundry.credhub.data.CertificateAuthorityService
 import org.cloudfoundry.credhub.data.CredentialDataService
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
@@ -43,7 +43,7 @@ class DefaultPermissionedCredentialService(
 
     override fun save(
         existingCredentialVersion: CredentialVersion?,
-        credentialValue: CredentialValue?,
+        credentialValue: org.cloudfoundry.credhub.credentials.CredentialValue?,
         generateRequest: BaseCredentialRequest
     ): CredentialVersion {
         val shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, generateRequest)
@@ -118,7 +118,7 @@ class DefaultPermissionedCredentialService(
     override fun findVersionByUuid(credentialUUID: String): CredentialVersion {
         val credentialVersion = credentialVersionDataService.findByUuid(credentialUUID)
 
-        auditRecord.requestDetails = GetCredentialById(credentialUUID)
+        auditRecord.requestDetails = org.cloudfoundry.credhub.audit.GetCredentialById(credentialUUID)
 
         if (credentialVersion != null) {
             auditRecord.setVersion(credentialVersion)
@@ -178,7 +178,7 @@ class DefaultPermissionedCredentialService(
 
     private fun makeAndSaveNewCredential(
         existingCredentialVersion: CredentialVersion?,
-        credentialValue: CredentialValue?,
+        credentialValue: org.cloudfoundry.credhub.credentials.CredentialValue?,
         request: BaseCredentialRequest
     ): CredentialVersion {
         val newVersion = credentialFactory.makeNewCredentialVersion(

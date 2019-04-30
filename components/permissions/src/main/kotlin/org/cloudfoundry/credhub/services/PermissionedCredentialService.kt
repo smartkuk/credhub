@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.services
 
-import org.cloudfoundry.credhub.credential.CredentialValue
+import org.cloudfoundry.credhub.credentials.CredentialValue
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.entity.Credential
 import org.cloudfoundry.credhub.requests.BaseCredentialRequest
@@ -11,7 +11,7 @@ interface PermissionedCredentialService {
 
     fun save(
         existingCredentialVersion: CredentialVersion?,
-        credentialValue: CredentialValue?,
+        credentialValue: org.cloudfoundry.credhub.credentials.CredentialValue?,
         generateRequest: BaseCredentialRequest
     ): CredentialVersion
 

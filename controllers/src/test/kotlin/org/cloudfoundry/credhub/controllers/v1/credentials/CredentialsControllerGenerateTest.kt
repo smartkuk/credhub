@@ -5,11 +5,11 @@ import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.constants.CredentialWriteMode
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue
-import org.cloudfoundry.credhub.credential.RsaCredentialValue
-import org.cloudfoundry.credhub.credential.SshCredentialValue
-import org.cloudfoundry.credhub.credential.StringCredentialValue
-import org.cloudfoundry.credhub.credential.UserCredentialValue
+import org.cloudfoundry.credhub.credentials.CertificateCredentialValue
+import org.cloudfoundry.credhub.credentials.RsaCredentialValue
+import org.cloudfoundry.credhub.credentials.SshCredentialValue
+import org.cloudfoundry.credhub.credentials.StringCredentialValue
+import org.cloudfoundry.credhub.credentials.UserCredentialValue
 import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
@@ -81,7 +81,7 @@ class CredentialsControllerGenerateTest {
             uuid,
             "/some-password-path",
             "password",
-            StringCredentialValue("some-password")
+            org.cloudfoundry.credhub.credentials.StringCredentialValue("some-password")
         )
 
         // language=json
@@ -160,7 +160,7 @@ class CredentialsControllerGenerateTest {
             uuid,
             "/some-user-path",
             CredentialType.USER.type.toLowerCase(),
-            UserCredentialValue("some-username", "some-password", "foo")
+            org.cloudfoundry.credhub.credentials.UserCredentialValue("some-username", "some-password", "foo")
         )
 
         // language=json
@@ -248,7 +248,7 @@ class CredentialsControllerGenerateTest {
             uuid,
             "/some-certificate-path",
             CredentialType.CERTIFICATE.type.toLowerCase(),
-            CertificateCredentialValue(
+            org.cloudfoundry.credhub.credentials.CertificateCredentialValue(
                 TestConstants.TEST_CA,
                 TestConstants.TEST_CERTIFICATE,
                 TestConstants.TEST_PRIVATE_KEY,
@@ -378,7 +378,7 @@ class CredentialsControllerGenerateTest {
             uuid,
             "/some-rsa-path",
             CredentialType.RSA.type.toLowerCase(),
-            RsaCredentialValue(
+            org.cloudfoundry.credhub.credentials.RsaCredentialValue(
                 TestConstants.RSA_PUBLIC_KEY_4096,
                 TestConstants.PRIVATE_KEY_4096
             )
@@ -448,7 +448,7 @@ class CredentialsControllerGenerateTest {
             uuid,
             "/some-ssh-path",
             CredentialType.SSH.type.toLowerCase(),
-            SshCredentialValue(
+            org.cloudfoundry.credhub.credentials.SshCredentialValue(
                 TestConstants.SSH_PUBLIC_KEY_4096,
                 TestConstants.PRIVATE_KEY_4096,
                 "EvI0/GIUgDjcoCzUQM+EtwnVTryNsKRd6TrHAGKJJSI"

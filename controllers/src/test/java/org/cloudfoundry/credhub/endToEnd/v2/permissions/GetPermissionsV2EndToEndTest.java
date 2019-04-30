@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.endToEnd.v2.permissions;
 
-import java.util.Locale;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;

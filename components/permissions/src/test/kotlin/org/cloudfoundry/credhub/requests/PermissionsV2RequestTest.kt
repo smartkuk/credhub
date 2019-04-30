@@ -1,7 +1,7 @@
 package org.cloudfoundry.credhub.requests
 
 import org.cloudfoundry.credhub.ErrorMessages
-import org.cloudfoundry.credhub.helpers.JsonTestHelper
+import org.cloudfoundry.credhub.utils.JsonTestHelper
 import org.hamcrest.MatcherAssert
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.collection.IsIterableContainingInOrder
@@ -24,12 +24,12 @@ class PermissionsV2RequestTest {
             }
         """.trimIndent()
 
-        val violations = JsonTestHelper
+        val violations = org.cloudfoundry.credhub.utils.JsonTestHelper
                 .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_SLASH_IN_PATH)))
+                org.cloudfoundry.credhub.utils.JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_SLASH_IN_PATH)))
     }
 
     @Test
@@ -43,12 +43,12 @@ class PermissionsV2RequestTest {
             }
         """.trimIndent()
 
-        val violations = JsonTestHelper
+        val violations = org.cloudfoundry.credhub.utils.JsonTestHelper
                 .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_SLASH_IN_PATH)))
+                org.cloudfoundry.credhub.utils.JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_SLASH_IN_PATH)))
     }
 
     @Test
@@ -61,12 +61,12 @@ class PermissionsV2RequestTest {
             }
         """.trimIndent()
 
-        val violations = JsonTestHelper
+        val violations = org.cloudfoundry.credhub.utils.JsonTestHelper
                 .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)))
+                org.cloudfoundry.credhub.utils.JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)))
     }
 
     @Test
@@ -79,12 +79,12 @@ class PermissionsV2RequestTest {
             }
         """.trimIndent()
 
-        val violations = JsonTestHelper
+        val violations = org.cloudfoundry.credhub.utils.JsonTestHelper
                 .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)))
+                org.cloudfoundry.credhub.utils.JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)))
     }
 
     @Test
@@ -97,12 +97,12 @@ class PermissionsV2RequestTest {
             }
         """.trimIndent()
 
-        val violations = JsonTestHelper
+        val violations = org.cloudfoundry.credhub.utils.JsonTestHelper
                 .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)))
+                org.cloudfoundry.credhub.utils.JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)))
     }
 
     @Test
@@ -116,12 +116,12 @@ class PermissionsV2RequestTest {
             }
         """.trimIndent()
 
-        val violations = JsonTestHelper
+        val violations = org.cloudfoundry.credhub.utils.JsonTestHelper
                 .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)))
+                org.cloudfoundry.credhub.utils.JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)))
     }
 
     @Test
@@ -135,12 +135,12 @@ class PermissionsV2RequestTest {
             }
         """.trimIndent()
 
-        val violations = JsonTestHelper
+        val violations = org.cloudfoundry.credhub.utils.JsonTestHelper
                 .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)))
+                org.cloudfoundry.credhub.utils.JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_ACTOR)))
     }
 
     @Test
@@ -154,12 +154,12 @@ class PermissionsV2RequestTest {
             }
         """.trimIndent()
 
-        val violations = JsonTestHelper
+        val violations = org.cloudfoundry.credhub.utils.JsonTestHelper
                 .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)))
+                org.cloudfoundry.credhub.utils.JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_OPERATIONS)))
     }
 
     @Test
@@ -173,12 +173,12 @@ class PermissionsV2RequestTest {
             }
         """.trimIndent()
 
-        val violations = JsonTestHelper
+        val violations = org.cloudfoundry.credhub.utils.JsonTestHelper
                 .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         assertThat(violations.size, equalTo(1))
         MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)))
+                org.cloudfoundry.credhub.utils.JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.MISSING_PATH)))
     }
 
     @Test
@@ -193,12 +193,12 @@ class PermissionsV2RequestTest {
             }
         """.trimIndent()
 
-            val violations = JsonTestHelper
+            val violations = org.cloudfoundry.credhub.utils.JsonTestHelper
                     .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
             assertThat(violations.size, equalTo(1))
             MatcherAssert.assertThat(violations, IsIterableContainingInOrder.contains(
-                    JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_CHARACTER_IN_PATH)))
+                    org.cloudfoundry.credhub.utils.JsonTestHelper.hasViolationWithMessage(ErrorMessages.Permissions.INVALID_CHARACTER_IN_PATH)))
         }
     }
 
@@ -215,7 +215,7 @@ class PermissionsV2RequestTest {
             }
         """.trimIndent()
 
-            val violations = JsonTestHelper
+            val violations = org.cloudfoundry.credhub.utils.JsonTestHelper
                     .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
             MatcherAssert.assertThat(violations.size, equalTo(0))
@@ -233,7 +233,7 @@ class PermissionsV2RequestTest {
         }
         """.trimIndent()
 
-        val violations = JsonTestHelper
+        val violations = org.cloudfoundry.credhub.utils.JsonTestHelper
                 .deserializeAndValidate(json, PermissionsV2Request::class.java)
 
         MatcherAssert.assertThat(violations.size, equalTo(0))

@@ -5,7 +5,7 @@ import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.certificates.CertificatesController
 import org.cloudfoundry.credhub.constants.CredentialType
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue
+import org.cloudfoundry.credhub.credentials.CertificateCredentialValue
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.JsonHelpers
@@ -51,7 +51,7 @@ class CertificatesControllerTest {
 
     lateinit var mockMvc: MockMvc
     private lateinit var spyCertificatesHandler: SpyCertificatesHandler
-    private lateinit var certificateCredentialValue: CertificateCredentialValue
+    private lateinit var certificateCredentialValue: org.cloudfoundry.credhub.credentials.CertificateCredentialValue
     private lateinit var credentialViewResponse: CredentialView
 
     private lateinit var certificateId: UUID
@@ -79,7 +79,7 @@ class CertificatesControllerTest {
         name = "/some-name"
         createdAt = Instant.ofEpochSecond(1549053472L)
 
-        certificateCredentialValue = CertificateCredentialValue(
+        certificateCredentialValue = org.cloudfoundry.credhub.credentials.CertificateCredentialValue(
             TestConstants.TEST_CA,
             TestConstants.TEST_CERTIFICATE,
             TestConstants.TEST_PRIVATE_KEY,

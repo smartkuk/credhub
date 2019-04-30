@@ -1,6 +1,6 @@
 package org.cloudfoundry.credhub.validators
 
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue
+import org.cloudfoundry.credhub.credentials.CertificateCredentialValue
 import org.cloudfoundry.credhub.utils.CertificateReader
 import org.cloudfoundry.credhub.utils.PrivateKeyReader
 import javax.validation.ConstraintValidator
@@ -12,7 +12,7 @@ class CertificateMatchesPrivateKeyValidator : ConstraintValidator<RequireCertifi
 
     override fun isValid(value: Any, context: ConstraintValidatorContext?): Boolean {
 
-        val certificateCredentialValue = value as CertificateCredentialValue
+        val certificateCredentialValue = value as org.cloudfoundry.credhub.credentials.CertificateCredentialValue
 
         if (certificateCredentialValue.certificate.isNullOrEmpty() ||
             certificateCredentialValue.privateKey.isNullOrEmpty()) {

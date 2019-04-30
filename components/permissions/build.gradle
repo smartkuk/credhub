@@ -31,7 +31,7 @@ dependencies {
     implementation project(":components:auth")
     implementation project(":components:constants")
     implementation project(":components:credentials")
-    implementation project(":components:encryption")
+    implementation project(":encryption")
     implementation project(":components:errors")
 
     testImplementation project(path: ":components:test-support", configuration: "testOutput")

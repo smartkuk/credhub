@@ -3,7 +3,7 @@ package org.cloudfoundry.credhub.validators
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
-import org.cloudfoundry.credhub.credential.CertificateCredentialValue
+import org.cloudfoundry.credhub.credentials.CertificateCredentialValue
 import org.cloudfoundry.credhub.exceptions.MalformedPrivateKeyException
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.junit.Before
@@ -22,7 +22,7 @@ class CertificateMatchesPrivateKeyValidatorTest {
     @Test
     fun `isValid should return false when PKCS1 key does not match cert`() {
         val certificateMatchesPrivateKeyValidator = CertificateMatchesPrivateKeyValidator()
-        val certificateCredentialValue = CertificateCredentialValue(
+        val certificateCredentialValue = org.cloudfoundry.credhub.credentials.CertificateCredentialValue(
             TestConstants.TEST_CA,
             TestConstants.TEST_CERTIFICATE,
             TestConstants.OTHER_TEST_PRIVATE_KEY,
@@ -36,7 +36,7 @@ class CertificateMatchesPrivateKeyValidatorTest {
     @Test
     fun `isValid should return true when PKCS1 key matches cert`() {
         val certificateMatchesPrivateKeyValidator = CertificateMatchesPrivateKeyValidator()
-        val certificateCredentialValue = CertificateCredentialValue(
+        val certificateCredentialValue = org.cloudfoundry.credhub.credentials.CertificateCredentialValue(
             TestConstants.TEST_CA,
             TestConstants.TEST_CERTIFICATE,
             TestConstants.TEST_PRIVATE_KEY,
@@ -50,7 +50,7 @@ class CertificateMatchesPrivateKeyValidatorTest {
     @Test
     fun `isValid should return false when PKCS8 key does not match cert`() {
         val certificateMatchesPrivateKeyValidator = CertificateMatchesPrivateKeyValidator()
-        val certificateCredentialValue = CertificateCredentialValue(
+        val certificateCredentialValue = org.cloudfoundry.credhub.credentials.CertificateCredentialValue(
             TestConstants.TEST_CA,
             TestConstants.TEST_CERTIFICATE,
             TestConstants.OTHER_TEST_PRIVATE_KEY_PKCS8,
@@ -64,7 +64,7 @@ class CertificateMatchesPrivateKeyValidatorTest {
     @Test
     fun `isValid should return true when PKCS8 key matches cert`() {
         val certificateMatchesPrivateKeyValidator = CertificateMatchesPrivateKeyValidator()
-        val certificateCredentialValue = CertificateCredentialValue(
+        val certificateCredentialValue = org.cloudfoundry.credhub.credentials.CertificateCredentialValue(
             TestConstants.TEST_CA,
             TestConstants.TEST_CERTIFICATE,
             TestConstants.TEST_PRIVATE_KEY_PKCS8,
@@ -79,7 +79,7 @@ class CertificateMatchesPrivateKeyValidatorTest {
     fun `isValid should throw a MalformedPrivateKeyException when PrivateKey is malformed`() {
         val certificateMatchesPrivateKeyValidator = CertificateMatchesPrivateKeyValidator()
 
-        val certificateCredentialValue = CertificateCredentialValue(
+        val certificateCredentialValue = org.cloudfoundry.credhub.credentials.CertificateCredentialValue(
             TestConstants.TEST_CA,
             TestConstants.TEST_CERTIFICATE,
             TestConstants.INVALID_PRIVATE_KEY_NO_HEADERS,
@@ -95,7 +95,7 @@ class CertificateMatchesPrivateKeyValidatorTest {
     fun `isValid should return true when certificate or ca is null or empty`() {
         val certificateMatchesPrivateKeyValidator = CertificateMatchesPrivateKeyValidator()
 
-        val certificateCredentialValue = CertificateCredentialValue(
+        val certificateCredentialValue = org.cloudfoundry.credhub.credentials.CertificateCredentialValue(
             null,
             "",
             TestConstants.TEST_PRIVATE_KEY,
@@ -110,7 +110,7 @@ class CertificateMatchesPrivateKeyValidatorTest {
     fun `isValid should return true when private key is null or empty`() {
         val certificateMatchesPrivateKeyValidator = CertificateMatchesPrivateKeyValidator()
 
-        val certificateCredentialValue = CertificateCredentialValue(
+        val certificateCredentialValue = org.cloudfoundry.credhub.credentials.CertificateCredentialValue(
             TestConstants.TEST_CA,
             TestConstants.TEST_CERTIFICATE,
             "",

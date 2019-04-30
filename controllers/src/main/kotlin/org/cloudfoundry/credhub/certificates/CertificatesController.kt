@@ -3,9 +3,9 @@ package org.cloudfoundry.credhub.certificates
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.audit.OperationDeviceAction
-import org.cloudfoundry.credhub.audit.entities.GetCertificateByName
-import org.cloudfoundry.credhub.audit.entities.RegenerateCertificate
-import org.cloudfoundry.credhub.audit.entities.UpdateTransitionalVersion
+import org.cloudfoundry.credhub.audit.GetCertificateByName
+import org.cloudfoundry.credhub.audit.RegenerateCertificate
+import org.cloudfoundry.credhub.audit.UpdateTransitionalVersion
 import org.cloudfoundry.credhub.requests.CertificateRegenerateRequest
 import org.cloudfoundry.credhub.requests.CreateVersionRequest
 import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest
@@ -46,7 +46,7 @@ class CertificatesController(
     @ResponseStatus(HttpStatus.OK)
     fun getCertificateByName(@RequestParam("name") name: String): CertificateCredentialsView {
         val credentialName = StringUtils.prependIfMissing(name, "/")
-        val details = GetCertificateByName()
+        val details = org.cloudfoundry.credhub.audit.GetCertificateByName()
         details.name = name
         auditRecord.requestDetails = details
 
@@ -60,7 +60,7 @@ class CertificatesController(
         @RequestBody(required = false) requestBody: CertificateRegenerateRequest?
     ): CredentialView {
         val finalRequestBody = requestBody ?: CertificateRegenerateRequest()
-        val certificate = RegenerateCertificate()
+        val certificate = org.cloudfoundry.credhub.audit.RegenerateCertificate()
         certificate.transitional = finalRequestBody.isTransitional
         auditRecord.requestDetails = certificate
 
@@ -73,7 +73,7 @@ class CertificatesController(
         @PathVariable("certificateId") certificateId: String,
         @RequestBody requestBody: UpdateTransitionalVersionRequest
     ): List<CertificateView> {
-        val details = UpdateTransitionalVersion()
+        val details = org.cloudfoundry.credhub.audit.UpdateTransitionalVersion()
         details.version = requestBody.versionUuid
         auditRecord.requestDetails = details
 

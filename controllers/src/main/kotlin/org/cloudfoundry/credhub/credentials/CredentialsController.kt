@@ -4,10 +4,10 @@ import com.google.common.io.ByteStreams
 import org.apache.commons.lang3.StringUtils
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
-import org.cloudfoundry.credhub.audit.entities.DeleteCredential
-import org.cloudfoundry.credhub.audit.entities.FindCredential
-import org.cloudfoundry.credhub.audit.entities.GetCredential
-import org.cloudfoundry.credhub.audit.entities.SetCredential
+import org.cloudfoundry.credhub.audit.DeleteCredential
+import org.cloudfoundry.credhub.audit.FindCredential
+import org.cloudfoundry.credhub.audit.GetCredential
+import org.cloudfoundry.credhub.audit.SetCredential
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException
 import org.cloudfoundry.credhub.generate.CredentialsHandler
 import org.cloudfoundry.credhub.generate.LegacyGenerationHandler
@@ -17,7 +17,6 @@ import org.cloudfoundry.credhub.services.PermissionedCredentialService
 import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
 import org.cloudfoundry.credhub.views.FindCredentialResults
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
@@ -72,7 +71,7 @@ class CredentialsController(
 
         val credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/")
 
-        val requestDetails = DeleteCredential(credentialNameWithPrependedSlash)
+        val requestDetails = org.cloudfoundry.credhub.audit.DeleteCredential(credentialNameWithPrependedSlash)
         auditRecord.requestDetails = requestDetails
 
         credentialsHandler.deleteCredential(credentialNameWithPrependedSlash)
@@ -101,7 +100,7 @@ class CredentialsController(
 
         val credentialNameWithPrependedSlash = StringUtils.prependIfMissing(credentialName, "/")
 
-        auditRecord.requestDetails = GetCredential(credentialName, numberOfVersions, current)
+        auditRecord.requestDetails = org.cloudfoundry.credhub.audit.GetCredential(credentialName, numberOfVersions, current)
 
         return if (current) {
             credentialsHandler.getCurrentCredentialVersions(credentialNameWithPrependedSlash)
@@ -116,7 +115,7 @@ class CredentialsController(
         @RequestParam("path") path: String,
         @RequestParam(value = "expires-within-days", required = false, defaultValue = "") expiresWithinDays: String
     ): FindCredentialResults {
-        val findCredential = FindCredential()
+        val findCredential = org.cloudfoundry.credhub.audit.FindCredential()
         findCredential.path = path
         findCredential.expiresWithinDays = expiresWithinDays
         auditRecord.requestDetails = findCredential
@@ -130,7 +129,7 @@ class CredentialsController(
         @RequestParam("name-like") nameLike: String,
         @RequestParam(value = "expires-within-days", required = false, defaultValue = "") expiresWithinDays: String
     ): FindCredentialResults {
-        val findCredential = FindCredential()
+        val findCredential = org.cloudfoundry.credhub.audit.FindCredential()
         findCredential.nameLike = nameLike
         findCredential.expiresWithinDays = expiresWithinDays
         auditRecord.requestDetails = findCredential
@@ -139,7 +138,7 @@ class CredentialsController(
     }
 
     private fun auditedHandlePutRequest(@RequestBody requestBody: BaseCredentialSetRequest<*>): CredentialView {
-        auditRecord.requestDetails = SetCredential(requestBody.name, requestBody.type)
+        auditRecord.requestDetails = org.cloudfoundry.credhub.audit.SetCredential(requestBody.name, requestBody.type)
         return setHandler.handle(requestBody)
     }
 }
