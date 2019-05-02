@@ -5,17 +5,14 @@ import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
-import org.cloudfoundry.credhub.PermissionOperation.DELETE
 import org.cloudfoundry.credhub.PermissionOperation.READ
 import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
-import org.cloudfoundry.credhub.audit.entities.GetCredentialById
 import org.cloudfoundry.credhub.auth.UserContext
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.credential.CredentialValue
 import org.cloudfoundry.credhub.credential.StringCredentialValue
-import org.cloudfoundry.credhub.data.CertificateAuthorityService
 import org.cloudfoundry.credhub.data.CredentialDataService
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialFactory
@@ -47,7 +44,7 @@ import java.util.Arrays
 import java.util.UUID
 import java.util.regex.Pattern
 
-class DefaultPermissionedCredentialServiceTest {
+class DefaultCredentialServiceTest {
 
     @Mock
     private lateinit var credentialVersionDataService: CredentialVersionDataService
@@ -70,8 +67,8 @@ class DefaultPermissionedCredentialServiceTest {
     @Mock
     private lateinit var auditRecord: CEFAuditRecord
 
-    private lateinit var subjectWithoutConcatenateCas: DefaultPermissionedCredentialService
-    private lateinit var subjectWithConcatenateCas: DefaultPermissionedCredentialService
+    private lateinit var subjectWithoutConcatenateCas: DefaultCredentialService
+    private lateinit var subjectWithConcatenateCas: DefaultCredentialService
     private lateinit var existingCredentialVersion: CredentialVersion
     private lateinit var userContext: UserContext
     private lateinit var generationParameters: StringGenerationParameters
@@ -93,26 +90,22 @@ class DefaultPermissionedCredentialServiceTest {
         val userContextHolder = UserContextHolder()
         userContextHolder.userContext = userContext
 
-        subjectWithoutConcatenateCas = DefaultPermissionedCredentialService(
-            credentialVersionDataService,
-            credentialFactory,
-            permissionCheckingService,
-            certificateAuthorityService,
-            userContextHolder,
-            credentialDataService,
-            auditRecord,
-            false
+        subjectWithoutConcatenateCas = DefaultCredentialService(
+                credentialVersionDataService,
+                credentialFactory,
+                certificateAuthorityService,
+                credentialDataService,
+                auditRecord,
+                false
         )
 
-        subjectWithConcatenateCas = DefaultPermissionedCredentialService(
-            credentialVersionDataService,
-            credentialFactory,
-            permissionCheckingService,
-            certificateAuthorityService,
-            userContextHolder,
-            credentialDataService,
-            auditRecord,
-            true
+        subjectWithConcatenateCas = DefaultCredentialService(
+                credentialVersionDataService,
+                credentialFactory,
+                certificateAuthorityService,
+                credentialDataService,
+                auditRecord,
+                true
         )
 
         generationParameters = mock<StringGenerationParameters>(StringGenerationParameters::class.java)
@@ -165,39 +158,6 @@ class DefaultPermissionedCredentialServiceTest {
     }
 
     @Test
-    fun delete_whenTheUserLacksPermission_throwsAnException() {
-        `when`(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
-            .thenReturn(false)
-
-        Assertions.assertThatThrownBy {
-            subjectWithoutConcatenateCas.delete(CREDENTIAL_NAME)
-        }.isInstanceOf(EntryNotFoundException::class.java)
-            .hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
-    }
-
-    @Test
-    fun findAllByName_whenTheUserLacksPermission_throwsAnException() {
-        `when`(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
-            .thenReturn(false)
-
-        Assertions.assertThatThrownBy {
-            subjectWithoutConcatenateCas.findAllByName(CREDENTIAL_NAME)
-        }.isInstanceOf(EntryNotFoundException::class.java)
-            .hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
-    }
-
-    @Test
-    fun findNByName_whenTheUserLacksPermission_throwsAnException() {
-        `when`(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
-            .thenReturn(false)
-
-        Assertions.assertThatThrownBy {
-            subjectWithoutConcatenateCas.findNByName(CREDENTIAL_NAME, 1)
-        }.isInstanceOf(EntryNotFoundException::class.java)
-            .hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
-    }
-
-    @Test
     fun getNCredentialVersions_whenTheNumberOfCredentialsIsNegative_throws() {
         `when`(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
             .thenReturn(true)
@@ -215,47 +175,6 @@ class DefaultPermissionedCredentialServiceTest {
 
         Assertions.assertThatThrownBy {
             subjectWithoutConcatenateCas.findVersionByUuid(VERSION_UUID_STRING)
-        }.isInstanceOf(EntryNotFoundException::class.java)
-            .hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
-    }
-
-    @Test
-    fun getCredentialVersion_whenTheUserLacksPermission_throwsExceptionAndSetsCorrectAuditingParameters() {
-        `when`(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
-            .thenReturn(false)
-        val passwordCredentialVersion = PasswordCredentialVersion(CREDENTIAL_NAME)
-        val credential = Credential("hello")
-        passwordCredentialVersion.credential = credential
-        `when`<CredentialVersion>(credentialVersionDataService.findByUuid(VERSION_UUID_STRING))
-            .thenReturn(passwordCredentialVersion)
-
-        Assertions.assertThatThrownBy {
-            subjectWithoutConcatenateCas.findVersionByUuid(VERSION_UUID_STRING)
-            verify<CEFAuditRecord>(auditRecord, times(1)).addResource(credential)
-            verify<CEFAuditRecord>(auditRecord, times(1)).addVersion(passwordCredentialVersion)
-            verify<CEFAuditRecord>(auditRecord, times(1)).requestDetails = GetCredentialById(VERSION_UUID_STRING)
-        }.isInstanceOf(EntryNotFoundException::class.java)
-            .hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
-    }
-
-    @Test
-    fun findAllCertificateCredentialsByCaName_whenTheUserLacksPermission_throwsException() {
-        `when`(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
-            .thenReturn(false)
-
-        Assertions.assertThatThrownBy {
-            subjectWithoutConcatenateCas.findAllCertificateCredentialsByCaName(CREDENTIAL_NAME)
-        }.isInstanceOf(EntryNotFoundException::class.java)
-            .hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
-    }
-
-    @Test
-    fun findByUuid_whenTheUUIDCorrespondsToACredential_andTheUserDoesNotHavePermission_throwsAnException() {
-        `when`(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, READ))
-            .thenReturn(false)
-
-        Assertions.assertThatThrownBy {
-            subjectWithoutConcatenateCas.findByUuid(CREDENTIAL_UUID)
         }.isInstanceOf(EntryNotFoundException::class.java)
             .hasMessage(ErrorMessages.Credential.INVALID_ACCESS)
     }

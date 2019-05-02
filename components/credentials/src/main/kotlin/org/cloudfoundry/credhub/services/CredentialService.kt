@@ -7,7 +7,7 @@ import org.cloudfoundry.credhub.requests.BaseCredentialRequest
 import org.cloudfoundry.credhub.views.FindCredentialResult
 import java.util.UUID
 
-interface PermissionedCredentialService {
+interface CredentialService {
 
     fun save(
         existingCredentialVersion: CredentialVersion?,

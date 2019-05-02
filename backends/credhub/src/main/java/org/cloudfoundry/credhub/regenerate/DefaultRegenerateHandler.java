@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.generate;
+package org.cloudfoundry.credhub.regenerate;
 
 import java.util.Collection;
 import java.util.Set;
@@ -12,9 +12,11 @@ import org.cloudfoundry.credhub.audit.entities.BulkRegenerateCredential;
 import org.cloudfoundry.credhub.credential.CredentialValue;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
+import org.cloudfoundry.credhub.generate.GenerationRequestGenerator;
+import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator;
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.requests.CertificateGenerateRequest;
-import org.cloudfoundry.credhub.services.PermissionedCredentialService;
+import org.cloudfoundry.credhub.services.CredentialService;
 import org.cloudfoundry.credhub.views.BulkRegenerateResults;
 import org.cloudfoundry.credhub.views.CredentialView;
 
@@ -25,13 +27,14 @@ import org.cloudfoundry.credhub.views.CredentialView;
 @Service
 public class DefaultRegenerateHandler implements RegenerateHandler {
 
-  private final PermissionedCredentialService credentialService;
+  private final CredentialService credentialService;
   private final UniversalCredentialGenerator credentialGenerator;
   private final GenerationRequestGenerator generationRequestGenerator;
   private final CEFAuditRecord auditRecord;
 
-  DefaultRegenerateHandler(
-    final PermissionedCredentialService credentialService,
+  // todo: add permissions
+  public DefaultRegenerateHandler(
+    final CredentialService credentialService,
     final UniversalCredentialGenerator credentialGenerator,
     final GenerationRequestGenerator generationRequestGenerator,
     final CEFAuditRecord auditRecord

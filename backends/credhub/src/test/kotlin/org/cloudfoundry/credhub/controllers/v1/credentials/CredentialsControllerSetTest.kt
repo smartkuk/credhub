@@ -24,7 +24,7 @@ import org.cloudfoundry.credhub.requests.RsaSetRequest
 import org.cloudfoundry.credhub.requests.SshSetRequest
 import org.cloudfoundry.credhub.requests.UserSetRequest
 import org.cloudfoundry.credhub.requests.ValueSetRequest
-import org.cloudfoundry.credhub.services.SpyPermissionedCredentialService
+import org.cloudfoundry.credhub.services.SpyCredentialService
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
@@ -46,7 +46,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.security.Security
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 @RunWith(SpringRunner::class)
 class CredentialsControllerSetTest {
@@ -57,17 +57,13 @@ class CredentialsControllerSetTest {
     val uuid = UUID.randomUUID()
 
     lateinit var mockMvc: MockMvc
-    lateinit var spySetHandler: SpySetHandler
+    private var spyCredentialsHandler: SpyCredentialsHandler = SpyCredentialsHandler()
 
     @Before
     fun setUp() {
-        spySetHandler = SpySetHandler()
-
         val credentialController = CredentialsController(
-            SpyPermissionedCredentialService(),
-            SpyCredentialsHandler(),
-            spySetHandler,
-            SpyLegacyGenerationHandler(),
+            SpyCredentialService(),
+            spyCredentialsHandler,
             CEFAuditRecord()
         )
 
@@ -80,7 +76,7 @@ class CredentialsControllerSetTest {
 
     @Test
     fun PUT__set_value_credential_returns__value_credential() {
-        spySetHandler.handle__returns_credentialView = CredentialView(
+        spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
@@ -122,7 +118,7 @@ class CredentialsControllerSetTest {
         expectedValueSetRequest.name = "/some-value-path"
         expectedValueSetRequest.type = CredentialType.VALUE.type.toLowerCase()
 
-        assertThat(spySetHandler.handle__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
+        assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
         val expectedResponse = """
@@ -140,7 +136,7 @@ class CredentialsControllerSetTest {
 
     @Test
     fun PUT__set_json_credential_returns__json_credential() {
-        spySetHandler.handle__returns_credentialView = CredentialView(
+        spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-value-path",
@@ -199,7 +195,7 @@ class CredentialsControllerSetTest {
         expectedValueSetRequest.name = "/some-value-path"
         expectedValueSetRequest.type = CredentialType.JSON.type.toLowerCase()
 
-        assertThat(spySetHandler.handle__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
+        assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
         val expectedResponse = """
@@ -219,7 +215,7 @@ class CredentialsControllerSetTest {
 
     @Test
     fun PUT__set_password_credential_returns__password_credential() {
-        spySetHandler.handle__returns_credentialView = CredentialView(
+        spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-password-path",
@@ -261,7 +257,7 @@ class CredentialsControllerSetTest {
         expectedValueSetRequest.name = "/some-password-path"
         expectedValueSetRequest.type = CredentialType.PASSWORD.type.toLowerCase()
 
-        assertThat(spySetHandler.handle__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
+        assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
         val expectedResponse = """
@@ -279,7 +275,7 @@ class CredentialsControllerSetTest {
 
     @Test
     fun PUT__set_user_credential_returns__user_credential() {
-        spySetHandler.handle__returns_credentialView = CredentialView(
+        spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-user-path",
@@ -333,7 +329,7 @@ class CredentialsControllerSetTest {
         expectedValueSetRequest.name = "/some-user-path"
         expectedValueSetRequest.type = CredentialType.USER.type.toLowerCase()
 
-        assertThat(spySetHandler.handle__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
+        assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
         val expectedResponse = """
@@ -355,7 +351,7 @@ class CredentialsControllerSetTest {
 
     @Test
     fun PUT__set_certificate_credential_returns__certificate_credential() {
-        spySetHandler.handle__returns_credentialView = CredentialView(
+        spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-certificate-path",
@@ -421,7 +417,7 @@ class CredentialsControllerSetTest {
         expectedValueSetRequest.name = "/some-certificate-path"
         expectedValueSetRequest.type = CredentialType.CERTIFICATE.type.toLowerCase()
 
-        assertThat(spySetHandler.handle__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
+        assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
         val expectedResponse = """
@@ -445,7 +441,7 @@ class CredentialsControllerSetTest {
 
     @Test
     fun PUT__set_rsa_credential_returns__rsa_credential() {
-        spySetHandler.handle__returns_credentialView = CredentialView(
+        spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-rsa-path",
@@ -499,7 +495,7 @@ class CredentialsControllerSetTest {
         expectedValueSetRequest.name = "/some-rsa-path"
         expectedValueSetRequest.type = CredentialType.RSA.type.toLowerCase()
 
-        assertThat(spySetHandler.handle__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
+        assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
         val expectedResponse = """
@@ -520,7 +516,7 @@ class CredentialsControllerSetTest {
 
     @Test
     fun PUT__set_ssh_credential_returns__ssh_credential() {
-        spySetHandler.handle__returns_credentialView = CredentialView(
+        spyCredentialsHandler.setCredential__returns_credentialView = CredentialView(
             Instant.ofEpochSecond(1549053472L),
             uuid,
             "/some-ssh-path",
@@ -576,7 +572,7 @@ class CredentialsControllerSetTest {
         expectedValueSetRequest.name = "/some-ssh-path"
         expectedValueSetRequest.type = CredentialType.SSH.type.toLowerCase()
 
-        assertThat(spySetHandler.handle__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
+        assertThat(spyCredentialsHandler.setCredential__calledWith_setRequest).isEqualTo(expectedValueSetRequest)
 
         // language=json
         val expectedResponse = """

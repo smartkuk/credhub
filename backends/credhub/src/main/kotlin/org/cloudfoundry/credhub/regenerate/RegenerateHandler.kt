@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.generate
+package org.cloudfoundry.credhub.regenerate
 
 import org.cloudfoundry.credhub.views.BulkRegenerateResults
 import org.cloudfoundry.credhub.views.CredentialView

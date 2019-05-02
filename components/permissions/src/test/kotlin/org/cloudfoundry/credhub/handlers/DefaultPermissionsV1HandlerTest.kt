@@ -19,7 +19,7 @@ class DefaultPermissionsV1HandlerTest {
     private lateinit var credentialVersion: CredentialVersion
     private lateinit var subject: DefaultPermissionsV1Handler
     private lateinit var spyPermissionService: SpyPermissionService
-    private lateinit var spyPermissionedCredentialService: SpyPermissionedCredentialService
+    private lateinit var spyPermissionedCredentialService: SpyCredentialService
 
     companion object {
         private const val CREDENTIAL_NAME = "/test-credential"
@@ -34,7 +34,7 @@ class DefaultPermissionsV1HandlerTest {
         )
 
         spyPermissionService = SpyPermissionService()
-        spyPermissionedCredentialService = SpyPermissionedCredentialService()
+        spyPermissionedCredentialService = SpyCredentialService()
         subject = DefaultPermissionsV1Handler(
             spyPermissionService,
             spyPermissionedCredentialService

@@ -4,18 +4,18 @@ import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.requests.PermissionsRequest
 import org.cloudfoundry.credhub.services.PermissionService
-import org.cloudfoundry.credhub.services.PermissionedCredentialService
+import org.cloudfoundry.credhub.services.CredentialService
 import org.cloudfoundry.credhub.views.PermissionsView
 import org.springframework.stereotype.Component
 
 @Component
 class DefaultPermissionsV1Handler(
     private val permissionService: PermissionService,
-    private val permissionedCredentialService: PermissionedCredentialService
+    private val credentialService: CredentialService
 ) : PermissionsV1Handler {
 
     override fun getPermissions(name: String): PermissionsView {
-        val credentialVersion = permissionedCredentialService.findMostRecent(name)
+        val credentialVersion = credentialService.findMostRecent(name)
         val permissions = permissionService.getPermissions(credentialVersion)
         return PermissionsView(credentialVersion!!.name, permissions)
     }

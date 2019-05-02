@@ -1,10 +1,26 @@
 package org.cloudfoundry.credhub.controllers.v1.credentials
 
-import org.cloudfoundry.credhub.generate.CredentialsHandler
+import org.cloudfoundry.credhub.credentials.CredentialsHandler
+import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
+import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
 import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
 
 class SpyCredentialsHandler : CredentialsHandler {
+
+    lateinit var generateCredential__calledWith_generateRequest: BaseCredentialGenerateRequest
+    lateinit var generateCredential__returns_credentialView: CredentialView
+    override fun generateCredential(generateRequest: BaseCredentialGenerateRequest): CredentialView {
+        generateCredential__calledWith_generateRequest = generateRequest
+        return generateCredential__returns_credentialView
+    }
+
+    lateinit var setCredential__calledWith_setRequest: BaseCredentialSetRequest<*>
+    lateinit var setCredential__returns_credentialView: CredentialView
+    override fun setCredential(setRequest: BaseCredentialSetRequest<*>): CredentialView {
+        setCredential__calledWith_setRequest = setRequest
+        return setCredential__returns_credentialView
+    }
 
     lateinit var deleteCredential__calledWith_credentialName: String
     override fun deleteCredential(credentialName: String) {

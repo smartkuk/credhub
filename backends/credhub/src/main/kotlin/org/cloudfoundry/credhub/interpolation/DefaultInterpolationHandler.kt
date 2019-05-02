@@ -5,13 +5,13 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
-import org.cloudfoundry.credhub.services.PermissionedCredentialService
+import org.cloudfoundry.credhub.services.CredentialService
 import org.springframework.stereotype.Service
 import java.util.ArrayList
 
 @Service
 class DefaultInterpolationHandler(
-    val credentialService: PermissionedCredentialService,
+    val credentialService: CredentialService,
     val auditRecord: CEFAuditRecord
 ) : InterpolationHandler {
 

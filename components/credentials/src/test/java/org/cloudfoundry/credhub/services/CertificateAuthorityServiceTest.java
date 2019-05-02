@@ -1,11 +1,9 @@
 package org.cloudfoundry.credhub.services;
 
 import org.cloudfoundry.credhub.ErrorMessages;
-import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
-import org.cloudfoundry.credhub.data.CertificateAuthorityService;
 import org.cloudfoundry.credhub.data.DefaultCertificateVersionDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
@@ -22,7 +20,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,7 +32,6 @@ public class CertificateAuthorityServiceTest {
   private DefaultCertificateVersionDataService certificateVersionDataService;
   private CertificateCredentialValue certificate;
   private CertificateCredentialVersion certificateCredential;
-  private PermissionCheckingService permissionCheckingService;
   private UserContext userContext;
 
   @Before
@@ -43,18 +39,14 @@ public class CertificateAuthorityServiceTest {
     certificate = new CertificateCredentialValue(null, CertificateStringConstants.SELF_SIGNED_CA_CERT, "my-key", null);
     certificateCredential = mock(CertificateCredentialVersion.class);
 
-    permissionCheckingService = mock(PermissionCheckingService.class);
     userContext = mock(UserContext.class);
     when(userContext.getActor()).thenReturn(USER_NAME);
     when(certificateCredential.getName()).thenReturn(CREDENTIAL_NAME);
-    when(permissionCheckingService.hasPermission(USER_NAME, CREDENTIAL_NAME, PermissionOperation.READ))
-      .thenReturn(true);
 
     certificateVersionDataService = mock(DefaultCertificateVersionDataService.class);
     final UserContextHolder userContextHolder = new UserContextHolder();
     userContextHolder.setUserContext(userContext);
-    certificateAuthorityService = new CertificateAuthorityService(certificateVersionDataService,
-      permissionCheckingService, userContextHolder);
+    certificateAuthorityService = new CertificateAuthorityService(certificateVersionDataService);
   }
 
   @Test
@@ -68,22 +60,20 @@ public class CertificateAuthorityServiceTest {
     }
   }
 
-  @Test
-  public void findActiveVersion_whenACaDoesNotExistAndPermissionsAreNotEnforced_throwsException() {
-    when(certificateVersionDataService.findActive(any(String.class))).thenReturn(null);
-    when(permissionCheckingService.hasPermission(anyString(), anyString(), any())).thenReturn(true);
-    try {
-      certificateAuthorityService.findActiveVersion("any ca name");
-    } catch (final EntryNotFoundException pe) {
-      assertThat(pe.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
-    }
-  }
+  // todo: remove this
+//  @Test
+//  public void findActiveVersion_whenACaDoesNotExist_throwsException() {
+//    when(certificateVersionDataService.findActive(any(String.class))).thenReturn(null);
+//    try {
+//      certificateAuthorityService.findActiveVersion("any ca name");
+//    } catch (final EntryNotFoundException pe) {
+//      assertThat(pe.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
+//    }
+//  }
 
   @Test
   public void findActiveVersion_whenCaNameRefersToNonCa_throwsException() {
     when(certificateVersionDataService.findActive(any(String.class))).thenReturn(mock(PasswordCredentialVersion.class));
-    when(permissionCheckingService.hasPermission(USER_NAME, "any non-ca name", PermissionOperation.READ))
-      .thenReturn(true);
 
     try {
       certificateAuthorityService.findActiveVersion("any non-ca name");

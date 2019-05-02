@@ -1,16 +1,11 @@
 package org.cloudfoundry.credhub.services
 
 import org.cloudfoundry.credhub.ErrorMessages
-import org.cloudfoundry.credhub.PermissionOperation.DELETE
-import org.cloudfoundry.credhub.PermissionOperation.READ
-import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.audit.entities.GetCredentialById
-import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.constants.CredentialWriteMode
 import org.cloudfoundry.credhub.credential.CredentialValue
-import org.cloudfoundry.credhub.data.CertificateAuthorityService
 import org.cloudfoundry.credhub.data.CredentialDataService
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialFactory
@@ -19,7 +14,6 @@ import org.cloudfoundry.credhub.entity.Credential
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
-import org.cloudfoundry.credhub.exceptions.PermissionException
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
@@ -29,17 +23,15 @@ import org.springframework.stereotype.Service
 import java.util.UUID
 
 @Service
-class DefaultPermissionedCredentialService(
+class DefaultCredentialService(
     private val credentialVersionDataService: CredentialVersionDataService,
     private val credentialFactory: CredentialFactory,
-    private val permissionCheckingService: PermissionCheckingService,
     private val certificateAuthorityService: CertificateAuthorityService,
-    private val userContextHolder: UserContextHolder,
     private val credentialDataService: CredentialDataService,
     private val auditRecord: CEFAuditRecord,
     @Value("\${certificates.concatenate_cas:false}") var concatenateCas: Boolean
 )
-    : PermissionedCredentialService {
+    : CredentialService {
 
     override fun save(
         existingCredentialVersion: CredentialVersion?,
@@ -48,7 +40,7 @@ class DefaultPermissionedCredentialService(
     ): CredentialVersion {
         val shouldWriteNewCredential = shouldWriteNewCredential(existingCredentialVersion, generateRequest)
 
-        validateCredentialSave(generateRequest.name, generateRequest.type, existingCredentialVersion)
+        validateCredentialSave(generateRequest.type, existingCredentialVersion)
 
         return if (!shouldWriteNewCredential) {
             existingCredentialVersion!!
@@ -56,17 +48,10 @@ class DefaultPermissionedCredentialService(
     }
 
     override fun delete(credentialName: String): Boolean {
-        if (!permissionCheckingService.hasPermission(userContextHolder.userContext.actor!!, credentialName, DELETE)) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        }
         return credentialVersionDataService.delete(credentialName)
     }
 
     override fun findAllByName(credentialName: String): List<CredentialVersion> {
-        if (!permissionCheckingService.hasPermission(userContextHolder.userContext.actor!!, credentialName, READ)) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        }
-
         val credentialList = credentialVersionDataService.findAllByName(credentialName)
 
         for (credentialVersion in credentialList) {
@@ -82,19 +67,12 @@ class DefaultPermissionedCredentialService(
             throw InvalidQueryParameterException(ErrorMessages.INVALID_QUERY_PARAMETER, "versions")
         }
 
-        if (!permissionCheckingService.hasPermission(userContextHolder.userContext.actor!!, credentialName, READ)) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        }
-
         val credentialList = credentialVersionDataService.findNByName(credentialName, numberOfVersions)
 
         return concatenateCas(credentialList)
     }
 
     override fun findActiveByName(credentialName: String): List<CredentialVersion> {
-        if (!permissionCheckingService.hasPermission(userContextHolder.userContext.actor!!, credentialName, READ)) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        }
         val credentialList = credentialVersionDataService.findActiveByName(credentialName)
 
         for (credentialVersion in credentialList!!) {
@@ -106,13 +84,9 @@ class DefaultPermissionedCredentialService(
     }
 
     override fun findByUuid(credentialUUID: UUID): Credential {
-        val credential = credentialDataService.findByUUID(credentialUUID)
-            ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
 
-        if (!permissionCheckingService.hasPermission(userContextHolder.userContext.actor!!, credential.name!!, READ)) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        }
-        return credential
+        return credentialDataService.findByUUID(credentialUUID)
+            ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
     }
 
     override fun findVersionByUuid(credentialUUID: String): CredentialVersion {
@@ -127,20 +101,11 @@ class DefaultPermissionedCredentialService(
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
-        val credentialName = credentialVersion.name
-
-        if (!permissionCheckingService.hasPermission(userContextHolder.userContext.actor!!, credentialName, READ)) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        }
-
         val findByUuid = credentialVersionDataService.findByUuid(credentialUUID)!!
         return concatenateCas(listOf(findByUuid))[0]
     }
 
     override fun findAllCertificateCredentialsByCaName(caName: String): List<String> {
-        if (!permissionCheckingService.hasPermission(userContextHolder.userContext.actor!!, caName, READ)) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        }
 
         return credentialVersionDataService.findAllCertificateCredentialsByCaName(caName)
     }
@@ -232,21 +197,10 @@ class DefaultPermissionedCredentialService(
         return generateRequest.isOverwrite
     }
 
-    private fun validateCredentialSave(credentialName: String, type: String, existingCredentialVersion: CredentialVersion?) {
-        verifyWritePermission(credentialName)
+    private fun validateCredentialSave(type: String, existingCredentialVersion: CredentialVersion?) {
 
         if (existingCredentialVersion != null && existingCredentialVersion.credentialType != type) {
             throw ParameterizedValidationException(ErrorMessages.TYPE_MISMATCH)
-        }
-    }
-
-    private fun verifyWritePermission(credentialName: String) {
-        if (userContextHolder.userContext == null) {
-            return
-        }
-
-        if (!permissionCheckingService.hasPermission(userContextHolder.userContext.actor, credentialName, WRITE)) {
-            throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
         }
     }
 }

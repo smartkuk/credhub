@@ -3,6 +3,8 @@ package org.cloudfoundry.credhub.requests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Objects;
+
 public class UserGenerateRequest extends BaseCredentialGenerateRequest {
   @JsonProperty("parameters")
   private StringGenerationParameters passwordGenerationParameters = new StringGenerationParameters();
@@ -32,5 +34,19 @@ public class UserGenerateRequest extends BaseCredentialGenerateRequest {
 
   public void setValue(final UsernameValue value) {
     this.value = value;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    UserGenerateRequest that = (UserGenerateRequest) o;
+    return Objects.equals(passwordGenerationParameters, that.passwordGenerationParameters) &&
+            Objects.equals(value, that.value);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(passwordGenerationParameters, value);
   }
 }

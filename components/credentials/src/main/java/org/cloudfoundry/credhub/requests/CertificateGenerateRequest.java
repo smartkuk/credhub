@@ -6,6 +6,8 @@ import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 
+import java.util.Objects;
+
 public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
 
   @JsonProperty("parameters")
@@ -47,5 +49,19 @@ public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
 
   public void setCertificateGenerationParameters(final CertificateGenerationParameters certificateGenerationParameters) {
     this.certificateGenerationParameters = certificateGenerationParameters;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    CertificateGenerateRequest that = (CertificateGenerateRequest) o;
+    return Objects.equals(requestGenerationParameters, that.requestGenerationParameters) &&
+            Objects.equals(certificateGenerationParameters, that.certificateGenerationParameters);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(requestGenerationParameters, certificateGenerationParameters);
   }
 }

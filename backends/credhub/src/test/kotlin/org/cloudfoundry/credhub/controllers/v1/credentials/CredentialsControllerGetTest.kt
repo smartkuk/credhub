@@ -16,7 +16,7 @@ import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
-import org.cloudfoundry.credhub.services.SpyPermissionedCredentialService
+import org.cloudfoundry.credhub.services.SpyCredentialService
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
@@ -39,7 +39,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.security.Security
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 @RunWith(SpringRunner::class)
 class CredentialsControllerGetTest {
@@ -50,19 +50,17 @@ class CredentialsControllerGetTest {
     val uuid = UUID.randomUUID()
 
     lateinit var mockMvc: MockMvc
-    lateinit var spyPermissionedCredentialService: SpyPermissionedCredentialService
+    lateinit var spyPermissionedCredentialService: SpyCredentialService
     lateinit var spyCredentialsHandler: SpyCredentialsHandler
 
     @Before
     fun setUp() {
-        spyPermissionedCredentialService = SpyPermissionedCredentialService()
+        spyPermissionedCredentialService = SpyCredentialService()
         spyCredentialsHandler = SpyCredentialsHandler()
 
         val credentialController = CredentialsController(
             spyPermissionedCredentialService,
             spyCredentialsHandler,
-            SpySetHandler(),
-            SpyLegacyGenerationHandler(),
             CEFAuditRecord()
         )
 

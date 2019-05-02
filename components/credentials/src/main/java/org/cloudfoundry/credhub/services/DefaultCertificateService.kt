@@ -1,11 +1,10 @@
-package org.cloudfoundry.credhub.permissions
+package org.cloudfoundry.credhub.services
 
 import com.google.common.collect.Lists
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.audit.AuditableCredentialVersion
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
-import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.data.CertificateDataService
 import org.cloudfoundry.credhub.data.CertificateVersionDataService
@@ -17,21 +16,18 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
-import org.cloudfoundry.credhub.services.CredentialVersionDataService
-import org.cloudfoundry.credhub.services.PermissionCheckingService
-import org.cloudfoundry.credhub.services.PermissionedCredentialService
+import org.cloudfoundry.credhub.utils.CertificateReader
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
+import java.util.*
 
+// todo: make interface
 @Service
 @Transactional
-class PermissionedCertificateService(
-    private val permissionedCredentialService: PermissionedCredentialService,
+class DefaultCertificateService(
+    private val credentialService: CredentialService,
     private val certificateDataService: CertificateDataService,
-    private val permissionCheckingService: PermissionCheckingService,
-    private val userContextHolder: UserContextHolder,
     private val certificateVersionDataService: CertificateVersionDataService,
     private val certificateCredentialFactory: CertificateCredentialFactory,
     private val credentialVersionDataService: CredentialVersionDataService,
@@ -48,7 +44,7 @@ class PermissionedCertificateService(
         if (credentialValue.isTransitional) {
             validateNoTransitionalVersionsAlreadyExist(generateRequest.name)
         }
-        return permissionedCredentialService
+        return credentialService
             .save(
                 existingCredentialVersion,
                 credentialValue,
@@ -57,26 +53,12 @@ class PermissionedCertificateService(
     }
 
     fun getAll(): List<Credential> {
-        val allCertificates = certificateDataService.findAll()
-
-        return allCertificates.filter { credential ->
-            permissionCheckingService.hasPermission(
-                userContextHolder.userContext.actor!!,
-                credential.name!!,
-                PermissionOperation.READ
-            )
-        }
+        return certificateDataService.findAll()
     }
 
     fun getByName(name: String): List<Credential> {
         val certificate = certificateDataService.findByName(name)
             ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-
-        failForInvalidAccess(
-            userContextHolder.userContext.actor!!,
-            certificate.name!!,
-            PermissionOperation.READ
-        )
 
         return listOf(certificate)
     }
@@ -102,12 +84,6 @@ class PermissionedCertificateService(
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
-        failForInvalidAccess(
-            userContextHolder.userContext.actor!!,
-            name,
-            PermissionOperation.READ
-        )
-
         return concatenateCas(list)
     }
 
@@ -130,29 +106,17 @@ class PermissionedCertificateService(
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
 
-        failForInvalidAccess(
-            userContextHolder.userContext.actor!!,
-            name,
-            PermissionOperation.READ
-        )
-
         return list
     }
 
     fun findSignedCertificates(caName: String): List<String> {
-        return permissionedCredentialService.findAllCertificateCredentialsByCaName(caName)
+        return credentialService.findAllCertificateCredentialsByCaName(caName)
     }
 
     fun updateTransitionalVersion(certificateUuid: UUID, newTransitionalVersionUuid: UUID?): List<CredentialVersion> {
         val credential = findCertificateCredential(certificateUuid)
 
         val name = credential.name
-
-        failForInvalidAccess(
-            userContextHolder.userContext.actor!!,
-            name!!,
-            PermissionOperation.WRITE
-        )
 
         certificateVersionDataService.unsetTransitionalVersion(certificateUuid)
 
@@ -165,7 +129,7 @@ class PermissionedCertificateService(
             certificateVersionDataService.setTransitionalVersion(newTransitionalVersionUuid)
         }
 
-        val credentialVersions = certificateVersionDataService.findActiveWithTransitional(name)
+        val credentialVersions = certificateVersionDataService.findActiveWithTransitional(name!!)
         auditRecord.addAllVersions(Lists.newArrayList<AuditableCredentialVersion>(credentialVersions!!))
 
         return credentialVersions
@@ -174,12 +138,6 @@ class PermissionedCertificateService(
     fun deleteVersion(certificateUuid: UUID, versionUuid: UUID): CertificateCredentialVersion {
         val certificate = certificateDataService.findByUuid(certificateUuid)
             ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-
-        failForInvalidAccess(
-            userContextHolder.userContext.actor!!,
-            certificate.name!!,
-            PermissionOperation.DELETE
-        )
 
         val versionToDelete = certificateVersionDataService.findVersion(versionUuid)
 
@@ -195,14 +153,13 @@ class PermissionedCertificateService(
         return versionToDelete
     }
 
+    fun findByCredentialUuid(uuid: String): CertificateCredentialVersion {
+        return certificateVersionDataService.findByCredentialUUID(uuid)
+            as? CertificateCredentialVersion ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+    }
+
     operator fun set(certificateUuid: UUID, value: CertificateCredentialValue): CertificateCredentialVersion {
         val credential = findCertificateCredential(certificateUuid)
-
-        failForInvalidAccess(
-            userContextHolder.userContext.actor!!,
-            credential.name!!,
-            PermissionOperation.WRITE
-        )
 
         if (value.isTransitional) {
             validateNoTransitionalVersionsAlreadyExist(credential.name)
@@ -229,22 +186,6 @@ class PermissionedCertificateService(
         }
     }
 
-    private fun failForInvalidAccess(
-        actor: String,
-        credentialName: String,
-        permissionOperation: PermissionOperation
-    ) {
-        val hasPermission = permissionCheckingService.hasPermission(
-            actor,
-            credentialName,
-            permissionOperation
-        )
-
-        if (!hasPermission) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
-        }
-    }
-
     private fun versionDoesNotBelongToCertificate(certificate: Credential, version: CertificateCredentialVersion?): Boolean {
         return version == null || certificate.uuid != version.credential.uuid
     }
@@ -259,7 +200,7 @@ class PermissionedCertificateService(
     }
 
     private fun validateNoTransitionalVersionsAlreadyExist(name: String?) {
-        val credentialVersions = permissionedCredentialService
+        val credentialVersions = credentialService
             .findAllByName(name!!)
 
         val transitionalVersionsAlreadyExist = credentialVersions.stream()

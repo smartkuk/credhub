@@ -1,40 +1,27 @@
-package org.cloudfoundry.credhub.data;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+package org.cloudfoundry.credhub.services;
 
 import org.cloudfoundry.credhub.ErrorMessages;
-import org.cloudfoundry.credhub.PermissionOperation;
-import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
+import org.cloudfoundry.credhub.data.DefaultCertificateVersionDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.services.PermissionCheckingService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class CertificateAuthorityService {
 
   private final DefaultCertificateVersionDataService certificateVersionDataService;
-  private final PermissionCheckingService permissionCheckingService;
-  private final UserContextHolder userContextHolder;
 
   @Autowired
-  public CertificateAuthorityService(final DefaultCertificateVersionDataService certificateVersionDataService,
-                                     final PermissionCheckingService permissionCheckingService,
-                                     final UserContextHolder userContextHolder) {
+  public CertificateAuthorityService(final DefaultCertificateVersionDataService certificateVersionDataService) {
     super();
     this.certificateVersionDataService = certificateVersionDataService;
-    this.permissionCheckingService = permissionCheckingService;
-    this.userContextHolder = userContextHolder;
   }
 
   public CertificateCredentialValue findActiveVersion(final String caName) {
-    if (!permissionCheckingService.hasPermission(userContextHolder.getUserContext().getActor(), caName, PermissionOperation.READ)) {
-      throw new EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS);
-    }
-
     final CredentialVersion mostRecent = certificateVersionDataService.findActive(caName);
 
     if (mostRecent == null) {

@@ -23,7 +23,6 @@ import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
-import org.cloudfoundry.credhub.permissions.PermissionedCertificateService;
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.junit.Before;
@@ -34,49 +33,50 @@ import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Fail.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.core.IsNull.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class PermissionedCertificateServiceTest {
-  private PermissionedCertificateService subjectWithoutConcatenateCas;
-  private PermissionedCertificateService subjectWithConcatenateCas;
-  private DefaultPermissionedCredentialService permissionedCredentialService;
+public class DefaultCertificateServiceTest {
+  private DefaultCertificateService subjectWithoutConcatenateCas;
+  private DefaultCertificateService subjectWithConcatenateCas;
+  private DefaultCredentialService permissionedCredentialService;
   private CertificateDataService certificateDataService;
-  private PermissionCheckingService permissionCheckingService;
   private UserContextHolder userContextHolder;
   private DefaultCertificateVersionDataService certificateVersionDataService;
   private CertificateCredentialFactory certificateCredentialFactory;
   private UUID uuid;
   private CredentialVersionDataService credentialVersionDataService;
+  private UserContext userContext;
+  private final static String actor = "Actor";
 
   @Before
   public void beforeEach() {
     uuid = UUID.randomUUID();
-    permissionedCredentialService = mock(DefaultPermissionedCredentialService.class);
+    permissionedCredentialService = mock(DefaultCredentialService.class);
     certificateDataService = mock(CertificateDataService.class);
-    permissionCheckingService = mock(PermissionCheckingService.class);
     certificateDataService = mock(CertificateDataService.class);
     userContextHolder = mock(UserContextHolder.class);
     certificateVersionDataService = mock(DefaultCertificateVersionDataService.class);
     certificateCredentialFactory = mock(CertificateCredentialFactory.class);
     credentialVersionDataService = mock(CredentialVersionDataService.class);
-    subjectWithoutConcatenateCas = new PermissionedCertificateService(
+    userContext = mock(UserContext.class);
+    when(userContext.getActor()).thenReturn(actor);
+    when(userContextHolder.getUserContext()).thenReturn(userContext);
+    subjectWithoutConcatenateCas = new DefaultCertificateService(
       permissionedCredentialService,
       certificateDataService,
-      permissionCheckingService,
-      userContextHolder,
       certificateVersionDataService,
       certificateCredentialFactory,
       credentialVersionDataService,
       new CEFAuditRecord(), false
     );
-    subjectWithConcatenateCas = new PermissionedCertificateService(
+    subjectWithConcatenateCas = new DefaultCertificateService(
       permissionedCredentialService,
       certificateDataService,
-      permissionCheckingService,
-      userContextHolder,
       certificateVersionDataService,
       certificateCredentialFactory,
       credentialVersionDataService,
@@ -168,9 +168,6 @@ public class PermissionedCertificateServiceTest {
     final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
 
-    when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
-    when(permissionCheckingService.hasPermission(user, "your-credential", PermissionOperation.READ)).thenReturn(false);
-
     when(certificateDataService.findAll())
       .thenReturn(newArrayList(myCredential, yourCredential));
 
@@ -190,9 +187,6 @@ public class PermissionedCertificateServiceTest {
 
     final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
-
-    when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
-    when(permissionCheckingService.hasPermission(user, "other-credential", PermissionOperation.READ)).thenReturn(true);
 
     when(certificateDataService.findByName("my-credential"))
       .thenReturn(myCredential);
@@ -216,7 +210,6 @@ public class PermissionedCertificateServiceTest {
     final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
 
-    when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
 
     when(certificateVersionDataService.findAllVersions(uuid))
       .thenReturn(versions);
@@ -241,8 +234,6 @@ public class PermissionedCertificateServiceTest {
 
     final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
-
-    when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
 
     when(certificateDataService.findByUuid(uuid))
       .thenReturn(aCredential);
@@ -271,6 +262,7 @@ public class PermissionedCertificateServiceTest {
     subjectWithoutConcatenateCas.getVersions(uuid, false);
   }
 
+  //todo: remove
   @Test(expected = EntryNotFoundException.class)
   public void getVersions_returnsAnError_whenUserDoesntHavePermission() {
     final CredentialVersion myCredential = mock(CredentialVersion.class);
@@ -285,8 +277,6 @@ public class PermissionedCertificateServiceTest {
 
     final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
-
-    when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(false);
 
     when(certificateVersionDataService.findAllVersions(uuid))
       .thenReturn(versions);
@@ -309,7 +299,6 @@ public class PermissionedCertificateServiceTest {
     final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
 
-    when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(true);
 
     when(certificateVersionDataService.findAllValidVersions(uuid))
       .thenReturn(versions);
@@ -343,6 +332,7 @@ public class PermissionedCertificateServiceTest {
     subjectWithoutConcatenateCas.getAllValidVersions(uuid);
   }
 
+  //todo: remove
   @Test(expected = EntryNotFoundException.class)
   public void getAllValidVersions_returnsAnError_whenUserDoesntHavePermission() {
     final CredentialVersion firstVersion = mock(CredentialVersion.class);
@@ -357,8 +347,6 @@ public class PermissionedCertificateServiceTest {
 
     final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
-
-    when(permissionCheckingService.hasPermission(user, "my-credential", PermissionOperation.READ)).thenReturn(false);
 
     when(certificateVersionDataService.findAllValidVersions(uuid))
       .thenReturn(versions);
@@ -379,7 +367,6 @@ public class PermissionedCertificateServiceTest {
     final String user = "my-user";
     final String credentialName = "my-credential";
     when(userContext.getActor()).thenReturn(user);
-    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(true);
 
     final Credential certificate = mock(Credential.class);
     when(certificate.getName()).thenReturn(credentialName);
@@ -395,6 +382,7 @@ public class PermissionedCertificateServiceTest {
     assertThat(certificateCredentialVersion, equalTo(versionToDelete));
   }
 
+  //todo: remove
   @Test(expected = EntryNotFoundException.class)
   public void deleteVersion_whenTheUserDoesNotHavePermission_returnsAnError() {
     final UUID versionUuid = UUID.randomUUID();
@@ -405,7 +393,6 @@ public class PermissionedCertificateServiceTest {
     final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
     final String credentialName = "my-credential";
-    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(false);
 
     final Credential certificate = mock(Credential.class);
     when(certificate.getName()).thenReturn(credentialName);
@@ -429,7 +416,6 @@ public class PermissionedCertificateServiceTest {
     final String user = "my-user";
     final String credentialName = "my-credential";
     when(userContext.getActor()).thenReturn(user);
-    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(true);
 
     final Credential certificate = mock(Credential.class);
     when(certificate.getName()).thenReturn(credentialName);
@@ -455,7 +441,6 @@ public class PermissionedCertificateServiceTest {
     final String user = "my-user";
     final String credentialName = "my-credential";
     when(userContext.getActor()).thenReturn(user);
-    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(true);
 
     final Credential certificate = mock(Credential.class);
     when(certificate.getName()).thenReturn(credentialName);
@@ -478,7 +463,6 @@ public class PermissionedCertificateServiceTest {
     final String user = "my-user";
     final String credentialName = "my-credential";
     when(userContext.getActor()).thenReturn(user);
-    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.DELETE)).thenReturn(true);
 
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(null);
 
@@ -488,6 +472,7 @@ public class PermissionedCertificateServiceTest {
     subjectWithoutConcatenateCas.deleteVersion(certificateUuid, versionUuid);
   }
 
+  // todo: remove
   @Test(expected = EntryNotFoundException.class)
   public void updateTransitionalVersion_whenTheUserDoesNotHavePermissions_returnsAnError() {
     final UUID certificateUuid = UUID.randomUUID();
@@ -505,7 +490,6 @@ public class PermissionedCertificateServiceTest {
     final String user = "my-user";
 
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
-    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.WRITE)).thenReturn(false);
 
     subjectWithoutConcatenateCas.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
   }
@@ -539,7 +523,6 @@ public class PermissionedCertificateServiceTest {
     when(userContext.getActor()).thenReturn(user);
 
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
-    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.WRITE)).thenReturn(true);
 
     when(certificateVersionDataService.findVersion(transitionalVersionUuid)).thenReturn(null);
 
@@ -567,7 +550,6 @@ public class PermissionedCertificateServiceTest {
     when(userContext.getActor()).thenReturn(user);
 
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
-    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.WRITE)).thenReturn(true);
 
     when(certificateVersionDataService.findVersion(transitionalVersionUuid)).thenReturn(version);
     when(version.getCredential()).thenReturn(otherCertificate);
@@ -575,6 +557,7 @@ public class PermissionedCertificateServiceTest {
     subjectWithoutConcatenateCas.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
   }
 
+  //todo: remove
   @Test(expected = EntryNotFoundException.class)
   public void set_whenTheUserDoesNotHavePermission_throwsAnException() {
     final UUID certificateUuid = UUID.randomUUID();
@@ -589,7 +572,6 @@ public class PermissionedCertificateServiceTest {
     when(userContext.getActor()).thenReturn(user);
 
     when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
-    when(permissionCheckingService.hasPermission(user, credentialName, PermissionOperation.WRITE)).thenReturn(false);
 
     subjectWithoutConcatenateCas.set(certificateUuid, mock(CertificateCredentialValue.class));
   }
@@ -627,9 +609,6 @@ public class PermissionedCertificateServiceTest {
 
     final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
-
-    when(permissionCheckingService.hasPermission(user, "some-cert", PermissionOperation.READ)).thenReturn(true);
-
 
     final List<CredentialVersion> results = subjectWithConcatenateCas.getVersions(certUuid, false);
     CertificateCredentialVersion resultCert = (CertificateCredentialVersion) results.get(0);
@@ -670,9 +649,6 @@ public class PermissionedCertificateServiceTest {
     final String user = "my-user";
     when(userContext.getActor()).thenReturn(user);
 
-    when(permissionCheckingService.hasPermission(user, "some-cert", PermissionOperation.READ)).thenReturn(true);
-
-
     final List<CredentialVersion> results = subjectWithoutConcatenateCas.getVersions(certUuid, false);
     CertificateCredentialVersion resultCert = (CertificateCredentialVersion) results.get(0);
 
@@ -683,6 +659,42 @@ public class PermissionedCertificateServiceTest {
       allMatches.add(m.group());
     }
     assertThat(allMatches.size(), equalTo(1));
+  }
+
+  @Test
+  public void findByUuid_ReturnsCertificateWithMatchingUuid() {
+    final CredentialVersion credentialVersion = new CertificateCredentialVersion();
+    credentialVersion.createName("credential-name");
+    String credentialUuid = UUID.randomUUID().toString();
+    when(certificateVersionDataService.findByCredentialUUID(credentialUuid)).thenReturn(credentialVersion);
+
+
+    final CertificateCredentialVersion certificate = subjectWithoutConcatenateCas.findByCredentialUuid(credentialUuid);
+
+    assertThat(certificate, not(nullValue()));
+  }
+
+  // todo: move this
+  @Test(expected = EntryNotFoundException.class)
+  public void findByUuid_ThrowsIfUserDoesNotHaveReadAccess() {
+//    when(permissionCheckingService.hasPermission(actor, credentialName, PermissionOperation.READ))
+//      .thenReturn(false);
+//
+//    subjectWithoutConcatenateCas.findByCredentialUuid(credentialUuid);
+  }
+
+  @Test(expected = EntryNotFoundException.class)
+  public void findByUuid_ThrowsEntryNotFoundIfUuidNotFound() {
+    when(certificateVersionDataService.findByCredentialUUID("UnknownUuid")).thenReturn(null);
+
+    subjectWithoutConcatenateCas.findByCredentialUuid("UnknownUuid");
+  }
+
+  @Test(expected = EntryNotFoundException.class)
+  public void findByUuid_ThrowsEntryNotFoundIfUuidMatchesNonCertificateCredential() {
+    when(certificateVersionDataService.findByCredentialUUID("rsaUuid")).thenReturn(null);
+
+    subjectWithoutConcatenateCas.findByCredentialUuid("rsaUuid");
   }
 
 }

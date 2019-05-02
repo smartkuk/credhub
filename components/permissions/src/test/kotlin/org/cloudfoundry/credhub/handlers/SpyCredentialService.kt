@@ -1,13 +1,14 @@
-package org.cloudfoundry.credhub.services
+package org.cloudfoundry.credhub.handlers
 
 import org.cloudfoundry.credhub.credential.CredentialValue
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.entity.Credential
 import org.cloudfoundry.credhub.requests.BaseCredentialRequest
+import org.cloudfoundry.credhub.services.CredentialService
 import org.cloudfoundry.credhub.views.FindCredentialResult
 import java.util.UUID
 
-class SpyPermissionedCredentialService : PermissionedCredentialService {
+class SpyCredentialService : CredentialService {
 
     override fun save(existingCredentialVersion: CredentialVersion?, credentialValue: CredentialValue?, generateRequest: BaseCredentialRequest): CredentialVersion {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
@@ -41,27 +42,18 @@ class SpyPermissionedCredentialService : PermissionedCredentialService {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
-    lateinit var findStartingWithPath__returns_findCredentialResultList: List<FindCredentialResult>
-    lateinit var findStartingWithPath__calledWith_path: String
-    lateinit var findStartingWithPath__calledWith_expiresWithinDays: String
     override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
-        findStartingWithPath__calledWith_path = path
-        findStartingWithPath__calledWith_expiresWithinDays = expiresWithinDays
-
-        return findStartingWithPath__returns_findCredentialResultList
-    }
-
-    lateinit var findContainingName__calledWith_name: String
-    lateinit var findContainingName__calledWith_expiresWithinDays: String
-    lateinit var findContainingName__returns_findCredentialResultList: List<FindCredentialResult>
-    override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
-        findContainingName__calledWith_name = name
-        findContainingName__calledWith_expiresWithinDays = expiresWithinDays
-
-        return findContainingName__returns_findCredentialResultList
-    }
-
-    override fun findMostRecent(credentialName: String): CredentialVersion? {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+    }
+
+    lateinit var findMostRecent__calledWith_credentialName: String
+    var findMostRecent__returns_credentialVersion: CredentialVersion? = null
+    override fun findMostRecent(credentialName: String): CredentialVersion? {
+        findMostRecent__calledWith_credentialName = credentialName
+        return findMostRecent__returns_credentialVersion
     }
 }

@@ -58,9 +58,6 @@ public class AuthConfigurationTest {
   @MockBean
   private DefaultCredentialVersionDataService credentialVersionDataService;
 
-  @MockBean
-  private PermissionDataService permissionDataService;
-
   private MockMvc mockMvc;
 
   @Before

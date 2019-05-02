@@ -7,7 +7,7 @@ import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
-import org.cloudfoundry.credhub.services.SpyPermissionedCredentialService
+import org.cloudfoundry.credhub.services.SpyCredentialService
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -35,10 +35,8 @@ class CredentialsControllerDeleteTest {
         spyCredentialsHandler = SpyCredentialsHandler()
 
         val credentialController = CredentialsController(
-            SpyPermissionedCredentialService(),
+            SpyCredentialService(),
             spyCredentialsHandler,
-            SpySetHandler(),
-            SpyLegacyGenerationHandler(),
             CEFAuditRecord()
         )
 
