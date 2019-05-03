@@ -6,6 +6,7 @@ import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.constants.CredentialType.JSON
+import org.cloudfoundry.credhub.controllers.v1.regenerate.SpyRegenerateHandler
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.credential.JsonCredentialValue
 import org.cloudfoundry.credhub.credential.RsaCredentialValue
@@ -24,7 +25,6 @@ import org.cloudfoundry.credhub.requests.RsaSetRequest
 import org.cloudfoundry.credhub.requests.SshSetRequest
 import org.cloudfoundry.credhub.requests.UserSetRequest
 import org.cloudfoundry.credhub.requests.ValueSetRequest
-import org.cloudfoundry.credhub.services.SpyCredentialService
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
@@ -46,7 +46,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.security.Security
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 @RunWith(SpringRunner::class)
 class CredentialsControllerSetTest {
@@ -58,13 +58,14 @@ class CredentialsControllerSetTest {
 
     lateinit var mockMvc: MockMvc
     private var spyCredentialsHandler: SpyCredentialsHandler = SpyCredentialsHandler()
+    private var spyRegenerateHandler: SpyRegenerateHandler = SpyRegenerateHandler()
 
     @Before
     fun setUp() {
         val credentialController = CredentialsController(
-            SpyCredentialService(),
             spyCredentialsHandler,
-            CEFAuditRecord()
+            CEFAuditRecord(),
+            spyRegenerateHandler
         )
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(credentialController, restDocumentation)

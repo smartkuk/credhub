@@ -27,10 +27,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class OAuth2IssuerServiceImplTest {
+public class DefaultOAuth2IssuerServiceTest {
   private static final String AUTH_SERVER = "https://example.com:1234/foo/bar";
 
-  private OAuth2IssuerServiceImpl subject;
+  private DefaultOAuth2IssuerService subject;
 
   private RestTemplate restTemplate;
 
@@ -50,7 +50,7 @@ public class OAuth2IssuerServiceImplTest {
     when(restTemplateFactory.createRestTemplate(trustStore, trustStorePassword))
       .thenReturn(restTemplate);
 
-    subject = new OAuth2IssuerServiceImpl(restTemplateFactory, oAuthProperties);
+    subject = new DefaultOAuth2IssuerService(restTemplateFactory, oAuthProperties);
   }
 
   @Test

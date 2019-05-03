@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.services;
+package org.cloudfoundry.credhub.data;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,9 +21,6 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 import org.cloudfoundry.credhub.audit.Resource;
 import org.cloudfoundry.credhub.audit.entities.V2Permission;
-import org.cloudfoundry.credhub.data.CredentialDataService;
-import org.cloudfoundry.credhub.data.PermissionData;
-import org.cloudfoundry.credhub.data.PermissionDataService;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;

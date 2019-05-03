@@ -95,6 +95,7 @@ public class DefaultRegenerateHandlerTest {
     when(credentialService.findAllCertificateCredentialsByCaName(signedBy)).thenReturn(certificateCredentials);
 
     final CertificateGenerateRequest request = spy(CertificateGenerateRequest.class);
+    request.setName("test");
     when(credentialService.findMostRecent(argThat(isOneOf("foo", "bar", "baz")))).thenReturn(credVersion);
     when(generationRequestGenerator.createGenerateRequest(argThat(is(credVersion)))).thenReturn(request);
     when(credentialGenerator.generate(request)).thenReturn(credValue);

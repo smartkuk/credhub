@@ -12,20 +12,21 @@ import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.cloudfoundry.credhub.RestTemplateFactory;
 import org.cloudfoundry.credhub.config.OAuthProperties;
 
-@Component
+@Service
 @ConditionalOnProperty("security.oauth2.enabled")
 @Profile({
   "prod",
   "dev",
+  "!unit-test"
 })
-public class OAuth2IssuerServiceImpl implements OAuth2IssuerService {
+public class DefaultOAuth2IssuerService implements OAuth2IssuerService {
 
   private final URI authServerUri;
   private final RestTemplate restTemplate;
@@ -33,7 +34,7 @@ public class OAuth2IssuerServiceImpl implements OAuth2IssuerService {
   private String issuer;
 
   @Autowired
-  OAuth2IssuerServiceImpl(
+  DefaultOAuth2IssuerService(
     final RestTemplateFactory restTemplateFactory,
     final OAuthProperties oAuthProperties
   ) throws URISyntaxException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {

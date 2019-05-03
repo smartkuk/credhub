@@ -9,7 +9,8 @@ import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
-import org.cloudfoundry.credhub.handlers.DefaultPermissionsV2Handler.Companion.INVALID_NUMBER_OF_PERMISSIONS
+import org.cloudfoundry.credhub.permissions.DefaultPermissionsV2Handler
+import org.cloudfoundry.credhub.permissions.DefaultPermissionsV2Handler.Companion.INVALID_NUMBER_OF_PERMISSIONS
 import org.cloudfoundry.credhub.requests.PermissionEntry
 import org.cloudfoundry.credhub.requests.PermissionsV2Request
 import org.cloudfoundry.credhub.views.PermissionsV2View

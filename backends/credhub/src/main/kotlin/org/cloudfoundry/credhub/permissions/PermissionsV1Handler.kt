@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.handlers
+package org.cloudfoundry.credhub.permissions
 
 import org.cloudfoundry.credhub.requests.PermissionsRequest
 import org.cloudfoundry.credhub.views.PermissionsView

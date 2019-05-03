@@ -9,9 +9,9 @@ import org.cloudfoundry.credhub.audit.entities.GenerateCredential
 import org.cloudfoundry.credhub.audit.entities.GetCredential
 import org.cloudfoundry.credhub.audit.entities.SetCredential
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException
+import org.cloudfoundry.credhub.regenerate.RegenerateHandler
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
-import org.cloudfoundry.credhub.services.CredentialService
 import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
 import org.cloudfoundry.credhub.views.FindCredentialResults
@@ -34,9 +34,9 @@ import org.springframework.web.bind.annotation.RestController
     produces = [MediaType.APPLICATION_JSON_UTF8_VALUE]
 )
 class CredentialsController(
-    private val credentialService: CredentialService,
     private val credentialsHandler: CredentialsHandler,
-    private val auditRecord: CEFAuditRecord
+    private val auditRecord: CEFAuditRecord,
+    val regenerateHandler: RegenerateHandler
 
 ) {
     companion object {
@@ -75,7 +75,6 @@ class CredentialsController(
         }
     }
 
-    //todo: move call to handler for permissions
     @RequestMapping(method = [GET], path = [""], params = ["path"])
     @ResponseStatus(HttpStatus.OK)
     fun findByPath(
@@ -87,10 +86,9 @@ class CredentialsController(
         findCredential.expiresWithinDays = expiresWithinDays
         auditRecord.requestDetails = findCredential
 
-        return FindCredentialResults(credentialService.findStartingWithPath(path, expiresWithinDays))
+        return FindCredentialResults(credentialsHandler.findStartingWithPath(path, expiresWithinDays))
     }
 
-    //todo: move call to handler for permissions
     @RequestMapping(method = [GET], path = [""], params = ["name-like"])
     @ResponseStatus(HttpStatus.OK)
     fun findByNameLike(
@@ -102,19 +100,23 @@ class CredentialsController(
         findCredential.expiresWithinDays = expiresWithinDays
         auditRecord.requestDetails = findCredential
 
-        return FindCredentialResults(credentialService.findContainingName(nameLike, expiresWithinDays))
+        return FindCredentialResults(credentialsHandler.findContainingName(nameLike, expiresWithinDays))
     }
 
     @Synchronized
     @RequestMapping(method = [POST], path = [""])
     @ResponseStatus(HttpStatus.OK)
     fun generate(@RequestBody requestBody: BaseCredentialGenerateRequest): CredentialView {
-        val generateCredential = GenerateCredential()
-        generateCredential.name = requestBody.name
-        generateCredential.type = requestBody.type
-        auditRecord.requestDetails = generateCredential
+        return if (!requestBody.isRegenerate) {
+            val generateCredential = GenerateCredential()
+            generateCredential.name = requestBody.name
+            generateCredential.type = requestBody.type
+            auditRecord.requestDetails = generateCredential
 
-        return credentialsHandler.generateCredential(requestBody)
+            credentialsHandler.generateCredential(requestBody)
+        } else {
+            regenerateHandler.handleRegenerate(requestBody.name)
+        }
     }
 
     @RequestMapping(method = [PUT], path = [""])
@@ -141,5 +143,4 @@ class CredentialsController(
 
         credentialsHandler.deleteCredential(credentialNameWithPrependedSlash)
     }
-
 }

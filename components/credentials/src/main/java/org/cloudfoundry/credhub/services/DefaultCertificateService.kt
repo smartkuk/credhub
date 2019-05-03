@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.services
 
 import com.google.common.collect.Lists
 import org.cloudfoundry.credhub.ErrorMessages
-import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.audit.AuditableCredentialVersion
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
@@ -16,13 +15,11 @@ import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
-import org.cloudfoundry.credhub.utils.CertificateReader
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
+import java.util.UUID
 
-// todo: make interface
 @Service
 @Transactional
 class DefaultCertificateService(

@@ -3,6 +3,7 @@ package org.cloudfoundry.credhub.handlers;
 import java.security.Security;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,7 +41,6 @@ import static org.assertj.core.api.Java6Assertions.fail;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -53,7 +53,8 @@ public class DefaultCertificatesHandlerTest {
   private final String UUID_STRING = UUID.randomUUID().toString();
   private final String USER = "darth-sirius";
 
-  private DefaultCertificatesHandler subject;
+  private DefaultCertificatesHandler subjectWithAcls;
+  private DefaultCertificatesHandler subjectWithoutAcls;
   private UniversalCredentialGenerator universalCredentialGenerator;
   private GenerationRequestGenerator generationRequestGenerator;
   private DefaultCertificateService certificateService;
@@ -73,13 +74,23 @@ public class DefaultCertificatesHandlerTest {
     certificateService = mock(DefaultCertificateService.class);
     universalCredentialGenerator = mock(UniversalCredentialGenerator.class);
     generationRequestGenerator = mock(GenerationRequestGenerator.class);
-    subject = new DefaultCertificatesHandler(
+    subjectWithAcls = new DefaultCertificatesHandler(
       certificateService,
       universalCredentialGenerator,
       generationRequestGenerator,
       new CEFAuditRecord(),
       permissionCheckingService,
-      userContextHolder
+      userContextHolder,
+      true
+    );
+    subjectWithoutAcls = new DefaultCertificatesHandler(
+      certificateService,
+      universalCredentialGenerator,
+      generationRequestGenerator,
+      new CEFAuditRecord(),
+      permissionCheckingService,
+      userContextHolder,
+      true
     );
   }
 
@@ -101,38 +112,37 @@ public class DefaultCertificatesHandlerTest {
 
     final CertificateRegenerateRequest regenerateRequest = new CertificateRegenerateRequest(true);
 
-    subject.handleRegenerate(UUID_STRING, regenerateRequest);
+    subjectWithAcls.handleRegenerate(UUID_STRING, regenerateRequest);
 
     verify(newValue).setTransitional(true);
   }
 
-  // todo: fix this
   @Test
   public void handleGetAllRequest_returnsCertificateCredentialsView() {
     final Credential certWithCaAndChildren = mock(Credential.class);
     final UUID certWithCaAndChildrenUuid = UUID.randomUUID();
-    final String certWithCaAndChildrenName = "certWithCaAndChildren";
-    final String certWithCaAndChildrenCaName = "/testCaA";
+    final String certWithCaAndChildrenName = "/certWithCaAndChildren";
+    final String certWithCaAndChildrenCaName = "/testCa";
     final List<String> childCertNames = asList("childCert1", "childCert2");
     when(certWithCaAndChildren.getUuid()).thenReturn(certWithCaAndChildrenUuid);
     when(certWithCaAndChildren.getName()).thenReturn(certWithCaAndChildrenName);
 
     final Credential selfSignedCert = mock(Credential.class);
     final UUID selfSignedCertUuid = UUID.randomUUID();
-    final String selfSignedCertName = "selfSignedCert";
+    final String selfSignedCertName = "/selfSignedCert";
     when(selfSignedCert.getUuid()).thenReturn(selfSignedCertUuid);
     when(selfSignedCert.getName()).thenReturn(selfSignedCertName);
 
+    final Credential noPermissionCert = mock(Credential.class);
+    final UUID noPermissionCertUuid = UUID.randomUUID();
+    final String noPermissionCertName = "/noPermissionCert";
+    when(noPermissionCert.getUuid()).thenReturn(noPermissionCertUuid);
+    when(noPermissionCert.getName()).thenReturn(noPermissionCertName);
+
     final UUID certificateWithNoValidVersionsUuid = UUID.randomUUID();
     final Credential certificateWithNoValidVersions = mock(Credential.class);
+    when(certificateWithNoValidVersions.getName()).thenReturn("/notValid");
     when(certificateWithNoValidVersions.getUuid()).thenReturn(certificateWithNoValidVersionsUuid);
-
-
-    when(certificateService.getAll())
-      .thenReturn(asList(certWithCaAndChildren, selfSignedCert, certificateWithNoValidVersions));
-
-    when(permissionCheckingService.hasPermission(eq(USER), eq(anyString()), PermissionOperation.READ))
-      .thenReturn(true);
 
     final CertificateCredentialVersion certWithCaAndChildrenVersion = new CertificateCredentialVersion(certWithCaAndChildrenName);
     certWithCaAndChildrenVersion.setUuid(UUID.randomUUID());
@@ -145,32 +155,40 @@ public class DefaultCertificatesHandlerTest {
     selfSignedCertVersion.setExpiryDate(Instant.now());
     selfSignedCertVersion.setCertificate(TestConstants.TEST_CA);
 
+    final HashSet<String> allowedPaths = new HashSet<>(asList("/certWithCaAndChildren", "/selfSignedCert", "/notValid"));
+
+    when(certificateService.getAll())
+      .thenReturn(asList(certWithCaAndChildren, selfSignedCert, certificateWithNoValidVersions, noPermissionCert));
+
     when(certificateService.getAllValidVersions(certWithCaAndChildrenUuid))
       .thenReturn(Collections.singletonList(certWithCaAndChildrenVersion));
+
     when(certificateService.findSignedCertificates(certWithCaAndChildrenName))
       .thenReturn(childCertNames);
 
     when(certificateService.getAllValidVersions(selfSignedCertUuid))
       .thenReturn(Collections.singletonList(selfSignedCertVersion));
+
     when(certificateService.findSignedCertificates(selfSignedCertName))
       .thenReturn(emptyList());
 
     when(certificateService.getAllValidVersions(certificateWithNoValidVersionsUuid))
       .thenReturn(emptyList());
 
-    final CertificateCredentialsView certificateCredentialsView = subject.handleGetAllRequest();
+    when(permissionCheckingService.findAllPathsByActor(USER))
+      .thenReturn(allowedPaths);
 
-    assertThat(certificateCredentialsView.getCertificates().size(), equalTo(3));
+    final CertificateCredentialsView certificateCredentialsView = subjectWithAcls.handleGetAllRequest();
 
     final CertificateCredentialView actualCertWithCa = certificateCredentialsView.getCertificates().get(0);
+    final CertificateCredentialView actualSelfSignedCert = certificateCredentialsView.getCertificates().get(1);
+    final CertificateCredentialView actualCertificateWithNoValidVersions = certificateCredentialsView.getCertificates().get(2);
+
+    assertThat(certificateCredentialsView.getCertificates().size(), equalTo(3));
     assertThat(actualCertWithCa.getCertificateVersionViews().size(), equalTo(1));
     assertThat(actualCertWithCa.getSignedBy(), equalTo(certWithCaAndChildrenCaName));
-
-    final CertificateCredentialView actualSelfSignedCert = certificateCredentialsView.getCertificates().get(1);
     assertThat(actualSelfSignedCert.getCertificateVersionViews().size(), equalTo(1));
     assertThat(actualSelfSignedCert.getSignedBy(), equalTo(selfSignedCertName));
-
-    final CertificateCredentialView actualCertificateWithNoValidVersions = certificateCredentialsView.getCertificates().get(2);
     assertThat(actualCertificateWithNoValidVersions.getCertificateVersionViews().size(), equalTo(0));
     assertThat(actualCertificateWithNoValidVersions.getSignedBy(), equalTo(""));
   }
@@ -210,7 +228,7 @@ public class DefaultCertificatesHandlerTest {
     when(certificateService.findSignedCertificates(certificateName))
       .thenReturn(childCertNames);
 
-    final CertificateCredentialsView certificateCredentialsView = subject.handleGetByNameRequest(certificateName);
+    final CertificateCredentialsView certificateCredentialsView = subjectWithAcls.handleGetByNameRequest(certificateName);
 
     assertThat(certificateCredentialsView.getCertificates().size(), equalTo(1));
 
@@ -230,7 +248,7 @@ public class DefaultCertificatesHandlerTest {
     final CredentialVersion credentialVersion = new CertificateCredentialVersion(certificateName);
     when(certificateService.getVersions(uuid, false))
       .thenReturn(Collections.singletonList(credentialVersion));
-    final List<CertificateView> certificateViews = subject
+    final List<CertificateView> certificateViews = subjectWithAcls
       .handleGetAllVersionsRequest(uuid.toString(), false);
 
     assertThat(certificateViews.size(), equalTo(1));
@@ -243,7 +261,7 @@ public class DefaultCertificatesHandlerTest {
       .thenReturn(false);
 
     try {
-      subject.handleRegenerate(UUID_STRING, new CertificateRegenerateRequest());
+      subjectWithAcls.handleRegenerate(UUID_STRING, new CertificateRegenerateRequest());
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -265,7 +283,7 @@ public class DefaultCertificatesHandlerTest {
       .thenReturn(false);
 
     try {
-      subject.handleGetByNameRequest(CREDENTIAL_NAME);
+      subjectWithAcls.handleGetByNameRequest(CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -279,7 +297,7 @@ public class DefaultCertificatesHandlerTest {
       .thenReturn(false);
 
     try {
-      subject.handleGetAllVersionsRequest(UUID_STRING, true);
+      subjectWithAcls.handleGetAllVersionsRequest(UUID_STRING, true);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -293,7 +311,7 @@ public class DefaultCertificatesHandlerTest {
       .thenReturn(false);
 
     try {
-      subject.handleDeleteVersionRequest(UUID.randomUUID().toString(), UUID_STRING);
+      subjectWithAcls.handleDeleteVersionRequest(UUID.randomUUID().toString(), UUID_STRING);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -307,7 +325,7 @@ public class DefaultCertificatesHandlerTest {
       .thenReturn(false);
 
     try {
-      subject.handleUpdateTransitionalVersion(UUID_STRING, new UpdateTransitionalVersionRequest());
+      subjectWithAcls.handleUpdateTransitionalVersion(UUID_STRING, new UpdateTransitionalVersionRequest());
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -321,7 +339,7 @@ public class DefaultCertificatesHandlerTest {
       .thenReturn(false);
 
     try {
-      subject.handleCreateVersionsRequest(UUID_STRING, new CreateVersionRequest());
+      subjectWithAcls.handleCreateVersionsRequest(UUID_STRING, new CreateVersionRequest());
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));

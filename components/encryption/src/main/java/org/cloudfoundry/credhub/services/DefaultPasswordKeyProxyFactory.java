@@ -1,15 +1,15 @@
 package org.cloudfoundry.credhub.services;
 
 import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 
 import static org.cloudfoundry.credhub.constants.EncryptionConstants.ITERATIONS;
 
-@Component
+@Service
 @Profile("!unit-test")
-public class PasswordKeyProxyFactoryImpl implements PasswordKeyProxyFactory {
+public class DefaultPasswordKeyProxyFactory implements PasswordKeyProxyFactory {
   @Override
   public KeyProxy createPasswordKeyProxy(
     final EncryptionKeyMetadata encryptionKeyMetadata, final InternalEncryptionService encryptionService) {

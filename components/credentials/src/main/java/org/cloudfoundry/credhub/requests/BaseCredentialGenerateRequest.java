@@ -27,10 +27,12 @@ import static com.google.common.collect.Lists.newArrayList;
   @JsonSubTypes.Type(name = "certificate", value = CertificateGenerateRequest.class),
   @JsonSubTypes.Type(name = "user", value = UserGenerateRequest.class),
 })
+
 public abstract class BaseCredentialGenerateRequest extends BaseCredentialRequest {
   private Boolean overwrite;
   private String rawOverwrite;
   private CredentialWriteMode mode;
+  private Boolean regenerate;
 
   public boolean isOverwrite() {
     if (overwrite == null) {
@@ -107,5 +109,16 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
 
   public void setMode(final CredentialWriteMode mode) {
     this.mode = mode;
+  }
+
+  public boolean isRegenerate() {
+    if (regenerate == null) {
+      return false;
+    }
+    return regenerate;
+  }
+
+  public void setRegenerate(Boolean regenerate) {
+    this.regenerate = regenerate;
   }
 }

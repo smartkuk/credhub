@@ -1,19 +1,16 @@
-package org.cloudfoundry.credhub.credentials;
+package org.cloudfoundry.credhub.services;
 
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -22,10 +19,8 @@ import com.google.common.collect.Lists;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.ErrorMessages;
-import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.CertificateVersionDataService;
 import org.cloudfoundry.credhub.data.CredentialDataService;
-import org.cloudfoundry.credhub.data.PermissionDataService;
 import org.cloudfoundry.credhub.domain.CredentialFactory;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
@@ -46,30 +41,21 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
   private final CredentialDataService credentialDataService;
   private final JdbcTemplate jdbcTemplate;
   private final CredentialFactory credentialFactory;
-  private final PermissionDataService permissionDataService;
-  private final UserContextHolder userContextHolder;
   private final CertificateVersionDataService certificateVersionDataService;
-
-  @Value("${security.authorization.acls.enabled}")
-  private boolean enforcePermissions;
 
   @Autowired
   protected DefaultCredentialVersionDataService(
     final CredentialVersionRepository credentialVersionRepository,
-    final PermissionDataService permissionDataService,
     final CredentialDataService credentialDataService,
     final JdbcTemplate jdbcTemplate,
     final CredentialFactory credentialFactory,
-    final UserContextHolder userContextHolder,
     final CertificateVersionDataService certificateVersionDataService
   ) {
     super();
     this.credentialVersionRepository = credentialVersionRepository;
-    this.permissionDataService = permissionDataService;
     this.credentialDataService = credentialDataService;
     this.jdbcTemplate = jdbcTemplate;
     this.credentialFactory = credentialFactory;
-    this.userContextHolder = userContextHolder;
     this.certificateVersionDataService = certificateVersionDataService;
   }
 
@@ -141,9 +127,9 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
   @Override
   public List<FindCredentialResult> findContainingName(final String name, final String expiresWithinDays) {
     if (!"".equals(expiresWithinDays)) {
-      return filterPermissions(filterCertificates("%" + name + "%", expiresWithinDays));
+      return filterCertificates("%" + name + "%", expiresWithinDays);
     }
-    return filterPermissions(findMatchingName("%" + name + "%"));
+    return findMatchingName("%" + name + "%");
   }
 
   @Override
@@ -158,10 +144,10 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
     adjustedPath = StringUtils.appendIfMissing(adjustedPath, "/");
 
     if (!"".equals(expiresWithinDays)) {
-      return filterPermissions(filterCertificates(adjustedPath + "%", expiresWithinDays));
+      return filterCertificates(adjustedPath + "%", expiresWithinDays);
     }
 
-    return filterPermissions(findMatchingName(adjustedPath + "%"));
+    return findMatchingName(adjustedPath + "%");
   }
 
   @Override
@@ -259,41 +245,6 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
     }
   }
 
-  private List<FindCredentialResult> filterPermissions(final List<FindCredentialResult> unfilteredResult) {
-    if (!enforcePermissions) {
-      return unfilteredResult;
-    }
-    final String actor = userContextHolder.getUserContext().getActor();
-    return filterCredentials(unfilteredResult, permissionDataService.findAllPathsByActor(actor));
-  }
-
-  private List<FindCredentialResult> filterCredentials(final List<FindCredentialResult> unfilteredResult,
-    final Set<String> permissions) {
-    if (permissions.contains("/*")) {
-      return unfilteredResult;
-    }
-    if (permissions.isEmpty()) {
-      return new ArrayList<>();
-    }
-
-    final List<FindCredentialResult> filteredResult = new ArrayList<>();
-
-    for (final FindCredentialResult credentialResult : unfilteredResult) {
-      final String credentialName = credentialResult.getName();
-      if (permissions.contains(credentialName)) {
-        filteredResult.add(credentialResult);
-      }
-
-      for (final String credentialPath : tokenizePath(credentialName)) {
-        if (permissions.contains(credentialPath)) {
-          filteredResult.add(credentialResult);
-          break;
-        }
-      }
-    }
-    return filteredResult;
-  }
-
   private List<FindCredentialResult> filterCertificates(final String path, final String expiresWithinDays) {
     final String escapedPath = path.replace("_", "\\_");
 
@@ -329,20 +280,6 @@ public class DefaultCredentialVersionDataService implements CredentialVersionDat
       }
     );
     return certificateResults;
-  }
-
-  private List<String> tokenizePath(final String credentialName) {
-    final List<String> result = new ArrayList<>();
-    String subPath;
-
-    for (int i = 1; i < credentialName.length(); i++) {
-      if (credentialName.charAt(i) == '/') {
-        subPath = credentialName.substring(0, i) + "/*";
-        result.add(subPath);
-      }
-    }
-
-    return result;
   }
 
   private List<FindCredentialResult> findMatchingName(final String nameLike) {

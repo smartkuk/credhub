@@ -18,7 +18,10 @@ import org.cloudfoundry.credhub.services.PermissionCheckingService
 import org.cloudfoundry.credhub.utils.CertificateReader
 import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
+import org.cloudfoundry.credhub.views.FindCredentialResult
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import java.util.ArrayList
 import java.util.UUID
 
 @Component
@@ -28,9 +31,20 @@ class DefaultCredentialsHandler(
     private val permissionCheckingService: PermissionCheckingService,
     private val userContextHolder: UserContextHolder,
     private val certificateAuthorityService: CertificateAuthorityService,
-    private val credentialGenerator: UniversalCredentialGenerator
-)
-    : CredentialsHandler {
+    private val credentialGenerator: UniversalCredentialGenerator,
+    @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean
+) : CredentialsHandler {
+    override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
+        val unfilteredResults = credentialService.findStartingWithPath(path, expiresWithinDays)
+        return filterPermissions(unfilteredResults)
+    }
+
+    override fun findContainingName(path: String, expiresWithinDays: String): List<FindCredentialResult> {
+        val unfilteredResults = credentialService.findContainingName(path, expiresWithinDays)
+        return filterPermissions(unfilteredResults)
+    }
+
+    //todo: add regenerate back
     override fun generateCredential(generateRequest: BaseCredentialGenerateRequest): CredentialView {
         checkPermissionsByName(generateRequest.name, PermissionOperation.WRITE)
 
@@ -67,7 +81,8 @@ class DefaultCredentialsHandler(
 
         auditRecord.setVersion(credentialVersion)
         auditRecord.setResource(credentialVersion.credential)
-        return CredentialView.fromEntity(credentialVersion)    }
+        return CredentialView.fromEntity(credentialVersion)
+    }
 
     override fun deleteCredential(credentialName: String) {
         checkPermissionsByName(credentialName, PermissionOperation.DELETE)
@@ -129,23 +144,65 @@ class DefaultCredentialsHandler(
         }
     }
 
+    private fun filterPermissions(unfilteredResult: List<FindCredentialResult>): List<FindCredentialResult> {
+        if (!enforcePermissions) {
+            return unfilteredResult
+        }
+        val actor = userContextHolder.userContext.actor
+        val paths = permissionCheckingService.findAllPathsByActor(actor)
+
+        if (paths.contains("/*")) return unfilteredResult
+        if (paths.isEmpty()) return ArrayList()
+
+        val filteredResult = ArrayList<FindCredentialResult>()
+
+        for (credentialResult in unfilteredResult) {
+            val credentialName = credentialResult.name
+            if (paths.contains(credentialName)) {
+                filteredResult.add(credentialResult)
+            }
+
+            val result = ArrayList<String>()
+
+            for (i in 1 until credentialName.length) {
+                if (credentialName[i] == '/') {
+                    result.add(credentialName.substring(0, i) + "/*")
+                }
+            }
+
+            for (credentialPath in result) {
+                if (paths.contains(credentialPath)) {
+                    filteredResult.add(credentialResult)
+                    break
+                }
+            }
+        }
+        return filteredResult
+    }
+
     private fun checkPermissionsByName(name: String, permissionOperation: PermissionOperation) {
+        if (!enforcePermissions) return
+
         if (!permissionCheckingService.hasPermission(
-                        userContextHolder.userContext.actor!!,
-                        name,
-                        permissionOperation
-                )) {
+                userContextHolder.userContext.actor!!,
+                name,
+                permissionOperation
+            )) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
     }
 
     private fun checkPermissionsByUuid(uuid: String, permissionOperation: PermissionOperation) {
+        if (!enforcePermissions) return
+
         if (!permissionCheckingService.hasPermission(
-                        userContextHolder.userContext.actor!!,
-                        UUID.fromString(uuid),
-                        permissionOperation
-                )) {
+                userContextHolder.userContext.actor!!,
+                UUID.fromString(uuid),
+                permissionOperation
+            )) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
     }
+
+
 }

@@ -5,8 +5,16 @@ import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
 import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
+import org.cloudfoundry.credhub.views.FindCredentialResult
 
 class SpyCredentialsHandler : CredentialsHandler {
+    override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun findContainingName(path: String, expiresWithinDays: String): List<FindCredentialResult> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 
     lateinit var generateCredential__calledWith_generateRequest: BaseCredentialGenerateRequest
     lateinit var generateCredential__returns_credentialView: CredentialView

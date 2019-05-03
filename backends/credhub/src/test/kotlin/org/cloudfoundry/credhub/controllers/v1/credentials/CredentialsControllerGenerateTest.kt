@@ -6,6 +6,7 @@ import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.constants.CredentialWriteMode
+import org.cloudfoundry.credhub.controllers.v1.regenerate.SpyRegenerateHandler
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.credential.RsaCredentialValue
 import org.cloudfoundry.credhub.credential.SshCredentialValue
@@ -18,7 +19,6 @@ import org.cloudfoundry.credhub.helpers.credHubAuthHeader
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.CertificateGenerationRequestParameters
 import org.cloudfoundry.credhub.requests.RsaSshGenerationParameters
-import org.cloudfoundry.credhub.services.SpyCredentialService
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
 import org.junit.Before
@@ -52,14 +52,15 @@ class CredentialsControllerGenerateTest {
 
     lateinit var mockMvc: MockMvc
     private val spyCredentialsHandler: SpyCredentialsHandler = SpyCredentialsHandler()
+    private val spyRegenerateHandler: SpyRegenerateHandler = SpyRegenerateHandler()
     private val objectMapper = ObjectMapper()
 
     @Before
     fun setUp() {
         val credentialController = CredentialsController(
-            SpyCredentialService(),
             spyCredentialsHandler,
-            CEFAuditRecord()
+            CEFAuditRecord(),
+            spyRegenerateHandler
         )
 
         mockMvc = MockMvcFactory.newSpringRestDocMockMvc(credentialController, restDocumentation)
@@ -127,9 +128,7 @@ class CredentialsControllerGenerateTest {
 
         val actualGenerateRequest = spyCredentialsHandler.generateCredential__calledWith_generateRequest
 
-
         val expectedGenerateRequest = objectMapper.readValue(requestBody, BaseCredentialGenerateRequest::class.java)
-
 
         assertThat(actualGenerateRequest).isEqualTo(expectedGenerateRequest)
 
@@ -210,9 +209,7 @@ class CredentialsControllerGenerateTest {
 
         val actualGenerateRequest = spyCredentialsHandler.generateCredential__calledWith_generateRequest
 
-
         val expectedGenerateRequest = objectMapper.readValue(requestBody, BaseCredentialGenerateRequest::class.java)
-
 
         assertThat(actualGenerateRequest).isEqualTo(expectedGenerateRequest)
 
@@ -338,9 +335,7 @@ class CredentialsControllerGenerateTest {
 
         val actualGenerateRequest = spyCredentialsHandler.generateCredential__calledWith_generateRequest
 
-
         val expectedGenerateRequest = objectMapper.readValue(requestBody, BaseCredentialGenerateRequest::class.java)
-
 
         assertThat(actualGenerateRequest).isEqualTo(expectedGenerateRequest)
 
@@ -411,9 +406,7 @@ class CredentialsControllerGenerateTest {
 
         val actualGenerateRequest = spyCredentialsHandler.generateCredential__calledWith_generateRequest
 
-
         val expectedGenerateRequest = objectMapper.readValue(requestBody, BaseCredentialGenerateRequest::class.java)
-
 
         assertThat(actualGenerateRequest).isEqualTo(expectedGenerateRequest)
 
@@ -486,9 +479,7 @@ class CredentialsControllerGenerateTest {
 
         val actualGenerateRequest = spyCredentialsHandler.generateCredential__calledWith_generateRequest
 
-
         val expectedGenerateRequest = objectMapper.readValue(requestBody, BaseCredentialGenerateRequest::class.java)
-
 
         assertThat(actualGenerateRequest).isEqualTo(expectedGenerateRequest)
 

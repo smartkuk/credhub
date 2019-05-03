@@ -4,14 +4,23 @@ import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
 import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
+import org.cloudfoundry.credhub.views.FindCredentialResult
 
 class RemoteCredentialsHandler : CredentialsHandler {
-    override fun generateCredential(generateRequest: BaseCredentialGenerateRequest): CredentialView {
+    override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    override fun setCredential(setRequest: BaseCredentialSetRequest<*>): CredentialView {
+    override fun findContainingName(path: String, expiresWithinDays: String): List<FindCredentialResult> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun generateCredential(generateRequest: BaseCredentialGenerateRequest): CredentialView {
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun setCredential(setRequest: BaseCredentialSetRequest<*>): CredentialView {
+        TODO("not implemented") // To change body of created functions use File | Settings | File Templates.
     }
 
     override fun deleteCredential(credentialName: String) {

@@ -14,7 +14,6 @@ import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.entity.Credential
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
-import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
 import org.cloudfoundry.credhub.generate.GenerationRequestGenerator
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator
 import org.cloudfoundry.credhub.requests.CertificateRegenerateRequest
@@ -22,14 +21,15 @@ import org.cloudfoundry.credhub.requests.CreateVersionRequest
 import org.cloudfoundry.credhub.requests.UpdateTransitionalVersionRequest
 import org.cloudfoundry.credhub.services.DefaultCertificateService
 import org.cloudfoundry.credhub.services.PermissionCheckingService
-import org.cloudfoundry.credhub.utils.CertificateReader
 import org.cloudfoundry.credhub.views.CertificateCredentialView
 import org.cloudfoundry.credhub.views.CertificateCredentialsView
 import org.cloudfoundry.credhub.views.CertificateVersionView
 import org.cloudfoundry.credhub.views.CertificateView
 import org.cloudfoundry.credhub.views.CredentialView
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.util.*
+import java.util.ArrayList
+import java.util.UUID
 
 @Service
 class DefaultCertificatesHandler(
@@ -38,7 +38,8 @@ class DefaultCertificatesHandler(
     private val generationRequestGenerator: GenerationRequestGenerator,
     private val auditRecord: CEFAuditRecord,
     private val permissionCheckingService: PermissionCheckingService,
-    private val userContextHolder: UserContextHolder
+    private val userContextHolder: UserContextHolder,
+    @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean
 ) : CertificatesHandler {
 
     override fun handleRegenerate(
@@ -69,30 +70,27 @@ class DefaultCertificatesHandler(
         return CertificateView(credentialVersion)
     }
 
-    // todo: test this
     override fun handleGetAllRequest(): CertificateCredentialsView {
-        val credentialList = certificateService.getAll()
-            .filter {
-            permissionCheckingService.hasPermission(
-                userContextHolder.userContext.actor!!,
-                it.name!!,
-                PermissionOperation.READ
-            )
-        }
+        val credentialList = filterPermissions(certificateService.getAll())
         val list = convertCertificateCredentialsToCertificateCredentialViews(credentialList)
+
         auditRecord.addAllCredentials(Lists.newArrayList<AuditableCredential>(credentialList))
+
         return CertificateCredentialsView(list)
     }
 
     override fun handleGetByNameRequest(name: String): CertificateCredentialsView {
         checkPermissionsByName(name, READ)
+
         val credentialList = certificateService.getByName(name)
         val list = convertCertificateCredentialsToCertificateCredentialViews(credentialList)
+
         return CertificateCredentialsView(list)
     }
 
     override fun handleGetAllVersionsRequest(uuidString: String, current: Boolean): List<CertificateView> {
         checkPermissionsByUuid(uuidString, READ)
+
         val uuid: UUID
         try {
             uuid = UUID.fromString(uuidString)
@@ -107,6 +105,7 @@ class DefaultCertificatesHandler(
 
     override fun handleDeleteVersionRequest(certificateId: String, versionId: String): CertificateView {
         checkPermissionsByUuid(versionId, DELETE)
+
         val deletedVersion = certificateService
             .deleteVersion(UUID.fromString(certificateId), UUID.fromString(versionId))
         return CertificateView(deletedVersion)
@@ -133,6 +132,7 @@ class DefaultCertificatesHandler(
 
     override fun handleCreateVersionsRequest(certificateId: String, requestBody: CreateVersionRequest): CertificateView {
         checkPermissionsByUuid(certificateId, WRITE)
+
         val certificateCredentialValue = requestBody.value
         certificateCredentialValue.isTransitional = requestBody.isTransitional
         val credentialVersion = certificateService.set(
@@ -175,6 +175,8 @@ class DefaultCertificatesHandler(
     }
 
     private fun checkPermissionsByName(name: String, permissionOperation: PermissionOperation) {
+        if (!enforcePermissions) return
+
         if (!permissionCheckingService.hasPermission(
                 userContextHolder.userContext.actor!!,
                 name,
@@ -185,6 +187,8 @@ class DefaultCertificatesHandler(
     }
 
     private fun checkPermissionsByUuid(uuid: String, permissionOperation: PermissionOperation) {
+        if (!enforcePermissions) return
+
         if (!permissionCheckingService.hasPermission(
                 userContextHolder.userContext.actor!!,
                 UUID.fromString(uuid),
@@ -192,5 +196,41 @@ class DefaultCertificatesHandler(
             )) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
         }
+    }
+
+    private fun filterPermissions(unfilteredCredentials: List<Credential>): List<Credential> {
+        if (!enforcePermissions) {
+            return unfilteredCredentials
+        }
+        val actor = userContextHolder.userContext.actor
+        val paths = permissionCheckingService.findAllPathsByActor(actor)
+
+        if (paths.contains("/*")) return unfilteredCredentials
+        if (paths.isEmpty()) return ArrayList()
+
+        val filteredCredentials = ArrayList<Credential>()
+
+        for (credential in unfilteredCredentials) {
+            val credentialName = credential.name
+            if (paths.contains(credentialName)) {
+                filteredCredentials.add(credential)
+            }
+
+            val result = ArrayList<String>()
+
+            for (i in 1 until credentialName!!.length) {
+                if (credentialName[i] == '/') {
+                    result.add(credentialName.substring(0, i) + "/*")
+                }
+            }
+
+            for (credentialPath in result) {
+                if (paths.contains(credentialPath)) {
+                    filteredCredentials.add(credential)
+                    break
+                }
+            }
+        }
+        return filteredCredentials
     }
 }

@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.handlers;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +22,7 @@ import org.cloudfoundry.credhub.domain.Encryptor;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.domain.SshCredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
+import org.cloudfoundry.credhub.entity.PasswordCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator;
 import org.cloudfoundry.credhub.requests.CertificateSetRequest;
@@ -34,21 +36,24 @@ import org.cloudfoundry.credhub.services.PermissionCheckingService;
 import org.cloudfoundry.credhub.utils.TestConstants;
 import org.cloudfoundry.credhub.views.CredentialView;
 import org.cloudfoundry.credhub.views.DataResponse;
+import org.cloudfoundry.credhub.views.FindCredentialResult;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
-import org.mockito.internal.verification.VerificationModeFactory;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.EMPTY_SET;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Java6Assertions.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -64,7 +69,8 @@ public class DefaultCredentialsHandlerTest {
   private static final String UUID_STRING = UUID.randomUUID().toString();
   private static final String USER = "darth-sirius";
 
-  private DefaultCredentialsHandler subject;
+  private DefaultCredentialsHandler subjectWithAcls;
+  private DefaultCredentialsHandler subjectWithoutAcls;
   private DefaultCredentialService credentialService;
   private CEFAuditRecord auditRecord;
   private PermissionCheckingService permissionCheckingService;
@@ -76,25 +82,37 @@ public class DefaultCredentialsHandlerTest {
   private CredentialVersion credentialVersion;
   private UniversalCredentialGenerator universalCredentialGenerator;
 
+
+  private Encryptor encryptor;
   @Before
   public void beforeEach() {
     TestHelper.getBouncyCastleFipsProvider();
-    final Encryptor encryptor = mock(Encryptor.class);
+    encryptor = mock(Encryptor.class);
 
     credentialService = mock(DefaultCredentialService.class);
     auditRecord = new CEFAuditRecord();
     permissionCheckingService = mock(PermissionCheckingService.class);
     UserContextHolder userContextHolder = mock(UserContextHolder.class);
     certificateAuthorityService = mock(CertificateAuthorityService.class);
-    universalCredentialGenerator = mock(UniversalCredentialGenerator.class);
+    UniversalCredentialGenerator universalCredentialGenerator = mock(UniversalCredentialGenerator.class);
 
-    subject = new DefaultCredentialsHandler(
+    subjectWithAcls = new DefaultCredentialsHandler(
       credentialService,
       auditRecord,
       permissionCheckingService,
       userContextHolder,
       certificateAuthorityService,
-      universalCredentialGenerator);
+      universalCredentialGenerator,
+      true);
+
+    subjectWithoutAcls = new DefaultCredentialsHandler(
+      credentialService,
+      auditRecord,
+      permissionCheckingService,
+      userContextHolder,
+      certificateAuthorityService,
+      universalCredentialGenerator,
+      false);
 
 
     generationParameters = new StringGenerationParameters();
@@ -105,10 +123,14 @@ public class DefaultCredentialsHandlerTest {
     version1 = new SshCredentialVersion(CREDENTIAL_NAME);
     version1.setVersionCreatedAt(VERSION1_CREATED_AT);
     version1.setEncryptor(encryptor);
+    version1.setUuid(UUID.randomUUID());
+    version1.getCredential().setUuid(UUID.randomUUID());
 
     version2 = new SshCredentialVersion(CREDENTIAL_NAME);
     version2.setVersionCreatedAt(VERSION2_CREATED_AT);
     version2.setEncryptor(encryptor);
+    version2.setUuid(UUID.randomUUID());
+    version2.getCredential().setUuid(UUID.randomUUID());
 
     final Credential cred = new Credential("federation");
     cred.setUuid(UUID.fromString(UUID_STRING));
@@ -118,7 +140,6 @@ public class DefaultCredentialsHandlerTest {
     when(credentialVersion.getName()).thenReturn(cred.getName());
     when(credentialVersion.getUuid()).thenReturn(cred.getUuid());
     when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
-
   }
 
   @Test
@@ -127,7 +148,7 @@ public class DefaultCredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.DELETE))
       .thenReturn(true);
 
-    subject.deleteCredential(CREDENTIAL_NAME);
+    subjectWithAcls.deleteCredential(CREDENTIAL_NAME);
 
     verify(credentialService, times(1)).delete(eq(CREDENTIAL_NAME));
   }
@@ -139,7 +160,7 @@ public class DefaultCredentialsHandlerTest {
     when(credentialService.delete(eq(CREDENTIAL_NAME))).thenReturn(false);
 
     try {
-      subject.deleteCredential(CREDENTIAL_NAME);
+      subjectWithAcls.deleteCredential(CREDENTIAL_NAME);
       fail("Should throw exception");
     } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -154,7 +175,7 @@ public class DefaultCredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
       .thenReturn(true);
 
-    final DataResponse credentialVersions = subject.getAllCredentialVersions(CREDENTIAL_NAME);
+    final DataResponse credentialVersions = subjectWithAcls.getAllCredentialVersions(CREDENTIAL_NAME);
 
     final List<CredentialView> credentialViews = credentialVersions.getData();
     assertThat(credentialViews, hasSize(2));
@@ -172,7 +193,7 @@ public class DefaultCredentialsHandlerTest {
       .thenReturn(true);
 
     try {
-      subject.getAllCredentialVersions(CREDENTIAL_NAME
+      subjectWithAcls.getAllCredentialVersions(CREDENTIAL_NAME
       );
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
@@ -187,7 +208,7 @@ public class DefaultCredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
       .thenReturn(true);
 
-    final DataResponse dataResponse = subject.getCurrentCredentialVersions(
+    final DataResponse dataResponse = subjectWithAcls.getCurrentCredentialVersions(
       CREDENTIAL_NAME
     );
     final CredentialView credentialView = dataResponse.getData().get(0);
@@ -198,7 +219,7 @@ public class DefaultCredentialsHandlerTest {
   @Test
   public void getMostRecentCredentialVersion_whenTheCredentialDoesNotExist_throwsException() {
     try {
-      subject.getCurrentCredentialVersions(CREDENTIAL_NAME);
+      subjectWithAcls.getCurrentCredentialVersions(CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -211,7 +232,7 @@ public class DefaultCredentialsHandlerTest {
       .thenReturn(false);
 
     try {
-      subject.getCurrentCredentialVersions(CREDENTIAL_NAME);
+      subjectWithAcls.getCurrentCredentialVersions(CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -226,7 +247,7 @@ public class DefaultCredentialsHandlerTest {
       .thenReturn(false);
 
     try {
-      subject.getCredentialVersionByUUID(UUID_STRING);
+      subjectWithAcls.getCredentialVersionByUUID(UUID_STRING);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -241,7 +262,7 @@ public class DefaultCredentialsHandlerTest {
       .thenReturn(false);
 
     try {
-      subject.getNCredentialVersions(CREDENTIAL_NAME, null);
+      subjectWithAcls.getNCredentialVersions(CREDENTIAL_NAME, null);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -258,7 +279,7 @@ public class DefaultCredentialsHandlerTest {
       .thenReturn(true);
 
     try {
-      subject.deleteCredential(CREDENTIAL_NAME);
+      subjectWithAcls.deleteCredential(CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -272,7 +293,7 @@ public class DefaultCredentialsHandlerTest {
       .thenReturn(false);
 
     try {
-      subject.getAllCredentialVersions(CREDENTIAL_NAME);
+      subjectWithAcls.getAllCredentialVersions(CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (final EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
@@ -287,7 +308,7 @@ public class DefaultCredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, UUID.fromString(UUID_STRING), PermissionOperation.READ))
       .thenReturn(true);
 
-    final CredentialView credentialVersion = subject.getCredentialVersionByUUID(UUID_STRING);
+    final CredentialView credentialVersion = subjectWithAcls.getCredentialVersionByUUID(UUID_STRING);
     assertThat(credentialVersion.getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credentialVersion.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
   }
@@ -295,15 +316,15 @@ public class DefaultCredentialsHandlerTest {
   @Test
   public void getNCredentialVersions_whenTheCredentialExists_addsToAuditRecord() {
     final List<CredentialVersion> credentials = newArrayList(version1, version2);
-    when(credentialService.findNByName(eq(CREDENTIAL_NAME), eq(2)))
+    when(credentialService.findNByName(CREDENTIAL_NAME, 2))
       .thenReturn(credentials);
     when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
       .thenReturn(true);
 
-    subject.getNCredentialVersions(CREDENTIAL_NAME, 2);
+    subjectWithAcls.getNCredentialVersions(CREDENTIAL_NAME, 2);
 
-    verify(auditRecord, times(2)).addVersion(any(CredentialVersion.class));
-    verify(auditRecord, times(2)).addResource(any(Credential.class));
+    assertEquals(2, auditRecord.getResourceList().size());
+    assertEquals(2, auditRecord.getVersionList().size());
   }
 
   @Test
@@ -319,8 +340,7 @@ public class DefaultCredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, setRequest.getName(), PermissionOperation.WRITE))
       .thenReturn(true);
 
-    subject.setCredential(setRequest);
-
+    subjectWithAcls.setCredential(setRequest);
 
     verify(credentialService).save(null, password, setRequest);
     assertThat(auditRecord.getResourceName(), Matchers.equalTo("federation"));
@@ -341,7 +361,7 @@ public class DefaultCredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, setRequest.getName(), PermissionOperation.WRITE))
       .thenReturn(true);
 
-    subject.setCredential(setRequest);
+    subjectWithAcls.setCredential(setRequest);
 
     verify(credentialService).save(null, password, setRequest);
   }
@@ -361,7 +381,7 @@ public class DefaultCredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, setRequest.getName(), PermissionOperation.WRITE))
       .thenReturn(true);
 
-    subject.setCredential(setRequest);
+    subjectWithAcls.setCredential(setRequest);
 
     verify(credentialService).save(null, userCredentialValue, setRequest);
   }
@@ -382,7 +402,7 @@ public class DefaultCredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, setRequest.getName(), PermissionOperation.WRITE))
       .thenReturn(true);
 
-    subject.setCredential(setRequest);
+    subjectWithAcls.setCredential(setRequest);
 
     verify(credentialService).save(null, certificateValue, setRequest);
   }
@@ -423,7 +443,7 @@ public class DefaultCredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, setRequest.getName(), PermissionOperation.WRITE))
       .thenReturn(true);
 
-    subject.setCredential(setRequest);
+    subjectWithAcls.setCredential(setRequest);
 
     verify(credentialService).save(eq(null), credentialValueArgumentCaptor.capture(), eq(setRequest));
     assertThat(credentialValueArgumentCaptor.getValue(), samePropertyValuesAs(expectedCredentialValue));
@@ -441,7 +461,7 @@ public class DefaultCredentialsHandlerTest {
     when(permissionCheckingService.hasPermission(USER, generateRequest.getName(), PermissionOperation.WRITE))
       .thenReturn(true);
 
-    subject.generateCredential(generateRequest);
+    subjectWithAcls.generateCredential(generateRequest);
 
     verify(credentialService).save(null, null, generateRequest);
   }
@@ -449,20 +469,117 @@ public class DefaultCredentialsHandlerTest {
   @Test
   public void handleGenerateRequest_addsToCEFAuditRecord() {
     final PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
+    final UUID uuid = UUID.randomUUID();
 
     generateRequest.setType("password");
     generateRequest.setGenerationParameters(generationParameters);
     generateRequest.setName("/captain");
     generateRequest.setOverwrite(false);
 
+    Credential credential = new Credential("/captain");
+    final PasswordCredentialVersionData delegate = mock(PasswordCredentialVersionData.class);
+    credential.setUuid(uuid);
+    credential.setName("/captain");
+    when(delegate.getCredential()).thenReturn(credential);
+    when(delegate.getUuid()).thenReturn(uuid);
+
+    final CredentialVersion credentialVersion = new PasswordCredentialVersion(delegate);
+    credentialVersion.setEncryptor(encryptor);
+    credentialVersion.setValue("some-value");
+    credentialVersion.setCredential(credential);
+    credentialVersion.setUuid(uuid);
+
+    when(credentialService.save(any(), any(), any())).thenReturn(credentialVersion);
+
     when(permissionCheckingService.hasPermission(USER, generateRequest.getName(), PermissionOperation.WRITE))
       .thenReturn(true);
 
-    subject.generateCredential(generateRequest);
-    verify(auditRecord, times(1)).addVersion(any(CredentialVersion.class));
-    verify(auditRecord, times(1)).addResource(any(Credential.class));
+    subjectWithAcls.generateCredential(generateRequest);
+
+    assertEquals("/captain", auditRecord.getResourceName());
+    assertEquals(uuid.toString(), auditRecord.getVersionUUID());
   }
 
+  @Test
+  public void findStartingWithPath_withAclsEnabled_andUserDoesNotHavePermissions_returnsEmptyList() {
+    when(permissionCheckingService.findAllPathsByActor(USER)).thenReturn(EMPTY_SET);
 
+    FindCredentialResult credential = new FindCredentialResult(Instant.now(), CREDENTIAL_NAME);
+    when(credentialService.findStartingWithPath("/", ""))
+      .thenReturn(Collections.singletonList(credential));
+
+    List<FindCredentialResult> results = subjectWithAcls.findStartingWithPath("/", "");
+
+    assertEquals(0, results.size());
+  }
+
+  @Test
+  public void findStartingWithPath_withAclsEnabled_andUserHasPermissions_returnsCredentials() {
+    HashSet<String> paths = new HashSet<>(Collections.singletonList(CREDENTIAL_NAME));
+    when(permissionCheckingService.findAllPathsByActor(USER)).thenReturn(paths);
+
+    FindCredentialResult credential = new FindCredentialResult(Instant.now(), CREDENTIAL_NAME);
+    when(credentialService.findStartingWithPath("/", ""))
+      .thenReturn(Collections.singletonList(credential));
+
+    List<FindCredentialResult> results = subjectWithAcls.findStartingWithPath("/", "");
+
+    assertEquals(1, results.size());
+    assertTrue(results.contains(credential));
+  }
+
+  @Test
+  public void findStartingWithPath_withAclsDisabled_returnsUnfilteredCredentials() {
+    FindCredentialResult credential = new FindCredentialResult(Instant.now(), CREDENTIAL_NAME);
+    when(credentialService.findStartingWithPath("/", ""))
+      .thenReturn(Collections.singletonList(credential));
+
+    List<FindCredentialResult> results = subjectWithoutAcls.findStartingWithPath("/", "");
+
+    assertEquals(1, results.size());
+    assertTrue(results.contains(credential));
+    verify(permissionCheckingService, times(0)).findAllPathsByActor(any());
+  }
+
+  @Test
+  public void findContainingName_withAclsEnabled_andUserDoesNotHavePermissions_returnsEmptyList() {
+    when(permissionCheckingService.findAllPathsByActor(USER)).thenReturn(EMPTY_SET);
+
+    FindCredentialResult credential = new FindCredentialResult(Instant.now(), CREDENTIAL_NAME);
+    when(credentialService.findContainingName(CREDENTIAL_NAME, ""))
+      .thenReturn(Collections.singletonList(credential));
+
+    List<FindCredentialResult> results = subjectWithAcls.findContainingName(CREDENTIAL_NAME, "");
+
+    assertEquals(0, results.size());
+  }
+
+  @Test
+  public void findContainingName_withAclsEnabled_andUserHasPermissions_returnsCredentials() {
+    HashSet<String> paths = new HashSet<>(Collections.singletonList(CREDENTIAL_NAME));
+    when(permissionCheckingService.findAllPathsByActor(USER)).thenReturn(paths);
+
+    FindCredentialResult credential = new FindCredentialResult(Instant.now(), CREDENTIAL_NAME);
+    when(credentialService.findContainingName(CREDENTIAL_NAME, ""))
+      .thenReturn(Collections.singletonList(credential));
+
+    List<FindCredentialResult> results = subjectWithAcls.findContainingName(CREDENTIAL_NAME, "");
+
+    assertEquals(1, results.size());
+    assertTrue(results.contains(credential));
+  }
+
+  @Test
+  public void findContainingName_withAclsDisabled_returnsUnfilteredCredentials() {
+    FindCredentialResult credential = new FindCredentialResult(Instant.now(), CREDENTIAL_NAME);
+    when(credentialService.findContainingName(CREDENTIAL_NAME, ""))
+      .thenReturn(Collections.singletonList(credential));
+
+    List<FindCredentialResult> results = subjectWithoutAcls.findContainingName(CREDENTIAL_NAME, "");
+
+    assertEquals(1, results.size());
+    assertTrue(results.contains(credential));
+    verify(permissionCheckingService, times(0)).findAllPathsByActor(any());
+  }
 
 }

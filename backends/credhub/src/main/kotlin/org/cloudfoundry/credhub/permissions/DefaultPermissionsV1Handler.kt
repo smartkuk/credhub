@@ -1,10 +1,10 @@
-package org.cloudfoundry.credhub.handlers
+package org.cloudfoundry.credhub.permissions
 
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.requests.PermissionsRequest
-import org.cloudfoundry.credhub.services.PermissionService
 import org.cloudfoundry.credhub.services.CredentialService
+import org.cloudfoundry.credhub.services.PermissionService
 import org.cloudfoundry.credhub.views.PermissionsView
 import org.springframework.stereotype.Component
 

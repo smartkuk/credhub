@@ -69,7 +69,7 @@ import static org.junit.Assert.assertThat;
   value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
   justification = "Let's refactor this class into kotlin"
 )
-public class CredentialVersionDataServiceTest {
+public class DefaultCredentialVersionDataServiceTest {
 
   @Autowired
   private CredentialVersionRepository credentialVersionRepository;

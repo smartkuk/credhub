@@ -14,4 +14,6 @@ interface PermissionCheckingService {
     fun userAllowedToOperateOnActor(actor: String?): Boolean
 
     fun userAllowedToOperateOnActor(guid: UUID): Boolean
+
+    fun findAllPathsByActor(actor: String): Set<String>
 }

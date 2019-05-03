@@ -9,6 +9,7 @@ import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.domain.ValueCredentialVersion
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
+import org.cloudfoundry.credhub.permissions.DefaultPermissionsV1Handler
 import org.cloudfoundry.credhub.requests.PermissionEntry
 import org.cloudfoundry.credhub.requests.PermissionsRequest
 import org.cloudfoundry.credhub.views.PermissionsView

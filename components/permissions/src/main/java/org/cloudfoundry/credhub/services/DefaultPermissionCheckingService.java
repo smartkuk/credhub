@@ -1,11 +1,12 @@
 package org.cloudfoundry.credhub.services;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +16,7 @@ import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.data.PermissionData;
 import org.cloudfoundry.credhub.data.PermissionDataService;
 
-@Component
+@Service
 @SuppressFBWarnings(
   value = "NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE",
   justification = "Let's refactor this class into kotlin"
@@ -90,5 +91,10 @@ public class DefaultPermissionCheckingService implements PermissionCheckingServi
     } else {
       return true;
     }
+  }
+
+  @Override
+  public Set<String> findAllPathsByActor(String actor) {
+    return permissionDataService.findAllPathsByActor(actor);
   }
 }
