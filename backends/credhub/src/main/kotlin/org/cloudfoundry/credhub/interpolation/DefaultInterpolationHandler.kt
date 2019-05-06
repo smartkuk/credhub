@@ -1,18 +1,26 @@
 package org.cloudfoundry.credhub.interpolation
 
 import org.cloudfoundry.credhub.ErrorMessages
+import org.cloudfoundry.credhub.PermissionOperation
+import org.cloudfoundry.credhub.PermissionOperation.READ
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
+import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
 import org.cloudfoundry.credhub.services.CredentialService
+import org.cloudfoundry.credhub.services.PermissionCheckingService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.ArrayList
 
 @Service
 class DefaultInterpolationHandler(
     val credentialService: CredentialService,
-    val auditRecord: CEFAuditRecord
+    val auditRecord: CEFAuditRecord,
+    private val permissionCheckingService: PermissionCheckingService,
+    private val userContextHolder: UserContextHolder,
+    @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean
 ) : InterpolationHandler {
 
     override fun interpolateCredHubReferences(servicesMap: Map<String, Any>): Map<String, Any> {
@@ -29,6 +37,7 @@ class DefaultInterpolationHandler(
                 val credhubRefString = credhubRef as? String ?: continue
                 val credentialName = getCredentialNameFromRef(credhubRefString)
 
+                checkPermissionsByName(credentialName, READ)
                 val credentialVersions = credentialService.findNByName(credentialName, 1)
                 if (credentialVersions.isEmpty()) {
                     throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
@@ -55,4 +64,17 @@ class DefaultInterpolationHandler(
     private fun getCredentialNameFromRef(credhubRef: String): String {
         return credhubRef.replaceFirst("^\\(\\(".toRegex(), "").replaceFirst("\\)\\)$".toRegex(), "")
     }
+
+    private fun checkPermissionsByName(name: String, permissionOperation: PermissionOperation) {
+        if (!enforcePermissions) return
+
+        if (!permissionCheckingService.hasPermission(
+                userContextHolder.userContext.actor!!,
+                name,
+                permissionOperation
+            )) {
+            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+        }
+    }
+
 }

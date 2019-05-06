@@ -37,9 +37,11 @@ import org.junit.Test;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Java6Assertions.fail;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -273,7 +275,12 @@ public class DefaultCertificatesHandlerTest {
   }
 
   @Test
-  public void handleGetAllRequest_whenUserLacksPermission_throwsException() {
+  public void handleGetAllRequest_whenUserLacksPermission_returnsEmptyList() {
+    when(permissionCheckingService.findAllPathsByActor(USER))
+      .thenReturn(emptySet());
+
+    CertificateCredentialsView certificateCredentialsView = subjectWithAcls.handleGetAllRequest();
+    assertEquals(certificateCredentialsView.getCertificates().size(),0);
 
   }
 

@@ -1,6 +1,7 @@
 package org.cloudfoundry.credhub.views;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -86,5 +87,26 @@ public class CredentialView {
   @JsonProperty("value")
   public CredentialValue getValue() {
     return value;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    CredentialView that = (CredentialView) o;
+    return Objects.equals(versionCreatedAt, that.versionCreatedAt) &&
+      Objects.equals(uuid, that.uuid) &&
+      Objects.equals(name, that.name) &&
+      Objects.equals(type, that.type) &&
+      Objects.equals(value, that.value);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(versionCreatedAt, uuid, name, type, value);
   }
 }

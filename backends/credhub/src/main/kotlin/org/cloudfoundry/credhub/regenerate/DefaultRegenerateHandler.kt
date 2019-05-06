@@ -1,30 +1,45 @@
 package org.cloudfoundry.credhub.regenerate
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import org.cloudfoundry.credhub.ErrorMessages
+import org.cloudfoundry.credhub.PermissionOperation
+import org.cloudfoundry.credhub.PermissionOperation.READ
+import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.audit.entities.BulkRegenerateCredential
+import org.cloudfoundry.credhub.auth.UserContextHolder
+import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters
+import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.generate.GenerationRequestGenerator
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator
 import org.cloudfoundry.credhub.requests.CertificateGenerateRequest
 import org.cloudfoundry.credhub.services.CredentialService
+import org.cloudfoundry.credhub.services.PermissionCheckingService
+import org.cloudfoundry.credhub.utils.CertificateReader
 import org.cloudfoundry.credhub.views.BulkRegenerateResults
 import org.cloudfoundry.credhub.views.CredentialView
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.TreeSet
 
 @SuppressFBWarnings(value = ["NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"],
     justification = "This will be refactored into safer non-nullable types")
 @Service
-class DefaultRegenerateHandler// todo: add permissions
+class DefaultRegenerateHandler
 (
     private val credentialService: CredentialService,
     private val credentialGenerator: UniversalCredentialGenerator,
     private val generationRequestGenerator: GenerationRequestGenerator,
-    private val auditRecord: CEFAuditRecord
+    private val auditRecord: CEFAuditRecord,
+    private val permissionCheckingService: PermissionCheckingService,
+    private val userContextHolder: UserContextHolder,
+    @Value("\${security.authorization.acls.enabled}") private val enforcePermissions: Boolean
 ) : RegenerateHandler {
 
     override fun handleRegenerate(credentialName: String): CredentialView {
+        checkPermissionsByName(credentialName, WRITE)
+
         val existingCredentialVersion = credentialService.findMostRecent(credentialName)
         val generateRequest = generationRequestGenerator
             .createGenerateRequest(existingCredentialVersion)
@@ -44,6 +59,9 @@ class DefaultRegenerateHandler// todo: add permissions
     override fun handleBulkRegenerate(signerName: String): BulkRegenerateResults {
         auditRecord.requestDetails = BulkRegenerateCredential(signerName)
 
+        verifyRegeneratePermissions(signerName)
+
+
         val results = BulkRegenerateResults()
         val certificateSet = TreeSet(String.CASE_INSENSITIVE_ORDER)
 
@@ -52,13 +70,29 @@ class DefaultRegenerateHandler// todo: add permissions
         return results
     }
 
+    private fun verifyRegeneratePermissions(signerName: String) {
+        if (!enforcePermissions) return
+
+        checkPermissionsByName(signerName, READ)
+        credentialService.findAllCertificateCredentialsByCaName(signerName)
+            .forEach {
+                checkPermissionsByName(it, WRITE)
+                val mostRecent = credentialService.findMostRecent(it)
+                    as CertificateCredentialVersion
+                val certificate = CertificateReader(mostRecent.certificate)
+                if (certificate.isCa) {
+                    verifyRegeneratePermissions(it)
+                }
+            }
+    }
+
     private fun regenerateCertificatesSignedByCA(signerName: String): Collection<String> {
         val results = TreeSet(String.CASE_INSENSITIVE_ORDER)
         val certificateNames = TreeSet(String.CASE_INSENSITIVE_ORDER)
 
         certificateNames.addAll(credentialService.findAllCertificateCredentialsByCaName(signerName))
         certificateNames.stream().map { name -> this.regenerateCertificateAndDirectChildren(name) }
-            .forEach{results.addAll(it)}
+            .forEach { results.addAll(it) }
 
         return results
     }
@@ -86,5 +120,17 @@ class DefaultRegenerateHandler// todo: add permissions
             results.addAll(this.regenerateCertificatesSignedByCA(generateRequest.name))
         }
         return results
+    }
+
+    private fun checkPermissionsByName(name: String, permissionOperation: PermissionOperation) {
+        if (!enforcePermissions) return
+
+        if (!permissionCheckingService.hasPermission(
+                userContextHolder.userContext.actor!!,
+                name,
+                permissionOperation
+            )) {
+            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+        }
     }
 }
