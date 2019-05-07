@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.data
+package org.cloudfoundry.credhub.services
 
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialVersion

@@ -14,6 +14,7 @@ import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.entity.Credential
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
+import org.cloudfoundry.credhub.exceptions.PermissionException
 import org.cloudfoundry.credhub.generate.GenerationRequestGenerator
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator
 import org.cloudfoundry.credhub.requests.CertificateRegenerateRequest
@@ -56,6 +57,7 @@ class DefaultCertificatesHandler(
             .createGenerateRequest(existingCredentialVersion)
         val credentialValue = credentialGenerator
             .generate(generateRequest) as CertificateCredentialValue
+
         credentialValue.isTransitional = request.isTransitional
 
         val credentialVersion = certificateService
@@ -182,19 +184,29 @@ class DefaultCertificatesHandler(
                 name,
                 permissionOperation
             )) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+            if (permissionOperation == WRITE) {
+                throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
+            } else {
+                throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+            }
         }
     }
 
     private fun checkPermissionsByUuid(uuid: String, permissionOperation: PermissionOperation) {
         if (!enforcePermissions) return
 
+        val credential = certificateService.findByCredentialUuid(uuid)
+
         if (!permissionCheckingService.hasPermission(
                 userContextHolder.userContext.actor!!,
-                UUID.fromString(uuid),
+                credential.name,
                 permissionOperation
             )) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+            if (permissionOperation == WRITE) {
+                throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
+            } else {
+                throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+            }
         }
     }
 

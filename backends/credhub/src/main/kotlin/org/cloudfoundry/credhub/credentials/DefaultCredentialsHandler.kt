@@ -2,15 +2,20 @@ package org.cloudfoundry.credhub.credentials
 
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
+import org.cloudfoundry.credhub.PermissionOperation.DELETE
+import org.cloudfoundry.credhub.PermissionOperation.READ
+import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
 import org.cloudfoundry.credhub.domain.CredentialVersion
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
+import org.cloudfoundry.credhub.exceptions.PermissionException
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
+import org.cloudfoundry.credhub.requests.CertificateGenerateRequest
 import org.cloudfoundry.credhub.requests.CertificateSetRequest
 import org.cloudfoundry.credhub.services.CertificateAuthorityService
 import org.cloudfoundry.credhub.services.CredentialService
@@ -44,11 +49,18 @@ class DefaultCredentialsHandler(
         return filterPermissions(unfilteredResults)
     }
 
-    //todo: add regenerate back
     override fun generateCredential(generateRequest: BaseCredentialGenerateRequest): CredentialView {
-        checkPermissionsByName(generateRequest.name, PermissionOperation.WRITE)
+        if (generateRequest.type == "certificate") {
+            val caName = (generateRequest as CertificateGenerateRequest).generationRequestParameters.caName
+            if (caName != null) {
+                checkPermissionsByName(caName, READ)
+            }
+        }
+        checkPermissionsByName(generateRequest.name, WRITE)
 
         val existingCredentialVersion = credentialService.findMostRecent(generateRequest.name)
+
+
         val value = credentialGenerator.generate(generateRequest)
 
         val credentialVersion = credentialService.save(existingCredentialVersion, value, generateRequest)
@@ -59,7 +71,7 @@ class DefaultCredentialsHandler(
     }
 
     override fun setCredential(setRequest: BaseCredentialSetRequest<*>): CredentialView {
-        checkPermissionsByName(setRequest.name, PermissionOperation.WRITE)
+        checkPermissionsByName(setRequest.name, WRITE)
         if (setRequest is CertificateSetRequest) {
             // fill in the ca value if it's one of ours
             val certificateValue = setRequest.certificateValue
@@ -85,7 +97,7 @@ class DefaultCredentialsHandler(
     }
 
     override fun deleteCredential(credentialName: String) {
-        checkPermissionsByName(credentialName, PermissionOperation.DELETE)
+        checkPermissionsByName(credentialName, DELETE)
         val deleteSucceeded = credentialService.delete(credentialName)
         if (!deleteSucceeded) {
             throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
@@ -93,7 +105,7 @@ class DefaultCredentialsHandler(
     }
 
     override fun getNCredentialVersions(credentialName: String, numberOfVersions: Int?): DataResponse {
-        checkPermissionsByName(credentialName, PermissionOperation.READ)
+        checkPermissionsByName(credentialName, READ)
         val credentialVersions: List<CredentialVersion>
         if (numberOfVersions == null) {
             credentialVersions = credentialService.findAllByName(credentialName)
@@ -113,12 +125,12 @@ class DefaultCredentialsHandler(
     }
 
     override fun getAllCredentialVersions(credentialName: String): DataResponse {
-        checkPermissionsByName(credentialName, PermissionOperation.READ)
+        checkPermissionsByName(credentialName, READ)
         return getNCredentialVersions(credentialName, null)
     }
 
     override fun getCurrentCredentialVersions(credentialName: String): DataResponse {
-        checkPermissionsByName(credentialName, PermissionOperation.READ)
+        checkPermissionsByName(credentialName, READ)
         val credentialVersions = credentialService.findActiveByName(credentialName)
 
         if (credentialVersions.isEmpty()) {
@@ -128,12 +140,12 @@ class DefaultCredentialsHandler(
     }
 
     override fun getCredentialVersionByUUID(credentialUUID: String): CredentialView {
-        checkPermissionsByUuid(credentialUUID, PermissionOperation.READ)
+        checkPermissionsByUuid(credentialUUID, READ)
         return CredentialView.fromEntity(credentialService.findVersionByUuid(credentialUUID))
     }
 
     private fun validateCertificateValueIsSignedByCa(certificateValue: CertificateCredentialValue, caName: String) {
-        checkPermissionsByName(caName, PermissionOperation.READ)
+        checkPermissionsByName(caName, READ)
         val caValue = certificateAuthorityService.findActiveVersion(caName).certificate
         certificateValue.ca = caValue
 
@@ -188,19 +200,30 @@ class DefaultCredentialsHandler(
                 name,
                 permissionOperation
             )) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+            if (permissionOperation == WRITE) {
+                throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
+            } else {
+                throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+            }
         }
     }
 
     private fun checkPermissionsByUuid(uuid: String, permissionOperation: PermissionOperation) {
         if (!enforcePermissions) return
 
+        val credentialName = credentialService.findByUuid(UUID.fromString(uuid)).name
+            ?: throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+
         if (!permissionCheckingService.hasPermission(
                 userContextHolder.userContext.actor!!,
-                UUID.fromString(uuid),
+                credentialName,
                 permissionOperation
             )) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+            if (permissionOperation == WRITE) {
+                throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
+            } else {
+                throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+            }
         }
     }
 

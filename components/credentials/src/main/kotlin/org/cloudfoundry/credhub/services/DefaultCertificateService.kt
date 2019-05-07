@@ -5,8 +5,6 @@ import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.audit.AuditableCredentialVersion
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue
-import org.cloudfoundry.credhub.data.CertificateDataService
-import org.cloudfoundry.credhub.data.CertificateVersionDataService
 import org.cloudfoundry.credhub.domain.CertificateCredentialFactory
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialVersion

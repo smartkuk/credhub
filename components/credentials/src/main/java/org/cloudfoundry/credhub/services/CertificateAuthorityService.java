@@ -2,7 +2,6 @@ package org.cloudfoundry.credhub.services;
 
 import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
-import org.cloudfoundry.credhub.data.DefaultCertificateVersionDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;

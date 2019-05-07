@@ -13,7 +13,6 @@ import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.credential.CredentialValue
 import org.cloudfoundry.credhub.credential.StringCredentialValue
-import org.cloudfoundry.credhub.data.CredentialDataService
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialFactory
 import org.cloudfoundry.credhub.domain.CredentialVersion

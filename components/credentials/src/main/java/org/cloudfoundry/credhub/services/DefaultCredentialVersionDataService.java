@@ -19,8 +19,6 @@ import com.google.common.collect.Lists;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang3.StringUtils;
 import org.cloudfoundry.credhub.ErrorMessages;
-import org.cloudfoundry.credhub.data.CertificateVersionDataService;
-import org.cloudfoundry.credhub.data.CredentialDataService;
 import org.cloudfoundry.credhub.domain.CredentialFactory;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.CertificateCredentialVersionData;
@@ -29,7 +27,6 @@ import org.cloudfoundry.credhub.entity.CredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.MaximumSizeException;
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException;
 import org.cloudfoundry.credhub.repositories.CredentialVersionRepository;
-import org.cloudfoundry.credhub.services.CredentialVersionDataService;
 import org.cloudfoundry.credhub.views.FindCertificateResult;
 import org.cloudfoundry.credhub.views.FindCredentialResult;
 

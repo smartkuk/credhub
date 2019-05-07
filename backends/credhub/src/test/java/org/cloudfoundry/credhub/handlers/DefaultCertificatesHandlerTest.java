@@ -19,6 +19,7 @@ import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
+import org.cloudfoundry.credhub.exceptions.PermissionException;
 import org.cloudfoundry.credhub.generate.GenerationRequestGenerator;
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator;
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest;
@@ -103,7 +104,7 @@ public class DefaultCertificatesHandlerTest {
     final CertificateCredentialValue newValue = mock(CertificateCredentialValue.class);
 
     when(certificate.getName()).thenReturn("test");
-    when(permissionCheckingService.hasPermission(USER, UUID.fromString(UUID_STRING), PermissionOperation.WRITE))
+    when(permissionCheckingService.hasPermission(USER, "test", PermissionOperation.WRITE))
       .thenReturn(true);
     when(certificateService.findByCredentialUuid(eq(UUID_STRING))).thenReturn(certificate);
     when(generationRequestGenerator.createGenerateRequest(eq(certificate)))
@@ -211,8 +212,6 @@ public class DefaultCertificatesHandlerTest {
 
     when(permissionCheckingService.hasPermission(USER, certificateName, PermissionOperation.READ))
       .thenReturn(true);
-    when(permissionCheckingService.hasPermission(USER, uuid, PermissionOperation.READ))
-      .thenReturn(true);
 
     final CertificateCredentialVersion nonTransitionalVersion = new CertificateCredentialVersion(certificateName);
     nonTransitionalVersion.setUuid(UUID.randomUUID());
@@ -244,7 +243,9 @@ public class DefaultCertificatesHandlerTest {
   public void handleGetAllVersionsRequest_returnsListOfCertificateViews() {
     final UUID uuid = UUID.randomUUID();
     final String certificateName = "some certificate";
-    when(permissionCheckingService.hasPermission(USER, uuid, PermissionOperation.READ))
+    CertificateCredentialVersion credential = new CertificateCredentialVersion(certificateName);
+    when(certificateService.findByCredentialUuid(uuid.toString())).thenReturn(credential);
+    when(permissionCheckingService.hasPermission(USER, certificateName, PermissionOperation.READ))
       .thenReturn(true);
 
     final CredentialVersion credentialVersion = new CertificateCredentialVersion(certificateName);
@@ -259,16 +260,18 @@ public class DefaultCertificatesHandlerTest {
 
   @Test
   public void handleRegenerate_whenUserLacksPermission_throwsException() {
-    when(permissionCheckingService.hasPermission(USER, UUID.fromString(UUID_STRING), PermissionOperation.WRITE))
+    CertificateCredentialVersion credential = new CertificateCredentialVersion(CREDENTIAL_NAME);
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(credential);
+    when(permissionCheckingService.hasPermission(USER,CREDENTIAL_NAME , PermissionOperation.WRITE))
       .thenReturn(false);
 
     try {
       subjectWithAcls.handleRegenerate(UUID_STRING, new CertificateRegenerateRequest());
       fail("should throw exception");
-    } catch (final EntryNotFoundException e) {
+    } catch (final PermissionException e) {
       assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
-    verify(certificateService, times(0)).findByCredentialUuid(any());
+    verify(certificateService, times(1)).findByCredentialUuid(any());
     verify(generationRequestGenerator, times(0)).createGenerateRequest(any());
     verify(universalCredentialGenerator, times(0)).generate(any());
     verify(certificateService, times(0)).save(any(), any(), any());
@@ -300,7 +303,9 @@ public class DefaultCertificatesHandlerTest {
 
   @Test
   public void handleGetAllVersionsRequest_whenUserLacksPermission_throwsException() {
-    when(permissionCheckingService.hasPermission(USER, UUID.fromString(UUID_STRING), PermissionOperation.READ))
+    CertificateCredentialVersion credential = new CertificateCredentialVersion(CREDENTIAL_NAME);
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(credential);
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
       .thenReturn(false);
 
     try {
@@ -314,7 +319,9 @@ public class DefaultCertificatesHandlerTest {
 
   @Test
   public void handleDeleteVersionRequest_whenUserLacksPermission_throwsException() {
-    when(permissionCheckingService.hasPermission(USER, UUID.fromString(UUID_STRING), PermissionOperation.DELETE))
+    CertificateCredentialVersion credential = new CertificateCredentialVersion(CREDENTIAL_NAME);
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(credential);
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.DELETE))
       .thenReturn(false);
 
     try {
@@ -328,13 +335,15 @@ public class DefaultCertificatesHandlerTest {
 
   @Test
   public void handleUpdateTransitionalVersion_whenUserLacksPermission_throwsException() {
-    when(permissionCheckingService.hasPermission(USER, UUID.fromString(UUID_STRING), PermissionOperation.DELETE))
+    CertificateCredentialVersion credential = new CertificateCredentialVersion(CREDENTIAL_NAME);
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(credential);
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE))
       .thenReturn(false);
 
     try {
       subjectWithAcls.handleUpdateTransitionalVersion(UUID_STRING, new UpdateTransitionalVersionRequest());
       fail("should throw exception");
-    } catch (final EntryNotFoundException e) {
+    } catch (final PermissionException e) {
       assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
     verify(certificateService, times(0)).updateTransitionalVersion(any(), any());
@@ -342,13 +351,15 @@ public class DefaultCertificatesHandlerTest {
 
   @Test
   public void handleCreateVersionsRequest_whenUserLacksPermission_throwsException() {
-    when(permissionCheckingService.hasPermission(USER, UUID.fromString(UUID_STRING), PermissionOperation.WRITE))
+    CertificateCredentialVersion credential = new CertificateCredentialVersion(CREDENTIAL_NAME);
+    when(certificateService.findByCredentialUuid(UUID_STRING)).thenReturn(credential);
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE))
       .thenReturn(false);
 
     try {
       subjectWithAcls.handleCreateVersionsRequest(UUID_STRING, new CreateVersionRequest());
       fail("should throw exception");
-    } catch (final EntryNotFoundException e) {
+    } catch (final PermissionException e) {
       assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     }
     verify(certificateService, times(0)).set(any(), any());

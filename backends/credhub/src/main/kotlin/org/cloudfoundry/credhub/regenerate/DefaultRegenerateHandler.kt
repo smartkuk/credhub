@@ -11,6 +11,7 @@ import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CertificateGenerationParameters
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
+import org.cloudfoundry.credhub.exceptions.PermissionException
 import org.cloudfoundry.credhub.generate.GenerationRequestGenerator
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator
 import org.cloudfoundry.credhub.requests.CertificateGenerateRequest
@@ -40,7 +41,14 @@ class DefaultRegenerateHandler
     override fun handleRegenerate(credentialName: String): CredentialView {
         checkPermissionsByName(credentialName, WRITE)
 
-        val existingCredentialVersion = credentialService.findMostRecent(credentialName)
+        val existingCredentialVersion = credentialService.findMostRecent(credentialName) ?:
+            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+        if (existingCredentialVersion.credentialType == "certificate") {
+            val caName = (existingCredentialVersion as CertificateCredentialVersion).caName
+            if (caName != null) {
+                checkPermissionsByName(caName, READ)
+            }
+        }
         val generateRequest = generationRequestGenerator
             .createGenerateRequest(existingCredentialVersion)
         val credentialValue = credentialGenerator.generate(generateRequest)
@@ -70,6 +78,7 @@ class DefaultRegenerateHandler
         return results
     }
 
+    //todo: do we still need this because of the rollback in transactional
     private fun verifyRegeneratePermissions(signerName: String) {
         if (!enforcePermissions) return
 
@@ -130,7 +139,11 @@ class DefaultRegenerateHandler
                 name,
                 permissionOperation
             )) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+            if (permissionOperation == WRITE) {
+                throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
+            } else {
+                throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+            }
         }
     }
 }

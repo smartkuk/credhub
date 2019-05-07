@@ -17,7 +17,6 @@ import org.cloudfoundry.credhub.credentials.CredentialsController
 import org.cloudfoundry.credhub.helpers.CredHubRestDocs
 import org.cloudfoundry.credhub.helpers.MockMvcFactory
 import org.cloudfoundry.credhub.helpers.credHubAuthHeader
-import org.cloudfoundry.credhub.services.SpyCredentialService
 import org.cloudfoundry.credhub.utils.TestConstants
 import org.cloudfoundry.credhub.views.CredentialView
 import org.cloudfoundry.credhub.views.DataResponse
@@ -40,7 +39,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.content
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.security.Security
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 @RunWith(SpringRunner::class)
 class CredentialsControllerGetTest {
@@ -51,12 +50,14 @@ class CredentialsControllerGetTest {
     val uuid = UUID.randomUUID()
 
     lateinit var mockMvc: MockMvc
-    lateinit var spyPermissionedCredentialService: SpyCredentialService
-    var spyCredentialsHandler: SpyCredentialsHandler = SpyCredentialsHandler()
-    var spyRegenerateHandler: SpyRegenerateHandler = SpyRegenerateHandler()
+    lateinit var spyCredentialsHandler: SpyCredentialsHandler
+    lateinit var spyRegenerateHandler: SpyRegenerateHandler
 
     @Before
     fun setUp() {
+        spyCredentialsHandler = SpyCredentialsHandler()
+        spyRegenerateHandler = SpyRegenerateHandler()
+
         val credentialController = CredentialsController(
             spyCredentialsHandler,
             CEFAuditRecord(),
@@ -413,7 +414,7 @@ class CredentialsControllerGetTest {
 
     @Test
     fun GET__find_by_name_like__returns_results() {
-        spyPermissionedCredentialService.findContainingName__returns_findCredentialResultList = listOf(
+        spyCredentialsHandler.findContainingName__returns_findCredentialResultList = listOf(
             FindCredentialResult(
                 Instant.ofEpochSecond(1549053472L),
                 "some-credential-name"
@@ -443,8 +444,8 @@ class CredentialsControllerGetTest {
             )
             .andReturn()
 
-        assertThat(spyPermissionedCredentialService.findContainingName__calledWith_name).isEqualTo("some-credential")
-        assertThat(spyPermissionedCredentialService.findContainingName__calledWith_expiresWithinDays).isEqualTo("1")
+        assertThat(spyCredentialsHandler.findContainingName__calledWith_name).isEqualTo("some-credential")
+        assertThat(spyCredentialsHandler.findContainingName__calledWith_expiresWithinDays).isEqualTo("1")
         val actualResponseBody = mvcResult.response.contentAsString
         // language=json
         val expectedResponseBody = """
@@ -463,7 +464,7 @@ class CredentialsControllerGetTest {
 
     @Test
     fun GET__find_by_name__returns_results() {
-        spyPermissionedCredentialService.findStartingWithPath__returns_findCredentialResultList = listOf(
+        spyCredentialsHandler.findStartingWithPath__returns_findCredentialResultList = listOf(
             FindCredentialResult(
                 Instant.ofEpochSecond(1549053472L),
                 "some-credential-name"
@@ -493,8 +494,8 @@ class CredentialsControllerGetTest {
             )
             .andReturn()
 
-        assertThat(spyPermissionedCredentialService.findStartingWithPath__calledWith_path).isEqualTo("some-credential-path")
-        assertThat(spyPermissionedCredentialService.findStartingWithPath__calledWith_expiresWithinDays).isEqualTo("1")
+        assertThat(spyCredentialsHandler.findStartingWithPath__calledWith_path).isEqualTo("some-credential-path")
+        assertThat(spyCredentialsHandler.findStartingWithPath__calledWith_expiresWithinDays).isEqualTo("1")
         val actualResponseBody = mvcResult.response.contentAsString
         // language=json
         val expectedResponseBody = """

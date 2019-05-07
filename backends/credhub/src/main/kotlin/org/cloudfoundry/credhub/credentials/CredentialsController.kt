@@ -9,6 +9,7 @@ import org.cloudfoundry.credhub.audit.entities.GenerateCredential
 import org.cloudfoundry.credhub.audit.entities.GetCredential
 import org.cloudfoundry.credhub.audit.entities.SetCredential
 import org.cloudfoundry.credhub.exceptions.InvalidQueryParameterException
+import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
 import org.cloudfoundry.credhub.regenerate.RegenerateHandler
 import org.cloudfoundry.credhub.requests.BaseCredentialGenerateRequest
 import org.cloudfoundry.credhub.requests.BaseCredentialSetRequest
@@ -107,16 +108,17 @@ class CredentialsController(
     @RequestMapping(method = [POST], path = [""])
     @ResponseStatus(HttpStatus.OK)
     fun generate(@RequestBody requestBody: BaseCredentialGenerateRequest): CredentialView {
-        return if (!requestBody.isRegenerate) {
-            val generateCredential = GenerateCredential()
-            generateCredential.name = requestBody.name
-            generateCredential.type = requestBody.type
-            auditRecord.requestDetails = generateCredential
+        val name = requestBody.name ?: throw ParameterizedValidationException(ErrorMessages.MISSING_NAME)
+        if (requestBody.isRegenerate) return regenerateHandler.handleRegenerate(name)
 
-            credentialsHandler.generateCredential(requestBody)
-        } else {
-            regenerateHandler.handleRegenerate(requestBody.name)
-        }
+        requestBody.validate()
+        val generateCredential = GenerateCredential()
+        generateCredential.name = name
+        generateCredential.type = requestBody.type
+        auditRecord.requestDetails = generateCredential
+
+        return credentialsHandler.generateCredential(requestBody)
+
     }
 
     @RequestMapping(method = [PUT], path = [""])

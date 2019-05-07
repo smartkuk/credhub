@@ -41,15 +41,16 @@ public class DefaultPermissionCheckingService implements PermissionCheckingServi
   @Override
   public boolean hasPermission(final String user, final String credentialName, final PermissionOperation permission) {
     if (enforcePermissions) {
-      return permissionDataService.hasPermission(user, credentialName, permission);
+      String name = StringUtils.prependIfMissing(credentialName, "/");
+      return permissionDataService.hasPermission(user, name, permission);
     }
     return true;
   }
 
   @Override
-  public boolean hasPermission(final String user, final UUID guid, final PermissionOperation permission) {
+  public boolean hasPermission(final String user, final UUID permissionGuid, final PermissionOperation permission) {
     if (enforcePermissions) {
-      final PermissionData permissionData = permissionDataService.getPermission(guid);
+      final PermissionData permissionData = permissionDataService.getPermission(permissionGuid);
       if (permissionData == null) {
         return false;
       }

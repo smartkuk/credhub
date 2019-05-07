@@ -4,7 +4,6 @@ import org.cloudfoundry.credhub.ErrorMessages;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
-import org.cloudfoundry.credhub.data.DefaultCertificateVersionDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
@@ -19,6 +18,7 @@ import org.junit.runners.JUnit4;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -60,17 +60,6 @@ public class CertificateAuthorityServiceTest {
     }
   }
 
-  // todo: remove this
-//  @Test
-//  public void findActiveVersion_whenACaDoesNotExist_throwsException() {
-//    when(certificateVersionDataService.findActive(any(String.class))).thenReturn(null);
-//    try {
-//      certificateAuthorityService.findActiveVersion("any ca name");
-//    } catch (final EntryNotFoundException pe) {
-//      assertThat(pe.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
-//    }
-//  }
-
   @Test
   public void findActiveVersion_whenCaNameRefersToNonCa_throwsException() {
     when(certificateVersionDataService.findActive(any(String.class))).thenReturn(mock(PasswordCredentialVersion.class));
@@ -102,8 +91,10 @@ public class CertificateAuthorityServiceTest {
 
     try {
       certificateAuthorityService.findActiveVersion("actually-a-password");
-    } catch (final EntryNotFoundException pe) {
-      assertThat(pe.getMessage(), equalTo(ErrorMessages.Credential.INVALID_ACCESS));
+    } catch (final ParameterizedValidationException pe) {
+      assertThat(pe.getMessage(), equalTo(ErrorMessages.NOT_A_CA_NAME));
+    } catch (final Exception e) {
+      fail("expected EntryNotFoundException, but got " + e.getClass() );
     }
   }
 

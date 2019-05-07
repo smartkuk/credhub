@@ -266,7 +266,7 @@ class CredentialsControllerGenerateTest {
                 .credHubAuthHeader()
                 .content(requestBody)
         )
-            .andExpect(status().isOk())
+            .andExpect(status().isOk)
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
             .andDo(
                 document(

@@ -1,6 +1,5 @@
 package org.cloudfoundry.credhub.endToEnd.v2.permissions;
 
-import java.util.Locale;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,7 +126,7 @@ public class GetPermissionsV2EndToEndTest {
 
     final String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
     final String errorMessage = new JSONObject(content).getString("error");
-    assertThat(errorMessage, is(equalTo(messageSource.getMessage(ErrorMessages.Permissions.INVALID_ACCESS, null, null, Locale.ENGLISH))));
+    assertThat(errorMessage, is(equalTo(ErrorMessages.Permissions.INVALID_ACCESS)));
   }
 
   @Test
@@ -143,7 +142,7 @@ public class GetPermissionsV2EndToEndTest {
 
     final String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
     final String errorMessage = new JSONObject(content).getString("error");
-    assertThat(errorMessage, is(equalTo(messageSource.getMessage(ErrorMessages.Permissions.INVALID_ACCESS, null, null, Locale.ENGLISH))));
+    assertThat(errorMessage, is(equalTo(ErrorMessages.Permissions.INVALID_ACCESS)));
   }
 
   @Test
@@ -159,6 +158,6 @@ public class GetPermissionsV2EndToEndTest {
 
     final String content = mockMvc.perform(getUuidRequest).andExpect(status().isNotFound()).andReturn().getResponse().getContentAsString();
     final String errorMessage = new JSONObject(content).getString("error");
-    assertThat(errorMessage, is(equalTo(messageSource.getMessage(ErrorMessages.Permissions.INVALID_ACCESS, null, null, Locale.ENGLISH))));
+    assertThat(errorMessage, is(equalTo(ErrorMessages.Permissions.INVALID_ACCESS)));
   }
 }

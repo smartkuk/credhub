@@ -3,11 +3,13 @@ package org.cloudfoundry.credhub.interpolation
 import org.cloudfoundry.credhub.ErrorMessages
 import org.cloudfoundry.credhub.PermissionOperation
 import org.cloudfoundry.credhub.PermissionOperation.READ
+import org.cloudfoundry.credhub.PermissionOperation.WRITE
 import org.cloudfoundry.credhub.audit.CEFAuditRecord
 import org.cloudfoundry.credhub.auth.UserContextHolder
 import org.cloudfoundry.credhub.domain.JsonCredentialVersion
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException
 import org.cloudfoundry.credhub.exceptions.ParameterizedValidationException
+import org.cloudfoundry.credhub.exceptions.PermissionException
 import org.cloudfoundry.credhub.services.CredentialService
 import org.cloudfoundry.credhub.services.PermissionCheckingService
 import org.springframework.beans.factory.annotation.Value
@@ -73,7 +75,11 @@ class DefaultInterpolationHandler(
                 name,
                 permissionOperation
             )) {
-            throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+            if (permissionOperation == WRITE) {
+                throw PermissionException(ErrorMessages.Credential.INVALID_ACCESS)
+            } else {
+                throw EntryNotFoundException(ErrorMessages.Credential.INVALID_ACCESS)
+            }
         }
     }
 

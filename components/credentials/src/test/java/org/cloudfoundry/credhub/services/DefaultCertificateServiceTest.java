@@ -9,13 +9,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.cloudfoundry.credhub.ErrorMessages;
-import org.cloudfoundry.credhub.PermissionOperation;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.auth.UserContext;
 import org.cloudfoundry.credhub.auth.UserContextHolder;
 import org.cloudfoundry.credhub.credential.CertificateCredentialValue;
-import org.cloudfoundry.credhub.data.CertificateDataService;
-import org.cloudfoundry.credhub.data.DefaultCertificateVersionDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialFactory;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;
@@ -162,17 +159,11 @@ public class DefaultCertificateServiceTest {
     final Credential yourCredential = mock(Credential.class);
     when(yourCredential.getName()).thenReturn("your-credential");
 
-    final UserContext userContext = mock(UserContext.class);
-    when(userContextHolder.getUserContext()).thenReturn(userContext);
-
-    final String user = "my-user";
-    when(userContext.getActor()).thenReturn(user);
-
     when(certificateDataService.findAll())
       .thenReturn(newArrayList(myCredential, yourCredential));
 
     final List<Credential> certificates = subjectWithoutConcatenateCas.getAll();
-    assertThat(certificates, equalTo(newArrayList(myCredential)));
+    assertThat(certificates, equalTo(newArrayList(myCredential, yourCredential)));
   }
 
   @Test
@@ -262,28 +253,6 @@ public class DefaultCertificateServiceTest {
     subjectWithoutConcatenateCas.getVersions(uuid, false);
   }
 
-  //todo: remove
-  @Test(expected = EntryNotFoundException.class)
-  public void getVersions_returnsAnError_whenUserDoesntHavePermission() {
-    final CredentialVersion myCredential = mock(CredentialVersion.class);
-    when(myCredential.getName()).thenReturn("my-credential");
-    final CredentialVersion secondVersion = mock(CredentialVersion.class);
-    when(secondVersion.getName()).thenReturn("my-credential");
-
-    final List<CredentialVersion> versions = newArrayList(myCredential, secondVersion);
-
-    final UserContext userContext = mock(UserContext.class);
-    when(userContextHolder.getUserContext()).thenReturn(userContext);
-
-    final String user = "my-user";
-    when(userContext.getActor()).thenReturn(user);
-
-    when(certificateVersionDataService.findAllVersions(uuid))
-      .thenReturn(versions);
-
-    subjectWithoutConcatenateCas.getVersions(uuid, false);
-  }
-
   @Test
   public void getAllValidVersions_returnsListWithValidVersions() {
     final CredentialVersion firstVersion = mock(CredentialVersion.class);
@@ -332,28 +301,6 @@ public class DefaultCertificateServiceTest {
     subjectWithoutConcatenateCas.getAllValidVersions(uuid);
   }
 
-  //todo: remove
-  @Test(expected = EntryNotFoundException.class)
-  public void getAllValidVersions_returnsAnError_whenUserDoesntHavePermission() {
-    final CredentialVersion firstVersion = mock(CredentialVersion.class);
-    when(firstVersion.getName()).thenReturn("my-credential");
-    final CredentialVersion secondVersion = mock(CredentialVersion.class);
-    when(secondVersion.getName()).thenReturn("my-credential");
-
-    final List<CredentialVersion> versions = newArrayList(firstVersion, secondVersion);
-
-    final UserContext userContext = mock(UserContext.class);
-    when(userContextHolder.getUserContext()).thenReturn(userContext);
-
-    final String user = "my-user";
-    when(userContext.getActor()).thenReturn(user);
-
-    when(certificateVersionDataService.findAllValidVersions(uuid))
-      .thenReturn(versions);
-
-    subjectWithoutConcatenateCas.getAllValidVersions(uuid);
-  }
-
   @Test
   public void deleteVersion_deletesTheProvidedVersion() {
     final UUID versionUuid = UUID.randomUUID();
@@ -380,30 +327,6 @@ public class DefaultCertificateServiceTest {
       .deleteVersion(certificateUuid, versionUuid);
 
     assertThat(certificateCredentialVersion, equalTo(versionToDelete));
-  }
-
-  //todo: remove
-  @Test(expected = EntryNotFoundException.class)
-  public void deleteVersion_whenTheUserDoesNotHavePermission_returnsAnError() {
-    final UUID versionUuid = UUID.randomUUID();
-    final UUID certificateUuid = UUID.randomUUID();
-
-    final UserContext userContext = mock(UserContext.class);
-    when(userContextHolder.getUserContext()).thenReturn(userContext);
-    final String user = "my-user";
-    when(userContext.getActor()).thenReturn(user);
-    final String credentialName = "my-credential";
-
-    final Credential certificate = mock(Credential.class);
-    when(certificate.getName()).thenReturn(credentialName);
-    when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
-
-    final CertificateCredentialVersion versionToDelete = mock(CertificateCredentialVersion.class);
-    when(certificate.getUuid()).thenReturn(UUID.randomUUID());
-    when(certificateVersionDataService.findVersion(versionUuid)).thenReturn(versionToDelete);
-    when(versionToDelete.getCredential()).thenReturn(certificate);
-
-    subjectWithoutConcatenateCas.deleteVersion(certificateUuid, versionUuid);
   }
 
   @Test(expected = EntryNotFoundException.class)
@@ -472,28 +395,6 @@ public class DefaultCertificateServiceTest {
     subjectWithoutConcatenateCas.deleteVersion(certificateUuid, versionUuid);
   }
 
-  // todo: remove
-  @Test(expected = EntryNotFoundException.class)
-  public void updateTransitionalVersion_whenTheUserDoesNotHavePermissions_returnsAnError() {
-    final UUID certificateUuid = UUID.randomUUID();
-    final UUID transitionalVersionUuid = UUID.randomUUID();
-    final String credentialName = "my-credential";
-
-    final Credential certificate = mock(Credential.class);
-    when(certificate.getName()).thenReturn(credentialName);
-
-    final UserContext userContext = mock(UserContext.class);
-    when(userContext.getActor()).thenReturn("some-actor");
-    when(userContextHolder.getUserContext()).thenReturn(userContext);
-
-    when(certificate.getName()).thenReturn(credentialName);
-    final String user = "my-user";
-
-    when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
-
-    subjectWithoutConcatenateCas.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
-  }
-
   @Test(expected = EntryNotFoundException.class)
   public void updateTransitionalVersion_whenTheCertificateIsNotFound_returnsAnError() {
     final UUID certificateUuid = UUID.randomUUID();
@@ -555,25 +456,6 @@ public class DefaultCertificateServiceTest {
     when(version.getCredential()).thenReturn(otherCertificate);
 
     subjectWithoutConcatenateCas.updateTransitionalVersion(certificateUuid, transitionalVersionUuid);
-  }
-
-  //todo: remove
-  @Test(expected = EntryNotFoundException.class)
-  public void set_whenTheUserDoesNotHavePermission_throwsAnException() {
-    final UUID certificateUuid = UUID.randomUUID();
-    final String credentialName = "my-credential";
-
-    final Credential certificate = mock(Credential.class);
-    when(certificate.getName()).thenReturn(credentialName);
-
-    final String user = "my-user";
-    final UserContext userContext = mock(UserContext.class);
-    when(userContextHolder.getUserContext()).thenReturn(userContext);
-    when(userContext.getActor()).thenReturn(user);
-
-    when(certificateDataService.findByUuid(certificateUuid)).thenReturn(certificate);
-
-    subjectWithoutConcatenateCas.set(certificateUuid, mock(CertificateCredentialValue.class));
   }
 
   @Test(expected = EntryNotFoundException.class)
@@ -672,15 +554,6 @@ public class DefaultCertificateServiceTest {
     final CertificateCredentialVersion certificate = subjectWithoutConcatenateCas.findByCredentialUuid(credentialUuid);
 
     assertThat(certificate, not(nullValue()));
-  }
-
-  // todo: move this
-  @Test(expected = EntryNotFoundException.class)
-  public void findByUuid_ThrowsIfUserDoesNotHaveReadAccess() {
-//    when(permissionCheckingService.hasPermission(actor, credentialName, PermissionOperation.READ))
-//      .thenReturn(false);
-//
-//    subjectWithoutConcatenateCas.findByCredentialUuid(credentialUuid);
   }
 
   @Test(expected = EntryNotFoundException.class)

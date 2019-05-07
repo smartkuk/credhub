@@ -2,6 +2,7 @@ package org.cloudfoundry.credhub.requests;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -120,5 +121,25 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
 
   public void setRegenerate(Boolean regenerate) {
     this.regenerate = regenerate;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    BaseCredentialGenerateRequest that = (BaseCredentialGenerateRequest) o;
+    return Objects.equals(overwrite, that.overwrite) &&
+      Objects.equals(rawOverwrite, that.rawOverwrite) &&
+      mode == that.mode &&
+      Objects.equals(regenerate, that.regenerate);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(overwrite, rawOverwrite, mode, regenerate);
   }
 }

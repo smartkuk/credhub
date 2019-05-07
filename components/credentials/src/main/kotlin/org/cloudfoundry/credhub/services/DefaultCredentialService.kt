@@ -6,7 +6,6 @@ import org.cloudfoundry.credhub.audit.entities.GetCredentialById
 import org.cloudfoundry.credhub.constants.CredentialType
 import org.cloudfoundry.credhub.constants.CredentialWriteMode
 import org.cloudfoundry.credhub.credential.CredentialValue
-import org.cloudfoundry.credhub.data.CredentialDataService
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion
 import org.cloudfoundry.credhub.domain.CredentialFactory
 import org.cloudfoundry.credhub.domain.CredentialVersion

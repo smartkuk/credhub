@@ -24,7 +24,7 @@ import org.cloudfoundry.credhub.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.config.EncryptionKeyMetadata;
 import org.cloudfoundry.credhub.config.EncryptionKeyProvider;
 import org.cloudfoundry.credhub.config.EncryptionKeysConfiguration;
-import org.cloudfoundry.credhub.data.CredentialDataService;
+import org.cloudfoundry.credhub.services.CredentialDataService;
 import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;

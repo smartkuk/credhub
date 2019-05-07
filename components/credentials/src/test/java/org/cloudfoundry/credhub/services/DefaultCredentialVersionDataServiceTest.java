@@ -19,7 +19,6 @@ import org.cloudfoundry.credhub.DatabaseUtilities;
 import org.cloudfoundry.credhub.SpringUtilities;
 import org.cloudfoundry.credhub.TestHelper;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
-import org.cloudfoundry.credhub.data.CredentialDataService;
 import org.cloudfoundry.credhub.data.EncryptionKeyCanaryDataService;
 import org.cloudfoundry.credhub.domain.CertificateCredentialVersion;
 import org.cloudfoundry.credhub.domain.CredentialVersion;

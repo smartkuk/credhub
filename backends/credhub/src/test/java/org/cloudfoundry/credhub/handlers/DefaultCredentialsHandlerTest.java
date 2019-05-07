@@ -243,7 +243,9 @@ public class DefaultCredentialsHandlerTest {
 
   @Test
   public void getCredentialVersionByUUID_whenTheUserLacksPermission_throwsException() {
-    when(permissionCheckingService.hasPermission(USER, UUID.fromString(UUID_STRING), PermissionOperation.READ))
+    Credential credential = new Credential(CREDENTIAL_NAME);
+    when(credentialService.findByUuid(UUID.fromString(UUID_STRING))).thenReturn(credential);
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
       .thenReturn(false);
 
     try {
@@ -303,9 +305,10 @@ public class DefaultCredentialsHandlerTest {
 
   @Test
   public void getCredentialVersion_whenTheVersionExists_returnsDataResponse() {
-    when(credentialService.findVersionByUuid(eq(UUID_STRING)))
+    when(credentialService.findVersionByUuid(UUID_STRING))
       .thenReturn(version1);
-    when(permissionCheckingService.hasPermission(USER, UUID.fromString(UUID_STRING), PermissionOperation.READ))
+    when(credentialService.findByUuid(UUID.fromString(UUID_STRING))).thenReturn(version1.getCredential());
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.READ))
       .thenReturn(true);
 
     final CredentialView credentialVersion = subjectWithAcls.getCredentialVersionByUUID(UUID_STRING);

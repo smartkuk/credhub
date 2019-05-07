@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.data;
+package org.cloudfoundry.credhub.services;
 
 import java.util.UUID;
 
@@ -13,6 +13,7 @@ import org.cloudfoundry.credhub.DatabaseProfileResolver;
 import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.repositories.CredentialRepository;
+import org.cloudfoundry.credhub.services.CredentialDataService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

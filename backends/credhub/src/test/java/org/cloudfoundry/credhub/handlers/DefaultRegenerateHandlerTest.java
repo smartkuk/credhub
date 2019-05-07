@@ -21,6 +21,7 @@ import org.cloudfoundry.credhub.domain.CredentialVersion;
 import org.cloudfoundry.credhub.domain.PasswordCredentialVersion;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
+import org.cloudfoundry.credhub.exceptions.PermissionException;
 import org.cloudfoundry.credhub.generate.GenerationRequestGenerator;
 import org.cloudfoundry.credhub.generate.UniversalCredentialGenerator;
 import org.cloudfoundry.credhub.regenerate.DefaultRegenerateHandler;
@@ -59,8 +60,8 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 @RunWith(JUnit4.class)
 public class DefaultRegenerateHandlerTest {
 
-  private static final String SIGNER_NAME = "signer name";
-  private static final String CREDENTIAL_NAME = "credName";
+  private static final String SIGNER_NAME = "/signer_name";
+  private static final String CREDENTIAL_NAME = "/credName";
   private static final String USER = "darth-sirius";
 
 
@@ -168,7 +169,7 @@ public class DefaultRegenerateHandlerTest {
     try {
       subjectWithAclsEnabled.handleRegenerate(CREDENTIAL_NAME);
       fail("should throw exception");
-    } catch (final EntryNotFoundException e) {
+    } catch (final PermissionException e) {
       MatcherAssert.assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     } catch (final Exception e) {
       fail("expected EntryNotFoundException but got " + e.getClass().toString());
@@ -384,7 +385,7 @@ public class DefaultRegenerateHandlerTest {
     try {
       subjectWithAclsEnabled.handleBulkRegenerate(SIGNER_NAME);
       fail("should throw exception");
-    } catch (final EntryNotFoundException e) {
+    } catch (final PermissionException e) {
       MatcherAssert.assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
     } catch (final Exception e) {
       fail("expected EntryNotFoundException but got " + e.getClass().toString() + "\n" + Arrays.toString(e.getStackTrace()));
@@ -504,4 +505,39 @@ public class DefaultRegenerateHandlerTest {
   }
 
 
+  @Test
+  public void handleRegenerate_whenRegeneratingCertificate_andCanNotReadCa_throwsException() {
+    CertificateCredentialVersion credentialVersion = new CertificateCredentialVersion(CREDENTIAL_NAME);
+    credentialVersion.setCertificate(TestConstants.TEST_CERTIFICATE);
+    credentialVersion.setCaName(SIGNER_NAME);
+
+    final CertificateGenerateRequest generateRequest = mock(CertificateGenerateRequest.class);
+    generateRequest.setName(CREDENTIAL_NAME);
+    when(generateRequest.getName()).thenReturn(CREDENTIAL_NAME);
+    final CertificateGenerationParameters generationParams = mock(CertificateGenerationParameters.class);
+    when(generationParams.isCa()).thenReturn(false);
+    when(generateRequest.getGenerationParameters()).thenReturn(generationParams);
+
+    when(generationRequestGenerator.createGenerateRequest(credentialVersion)).thenReturn(generateRequest);
+    when(credentialService.findMostRecent(CREDENTIAL_NAME))
+      .thenReturn(credentialVersion);
+    when(permissionCheckingService.hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE))
+      .thenReturn(true);
+    when(permissionCheckingService.hasPermission(USER, SIGNER_NAME, PermissionOperation.READ))
+      .thenReturn(false);
+
+    try {
+      subjectWithAclsEnabled.handleRegenerate(CREDENTIAL_NAME);
+      fail("should throw exception");
+    } catch (final EntryNotFoundException e) {
+      MatcherAssert.assertThat(e.getMessage(), IsEqual.equalTo(ErrorMessages.Credential.INVALID_ACCESS));
+    } catch (final Exception e) {
+      fail("expected EntryNotFoundException but got " + e.getClass().toString() + "\n" + Arrays.toString(e.getStackTrace()));
+    }
+
+
+    verify(permissionCheckingService, times(1)).hasPermission(USER, CREDENTIAL_NAME, PermissionOperation.WRITE);
+    verify(permissionCheckingService, times(1)).hasPermission(USER, SIGNER_NAME, PermissionOperation.READ);
+
+  }
 }

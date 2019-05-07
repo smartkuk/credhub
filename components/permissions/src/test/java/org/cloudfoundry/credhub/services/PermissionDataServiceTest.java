@@ -1,4 +1,4 @@
-package org.cloudfoundry.credhub.data;
+package org.cloudfoundry.credhub.services;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +21,8 @@ import org.cloudfoundry.credhub.audit.CEFAuditRecord;
 import org.cloudfoundry.credhub.audit.OperationDeviceAction;
 import org.cloudfoundry.credhub.audit.Resource;
 import org.cloudfoundry.credhub.audit.entities.V2Permission;
+import org.cloudfoundry.credhub.data.PermissionData;
+import org.cloudfoundry.credhub.data.PermissionDataService;
 import org.cloudfoundry.credhub.entity.Credential;
 import org.cloudfoundry.credhub.entity.ValueCredentialVersionData;
 import org.cloudfoundry.credhub.exceptions.EntryNotFoundException;
@@ -53,7 +55,7 @@ import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value ="unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredhubTestApp.class)
 @Transactional
 @SuppressFBWarnings(

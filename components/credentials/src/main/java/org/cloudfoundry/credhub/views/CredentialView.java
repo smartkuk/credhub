@@ -44,19 +44,19 @@ public class CredentialView {
 
   public static CredentialView fromEntity(final CredentialVersion credentialVersion) {
     final CredentialView result;
-    if (ValueCredentialVersion.class.isInstance(credentialVersion)) {
+    if (credentialVersion instanceof ValueCredentialVersion) {
       result = new ValueView((ValueCredentialVersion) credentialVersion);
-    } else if (PasswordCredentialVersion.class.isInstance(credentialVersion)) {
+    } else if (credentialVersion instanceof PasswordCredentialVersion) {
       result = new PasswordView((PasswordCredentialVersion) credentialVersion);
-    } else if (CertificateCredentialVersion.class.isInstance(credentialVersion)) {
+    } else if (credentialVersion instanceof CertificateCredentialVersion) {
       result = new CertificateView((CertificateCredentialVersion) credentialVersion);
-    } else if (SshCredentialVersion.class.isInstance(credentialVersion)) {
+    } else if (credentialVersion instanceof SshCredentialVersion) {
       result = new SshView((SshCredentialVersion) credentialVersion);
-    } else if (RsaCredentialVersion.class.isInstance(credentialVersion)) {
+    } else if (credentialVersion instanceof RsaCredentialVersion) {
       result = new RsaView((RsaCredentialVersion) credentialVersion);
-    } else if (JsonCredentialVersion.class.isInstance(credentialVersion)) {
+    } else if (credentialVersion instanceof JsonCredentialVersion) {
       result = new JsonView((JsonCredentialVersion) credentialVersion);
-    } else if (UserCredentialVersion.class.isInstance(credentialVersion)) {
+    } else if (credentialVersion instanceof UserCredentialVersion) {
       result = new UserView((UserCredentialVersion) credentialVersion);
     } else {
       throw new IllegalArgumentException();

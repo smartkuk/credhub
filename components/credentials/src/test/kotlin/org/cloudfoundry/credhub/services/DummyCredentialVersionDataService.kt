@@ -6,7 +6,6 @@ import org.cloudfoundry.credhub.views.FindCredentialResult
 import org.springframework.stereotype.Component
 import java.util.UUID
 
-@Component
 class DummyCredentialVersionDataService : CredentialVersionDataService {
     override fun save(credentialVersion: CredentialVersion): CredentialVersion {
         TODO("not implemented") // To change body of created functions use File | Settings | File Templates.

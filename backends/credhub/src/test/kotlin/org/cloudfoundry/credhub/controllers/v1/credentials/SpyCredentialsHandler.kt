@@ -8,12 +8,24 @@ import org.cloudfoundry.credhub.views.DataResponse
 import org.cloudfoundry.credhub.views.FindCredentialResult
 
 class SpyCredentialsHandler : CredentialsHandler {
+    lateinit var findStartingWithPath__returns_findCredentialResultList: List<FindCredentialResult>
+    lateinit var findStartingWithPath__calledWith_path: String
+    lateinit var findStartingWithPath__calledWith_expiresWithinDays: String
     override fun findStartingWithPath(path: String, expiresWithinDays: String): List<FindCredentialResult> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        findStartingWithPath__calledWith_path = path
+        findStartingWithPath__calledWith_expiresWithinDays = expiresWithinDays
+
+        return findStartingWithPath__returns_findCredentialResultList
     }
 
-    override fun findContainingName(path: String, expiresWithinDays: String): List<FindCredentialResult> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    lateinit var findContainingName__calledWith_name: String
+    lateinit var findContainingName__calledWith_expiresWithinDays: String
+    lateinit var findContainingName__returns_findCredentialResultList: List<FindCredentialResult>
+    override fun findContainingName(name: String, expiresWithinDays: String): List<FindCredentialResult> {
+        findContainingName__calledWith_name = name
+        findContainingName__calledWith_expiresWithinDays = expiresWithinDays
+
+        return findContainingName__returns_findCredentialResultList
     }
 
     lateinit var generateCredential__calledWith_generateRequest: BaseCredentialGenerateRequest
